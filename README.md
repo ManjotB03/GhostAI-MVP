@@ -1,2 +1,4 @@
 # GhostAI-MVP
-Space-themed AI automation assistant MVP
+GhostAI is a Space-themed AI automation assistant.
+This repository is the foundation of the MVP.
+
