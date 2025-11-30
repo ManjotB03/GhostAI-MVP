@@ -13,9 +13,8 @@ export default function ContactPage() {
       <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-xl">
         <h2 className="text-2xl font-semibold text-indigo-300 mb-4">Email</h2>
         <p className="text-gray-300 text-lg">
-          contact@ghostai.app  
-          <br />
-          <span className="text-sm text-gray-500">(placeholder — we can change it later)</span>
+          ghostaicorp@ghostai.app
+          
         </p>
       </div>
 
