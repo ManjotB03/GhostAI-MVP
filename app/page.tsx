@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import ModernLayout from "./components/ModernLayout";
 import { motion } from "framer-motion";
+import { useSession, signIn } from "next-auth/react";
 
 interface HistoryItem {
   task: string;
@@ -11,11 +12,34 @@ interface HistoryItem {
 }
 
 export default function Home() {
+  // ❗ ALL HOOKS MUST RUN BEFORE ANY CONDITIONAL RETURNS
+  const { data: session } = useSession();
+
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  // If user is NOT logged in → show login screen
+  if (!session) {
+    return (
+      <ModernLayout>
+        <div className="text-center mt-20">
+          <h2 className="text-3xl mb-6 text-gray-900 dark:text-white">
+            You must be signed in to use GhostAI
+          </h2>
+
+          <button
+            onClick={() => signIn()}
+            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
+          >
+            Sign In
+          </button>
+        </div>
+      </ModernLayout>
+    );
+  }
 
   const handleSubmit = async () => {
     if (!task.trim()) return;
@@ -28,13 +52,18 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ task, category }),
       });
+
       const data = await res.json();
-      const answer = res.ok ? data.result : `Error: ${data.error || "Something went wrong"}`;
+      const answer = res.ok
+        ? data.result
+        : `Error: ${data.error || "Something went wrong"}`;
+
       setResponse(answer);
       setHistory([{ task, category, response: answer }, ...history]);
     } catch (err) {
       setResponse("Error contacting AI.");
     }
+
     setLoading(false);
     setTask("");
   };
@@ -89,7 +118,10 @@ export default function Home() {
           disabled={loading}
         >
           {loading ? (
-            <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }}>
+            <motion.span
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ repeat: Infinity, duration: 1 }}
+            >
               Thinking...
             </motion.span>
           ) : (
@@ -107,7 +139,7 @@ export default function Home() {
           </button>
         )}
 
-        {/* AI Response Display */}
+        {/* AI Response */}
         {response && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -119,7 +151,7 @@ export default function Home() {
           </motion.div>
         )}
 
-        {/* History Display */}
+        {/* History */}
         {history.length > 0 && (
           <div className="mt-6 w-full max-w-3xl flex flex-col gap-4">
             {history.map((item, index) => (
@@ -134,12 +166,13 @@ export default function Home() {
                   {item.category} • You asked:
                 </p>
                 <p className="text-gray-900 dark:text-white mb-2">{item.task}</p>
-                <p className="text-gray-800 dark:text-gray-200">{item.response}</p>
+                <p className="text-gray-800 dark:text-gray-200">
+                  {item.response}
+                </p>
               </motion.div>
             ))}
           </div>
         )}
       </motion.div>
     </ModernLayout>
-  );
-}
+  );} 

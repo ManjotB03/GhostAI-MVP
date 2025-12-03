@@ -1,26 +1,24 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { supabase } from "@/lib/supabase";
+import { saveUserToSupabase } from "./authorize";
 
-type User = {
-  id: string;
-  email: string;
-  password: string; // hashed password
-};
-
-// TEMPORARY in-memory users array (we'll replace with a real database later)
-const users: User[] = [];
-
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
+  pages: {
+    signIn: "/login",
+  },  
+  session: {
+    strategy: "jwt",
+  },  
+  
   providers: [
-    // Google login
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
+    }), 
 
-    // Email + password login
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -31,38 +29,50 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
-        // Find user by email in our temporary in-memory list
-        const user = users.find((u) => u.email === credentials.email);
-        if (!user) return null;
+        const { data: user, error } = await supabase
+          .from("app_users")
+          .select("*")
+          .eq("email", credentials.email)
+          .single();  
 
-        const match = await bcrypt.compare(credentials.password, user.password);
-        if (!match) return null;
+        if (error || !user) {
+          console.error("Supabase error:", error);
+          return null;
+        } 
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password,
+          user.password_hash
+        );
+
+        if (!isPasswordValid) {
+          console.error("Invalid password for user:", credentials.email);
+          return null;
+        } 
 
         return { id: user.id, email: user.email };
       },
     }),
-  ],
+  ],  
 
-  session: {
-    strategy: "jwt",
-  },
+    callbacks: {
+      async jwt({ token, user }: any) {
+        if (user) {
+          token.user = user;
 
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        // Attach user info to the token
-        // @ts-ignore
-        token.user = user;
-      }
-      return token;
+          await saveUserToSupabase(user);
+        }
+        return token;
+      },
+  
+      async session({ session, token }: any) {
+        session.user = token.user;
+        return session;
+      },
     },
+  };
 
-    async session({ session, token }) {
-      // @ts-ignore
-      session.user = token.user;
-      return session;
-    },
-  },
-});
+// Create NextAuth handler
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

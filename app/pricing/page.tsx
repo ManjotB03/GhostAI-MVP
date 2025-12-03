@@ -1,4 +1,24 @@
+"use client";
+
 export default function PricingPage() {
+  const handleSubscribe = async (priceId: string) => {
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        body: JSON.stringify({ priceId }),
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url; // Redirect to Stripe checkout
+      } else {
+        console.error("Stripe error:", data);
+      }
+    } catch (err) {
+      console.error("Checkout failed:", err);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto mt-16 px-6 text-center">
       <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent">
@@ -29,15 +49,21 @@ export default function PricingPage() {
         {/* PRO PLAN */}
         <div className="bg-gray-900 border-2 border-indigo-500 rounded-2xl p-8 shadow-2xl transform scale-105">
           <h2 className="text-2xl font-bold text-white mb-2">Pro</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£9.99/mo</p>
+          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£4.99/mo</p>
           <ul className="text-gray-300 space-y-3 mb-6 text-left">
             <li>• Unlimited questions</li>
             <li>• Faster response speed</li>
             <li>• Priority AI model usage</li>
             <li>• Full category access</li>
           </ul>
-          <button className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-            Upgrade
+
+          <button
+            onClick={() =>
+              handleSubscribe(process.env.NEXT_PUBLIC_STRIPE_PRICE_ID!)
+            }
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          >
+            Upgrade to Pro
           </button>
         </div>
 
@@ -51,11 +77,11 @@ export default function PricingPage() {
             <li>• GPT-4 / GPT-5 Tier Models</li>
             <li>• Custom AI personalization</li>
           </ul>
+
           <button className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
             Unlock Ultimate
           </button>
         </div>
-
       </div>
     </div>
   );

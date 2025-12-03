@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import ClientSessionProvider from "./components/ClientSessionProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,10 +17,13 @@ export const metadata = {
   description: "Powered by GhostAI",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <body>{children}</body>
+export default function RootLayout({children}: { children: React.ReactNode }) {
+  return (  
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ClientSessionProvider>{children}</ClientSessionProvider>
+      </body>
     </html>
   );
 }
+ 
