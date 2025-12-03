@@ -70,7 +70,7 @@ export default function PricingPage() {
         {/* ULTIMATE PLAN */}
         <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl">
           <h2 className="text-2xl font-bold text-white mb-2">Ultimate</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£19.99/mo</p>
+          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£14.99/mo</p>
           <ul className="text-gray-300 space-y-3 mb-6 text-left">
             <li>• Everything in Pro</li>
             <li>• Ultra-fast responses</li>
