@@ -15,7 +15,7 @@ export default function AboutPage() {
 
       <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-xl">
         <h2 className="text-2xl font-bold mb-4 text-cyan-300">What GhostAI Can Do:</h2>
-        <ul className="text-gray-300 space-y-3">
+        <ul className="text-gray-300 space-y-3"> 
           <li>• Generate answers instantly using advanced AI</li>
           <li>• Help with CVs, career guidance, and job applications</li>
           <li>• Assist with money management, investing, and financial advice</li>
