@@ -1,22 +1,13 @@
 "use client";
 
 export default function PricingPage() {
-  const handleSubscribe = async (priceId: string) => {
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        body: JSON.stringify({ priceId }),
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url; // Redirect to Stripe checkout
-      } else {
-        console.error("Stripe error:", data);
-      }
-    } catch (err) {
-      console.error("Checkout failed:", err);
-    }
+  const handleSubscribe = async (plan: string) => {
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      body: JSON.stringify({ plan }),
+    });
+    const data = await res.json();
+    window.location.href = data.url; // Redirect to Stripe checkout
   };
 
   return (
@@ -58,9 +49,7 @@ export default function PricingPage() {
           </ul>
 
           <button
-            onClick={() =>
-              handleSubscribe(process.env.NEXT_PUBLIC_STRIPE_PRICE_ID!)
-            }
+            onClick={() => handleSubscribe("pro")}
             className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
           >
             Upgrade to Pro
@@ -78,7 +67,9 @@ export default function PricingPage() {
             <li>• Custom AI personalization</li>
           </ul>
 
-          <button className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+          <button className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            onClick={() => handleSubscribe("ultimate")}
+          > 
             Unlock Ultimate
           </button>
         </div>
