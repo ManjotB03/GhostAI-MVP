@@ -27,7 +27,9 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) return null;
+        if (!credentials?.email || !credentials.password) {
+          throw new Error("Email and password are required");
+        }
 
         const { data: user, error } = await supabase
           .from("app_users")
@@ -36,20 +38,17 @@ export const authOptions: NextAuthOptions = {
           .single();  
 
         if (error || !user) {
-          console.error("Supabase error:", error);
-          return null;
-        } 
-
-        const isPasswordValid = await bcrypt.compare(
+          throw new Error("No user found with the given email");
+        }
+        
+        const match = await bcrypt.compare(
           credentials.password,
           user.password_hash
         );
 
-        if (!isPasswordValid) {
-          console.error("Invalid password for user:", credentials.email);
-          return null;
-        } 
-
+        if (!match) {
+          throw new Error("Invalid password");
+        }
         return { id: user.id, email: user.email };
       },
     }),
