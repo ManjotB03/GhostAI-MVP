@@ -1,24 +1,27 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { supabase } from "@/lib/supabase";
-import { saveUserToSupabase } from "./authorize";
 
-export const authOptions: NextAuthOptions = {
+// MAIN AUTH CONFIG
+export const authOptions = {
   pages: {
     signIn: "/login",
-  },  
-  session: {
-    strategy: "jwt",
-  },  
-  
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }), 
+  },
 
+  session: {
+    strategy: "jwt" as const,
+  },
+
+  providers: [
+    // GOOGLE LOGIN
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+
+    // EMAIL + PASSWORD LOGIN
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -28,50 +31,52 @@ export const authOptions: NextAuthOptions = {
 
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
-          throw new Error("Email and password are required");
+          throw new Error("Missing email or password");
         }
 
+        // FETCH USER FROM SUPABASE TABLE
         const { data: user, error } = await supabase
           .from("app_users")
           .select("*")
           .eq("email", credentials.email)
-          .single();  
+          .single();
 
         if (error || !user) {
-          throw new Error("No user found with the given email");
+          throw new Error("User not found");
         }
-        
-        const match = await bcrypt.compare(
+
+        // CHECK PASSWORD
+        const isValid = await bcrypt.compare(
           credentials.password,
           user.password_hash
         );
 
-        if (!match) {
+        if (!isValid) {
           throw new Error("Invalid password");
         }
+
         return { id: user.id, email: user.email };
       },
     }),
-  ],  
+  ],
 
-    callbacks: {
-      async jwt({ token, user }: any) {
-        if (user) {
-          token.user = user;
-
-          await saveUserToSupabase(user);
-        }
-        return token;
-      },
-  
-      async session({ session, token }: any) {
-        session.user = token.user;
-        return session;
-      },
+  callbacks: {
+    async jwt({ token, user }: { token: any; user?: any }) {
+      if (user) {
+        token.user = user;
+      }
+      return token;
     },
-  };
 
-// Create NextAuth handler
+    async session({ session, token }: { session: any; token: any }) {
+      session.user = token.user;
+      return session;
+    },
+  },
+};
+
+// AUTH HANDLERS
 const handler = NextAuth(authOptions);
 
+// EXPORTS REQUIRED FOR NEXT.JS ROUTE HANDLER
 export { handler as GET, handler as POST };

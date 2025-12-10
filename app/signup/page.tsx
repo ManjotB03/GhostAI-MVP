@@ -1,48 +1,66 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { signIn } from "next-auth/react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // CREATE USER IN SUPABASE (our user DB)
+  const createUserRecord = async (email: string, password_hash: string) => {
+    const { error } = await supabase.from("app_users").insert([
+      {
+        email,
+        password_hash,
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      throw new Error("Failed to create user");
+    }
+  };
+
+  // SIGNUP FORM HANDLER
   const handleSignUp = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
-    setSuccessMsg(null);
-
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      // HASH PASSWORD
+      const hashed = await fetch("/api/hash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      }).then((res) => res.json());
 
-    setLoading(false);
+      // SAVE USER TO SUPABASE TABLE
+      await createUserRecord(email, hashed.hash);
 
-    if (error) {
-      setErrorMsg(error.message);
-      return;
+      // Auto-login after signup
+      await signIn("credentials", {
+        email,
+        password,
+        callbackUrl: "/ghost",
+      });
+    } catch (err: any) {
+      setErrorMsg(err.message || "Something went wrong.");
     }
 
-    setSuccessMsg("Account created! Please check your email to verify.");
-    
-    setTimeout(() => router.push("/login"), 1500);
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-700 rounded-2xl p-8 shadow-xl">
-        <h1 className="text-3xl font-extrabold text-center mb-4">
-          <span className="text-sky-400">Sign Up</span>{" "}
-          <span className="text-white">for GhostAI</span>
+        <h1 className="text-3xl font-extrabold text-center mb-6">
+          <span className="text-sky-400">Create</span>{" "}
+          <span className="text-white">your GhostAI account</span>
         </h1>
 
         {errorMsg && (
@@ -51,12 +69,33 @@ export default function SignUpPage() {
           </div>
         )}
 
-        {successMsg && (
-          <div className="mb-4 text-green-300 bg-green-500/10 border border-green-500 rounded-lg p-3 text-sm text-center">
-            {successMsg}
-          </div>
-        )}
+        {/* GOOGLE SIGNUP */}
+        <button
+          onClick={() => signIn("google", { callbackUrl: "/ghost" })}
+          className="w-full py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold transition flex items-center justify-center gap-2"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            className="w-5 h-5"
+            alt="Google Logo"
+          />
+          Sign up with Google
+        </button>
 
+        {/* APPLE SIGNUP (activate later) */}
+        <button
+          onClick={() => signIn("apple", { callbackUrl: "/ghost" })}
+          className="mt-3 w-full py-2.5 rounded-lg bg-black hover:bg-neutral-900 text-white font-semibold transition flex items-center justify-center gap-2"
+        >
+           Sign up with Apple
+        </button>
+
+        {/* DIVIDER */}
+        <div className="my-6 flex items-center justify-center">
+          <span className="text-slate-500 text-sm">──────── or ────────</span>
+        </div>
+
+        {/* EMAIL SIGNUP FORM */}
         <form onSubmit={handleSignUp} className="space-y-4">
           <div>
             <label className="text-sm text-slate-200">Email</label>
@@ -97,7 +136,7 @@ export default function SignUpPage() {
             href="/login"
             className="text-sky-400 hover:text-sky-300 underline underline-offset-2"
           >
-            Login
+            Log in
           </a>
         </p>
       </div>
