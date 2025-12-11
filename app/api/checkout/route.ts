@@ -1,16 +1,20 @@
 import Stripe from "stripe";
-import { NextResponse } from "next/server";     
+import { NextResponse } from "next/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-11-17.clover",   
+  apiVersion: "2025-11-17.clover",
 });
 
 export async function POST(req: Request) {
   try {
-    const { plan } = await req.json();
+    const { plan, email } = await req.json();   // ⬅️ STEP 1: capture email
 
     if (!plan) {
       return NextResponse.json({ error: "Missing plan" }, { status: 400 });
+    }
+
+    if (!email) {
+      return NextResponse.json({ error: "Missing email" }, { status: 400 }); // ⬅️ STEP 2
     }
 
     const priceId =
@@ -24,17 +28,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
+    // ⭐ STEP 3: include user email + return to /ghost
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
+      customer_email: email,   // ⬅️ This ties payment → user
       line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_URL}/success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/pricing`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/ghost?status=success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/pricing?status=cancelled`,
     });
 
     return NextResponse.json({ url: session.url });

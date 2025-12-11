@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import ModernLayout from "../components/ModernLayout";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 interface HistoryItem {
   task: string;
@@ -11,12 +12,17 @@ interface HistoryItem {
 }
 
 export default function GhostClient() {
+  const { data: session } = useSession();
+
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
+  // ------------------------------
+  // AI SUBMIT HANDLER
+  // ------------------------------
   const handleSubmit = async () => {
     if (!task.trim()) return;
     setLoading(true);
@@ -46,6 +52,25 @@ export default function GhostClient() {
 
   const handleClearHistory = () => setHistory([]);
 
+  // ------------------------------
+  // STRIPE UPGRADE HANDLER
+  // ------------------------------
+  const handleUpgrade = async (priceId: string) => {
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        priceId,
+        email: session?.user?.email,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url; // Redirect to Stripe Checkout
+    }
+  };
+
   return (
     <ModernLayout>
       <motion.div
@@ -57,6 +82,27 @@ export default function GhostClient() {
         <h1 className="text-5xl font-extrabold mb-8 text-gray-900 dark:text-white text-center">
           Welcome to GhostAI
         </h1>
+
+        {/* UPGRADE BUTTONS */}
+        <div className="flex gap-4 mb-6">
+          <button
+            onClick={() =>
+              handleUpgrade(process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE!)
+            }
+            className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+          >
+            Upgrade to Pro
+          </button>
+
+          <button
+            onClick={() =>
+              handleUpgrade(process.env.NEXT_PUBLIC_STRIPE_ULTIMATE_PRICE!)
+            }
+            className="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition"
+          >
+            Upgrade to Ultimate
+          </button>
+        </div>
 
         {/* Category Selector */}
         <div className="flex gap-3 justify-center mb-4">
@@ -143,7 +189,9 @@ export default function GhostClient() {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                   {item.category} • You asked:
                 </p>
-                <p className="text-gray-900 dark:text-white mb-2">{item.task}</p>
+                <p className="text-gray-900 dark:text-white mb-2">
+                  {item.task}
+                </p>
                 <p className="text-gray-800 dark:text-gray-200">
                   {item.response}
                 </p>

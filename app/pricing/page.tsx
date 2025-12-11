@@ -1,11 +1,25 @@
 "use client";
 
+import { useSession } from "next-auth/react";
+
 export default function PricingPage() {
+  const { data: session } = useSession();
+
   const handleSubscribe = async (plan: string) => {
+    if (!session?.user?.email) {
+      alert("You must be signed in to upgrade your plan.");
+      return;
+    }
+
     const res = await fetch("/api/checkout", {
       method: "POST",
-      body: JSON.stringify({ plan }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan,
+        email: session.user.email,   // ⬅️ REQUIRED
+      }),
     });
+
     const data = await res.json();
     window.location.href = data.url; // Redirect to Stripe checkout
   };
@@ -22,7 +36,7 @@ export default function PricingPage() {
 
       {/* Pricing Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        
+
         {/* FREE PLAN */}
         <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl">
           <h2 className="text-2xl font-bold text-white mb-2">Free</h2>
@@ -32,6 +46,7 @@ export default function PricingPage() {
             <li>• Work, Career & Money categories</li>
             <li>• Standard response speed</li>
           </ul>
+
           <button className="w-full py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition">
             Current Plan
           </button>
@@ -67,9 +82,10 @@ export default function PricingPage() {
             <li>• Custom AI personalization</li>
           </ul>
 
-          <button className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          <button
             onClick={() => handleSubscribe("ultimate")}
-          > 
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          >
             Unlock Ultimate
           </button>
         </div>
