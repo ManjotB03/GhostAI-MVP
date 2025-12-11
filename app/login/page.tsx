@@ -61,14 +61,6 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        {/* APPLE LOGIN (READY WHEN YOU ENABLE IT) */}
-        <button
-          onClick={() => signIn("apple", { callbackUrl: "/ghost" })}
-          className="mt-3 w-full py-2.5 rounded-lg bg-black hover:bg-neutral-900 text-white font-semibold transition flex items-center justify-center gap-2"
-        >
-           Continue with Apple
-        </button>
-
         {/* DIVIDER */}
         <div className="my-6 flex items-center justify-center">
           <span className="text-slate-500 text-sm">──────── or ────────</span>
