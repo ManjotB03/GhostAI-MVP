@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useSession } from "next-auth/react";
 
 export default function PricingPage() {
@@ -38,13 +36,12 @@ export default function PricingPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* FREE */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl">
-          <h2 className="text-2xl font-bold text-white mb-2">Free</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£0</p>
-          <ul className="text-gray-300 space-y-3 mb-6 text-left">
+        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8">
+          <h2 className="text-2xl font-bold text-white">Free</h2>
+          <p className="text-4xl text-indigo-400 mb-4">£0</p>
+          <ul className="text-gray-300 mb-6 space-y-2 text-left">
             <li>• 20 questions/day</li>
             <li>• Work, Career & Money</li>
-            <li>• Standard speed</li>
           </ul>
           <button className="w-full py-3 bg-gray-700 rounded-lg">
             Current Plan
@@ -52,13 +49,12 @@ export default function PricingPage() {
         </div>
 
         {/* PRO */}
-        <div className="bg-gray-900 border-2 border-indigo-500 rounded-2xl p-8 shadow-2xl scale-105">
-          <h2 className="text-2xl font-bold text-white mb-2">Pro</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£4.99/mo</p>
-          <ul className="text-gray-300 space-y-3 mb-6 text-left">
-            <li>• Unlimited questions</li>
-            <li>• Faster responses</li>
-            <li>• Priority AI</li>
+        <div className="bg-gray-900 border-2 border-indigo-500 rounded-2xl p-8 scale-105">
+          <h2 className="text-2xl font-bold text-white">Pro</h2>
+          <p className="text-4xl text-indigo-400 mb-4">£4.99/mo</p>
+          <ul className="text-gray-300 mb-6 space-y-2 text-left">
+            <li>• Unlimited usage</li>
+            <li>• Faster AI</li>
           </ul>
           <button
             onClick={() => handleSubscribe("pro")}
@@ -69,13 +65,12 @@ export default function PricingPage() {
         </div>
 
         {/* ULTIMATE */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl">
-          <h2 className="text-2xl font-bold text-white mb-2">Ultimate</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£14.99/mo</p>
-          <ul className="text-gray-300 space-y-3 mb-6 text-left">
+        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8">
+          <h2 className="text-2xl font-bold text-white">Ultimate</h2>
+          <p className="text-4xl text-indigo-400 mb-4">£14.99/mo</p>
+          <ul className="text-gray-300 mb-6 space-y-2 text-left">
             <li>• Everything in Pro</li>
-            <li>• Ultra-fast</li>
-            <li>• Top-tier AI models</li>
+            <li>• Top-tier models</li>
           </ul>
           <button
             onClick={() => handleSubscribe("ultimate")}
