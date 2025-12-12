@@ -7,7 +7,7 @@ export default function PricingPage() {
 
   const handleSubscribe = async (plan: "pro" | "ultimate") => {
     if (!session?.user?.email) {
-      alert("You must be signed in to upgrade your plan.");
+      alert("You must be signed in to upgrade.");
       return;
     }
 
@@ -28,63 +28,42 @@ export default function PricingPage() {
 
   return (
     <div className="max-w-5xl mx-auto mt-16 px-6 text-center">
-      <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent">
+      <h1 className="text-5xl font-extrabold mb-4 text-white">
         Pricing
       </h1>
 
-      <p className="text-gray-300 text-lg mb-12">
-        Choose the plan that fits your goals. Upgrade anytime.
-      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-
-        {/* FREE */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl">
-          <h2 className="text-2xl font-bold text-white mb-2">Free</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£0</p>
-          <ul className="text-gray-300 space-y-3 mb-6 text-left">
-            <li>• 20 questions/day</li>
-            <li>• Work, Career & Money</li>
-            <li>• Standard speed</li>
-          </ul>
-          <button className="w-full py-3 bg-gray-700 text-white rounded-lg">
+        <div className="bg-gray-800 p-8 rounded-xl">
+          <h2 className="text-2xl font-bold text-white">Free</h2>
+          <p className="text-gray-400 mt-4">£0</p>
+          <button className="mt-6 w-full py-3 bg-gray-600 rounded">
             Current Plan
           </button>
         </div>
 
-        {/* PRO */}
-        <div className="bg-gray-900 border-2 border-indigo-500 rounded-2xl p-8 shadow-2xl scale-105">
-          <h2 className="text-2xl font-bold text-white mb-2">Pro</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£4.99/mo</p>
-          <ul className="text-gray-300 space-y-3 mb-6 text-left">
-            <li>• Unlimited questions</li>
-            <li>• Faster responses</li>
-            <li>• Priority AI</li>
-          </ul>
+        <div className="bg-indigo-900 p-8 rounded-xl">
+          <h2 className="text-2xl font-bold text-white">Pro</h2>
+          <p className="text-gray-300 mt-4">£4.99 / mo</p>
           <button
             onClick={() => handleSubscribe("pro")}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="mt-6 w-full py-3 bg-indigo-600 rounded"
           >
-            Upgrade to Pro
+            Upgrade
           </button>
         </div>
 
-        {/* ULTIMATE */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl">
-          <h2 className="text-2xl font-bold text-white mb-2">Ultimate</h2>
-          <p className="text-4xl font-extrabold text-indigo-400 mb-4">£14.99/mo</p>
-          <ul className="text-gray-300 space-y-3 mb-6 text-left">
-            <li>• Everything in Pro</li>
-            <li>• Ultra-fast responses</li>
-            <li>• Top-tier AI models</li>
-          </ul>
+        <div className="bg-gray-800 p-8 rounded-xl">
+          <h2 className="text-2xl font-bold text-white">Ultimate</h2>
+          <p className="text-gray-300 mt-4">£14.99 / mo</p>
           <button
             onClick={() => handleSubscribe("ultimate")}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="mt-6 w-full py-3 bg-indigo-600 rounded"
           >
-            Unlock Ultimate
+            Unlock
           </button>
         </div>
+
       </div>
     </div>
   );
