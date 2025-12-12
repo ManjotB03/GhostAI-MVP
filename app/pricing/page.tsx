@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -16,7 +17,7 @@ export default function PricingPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         plan,
-        email: session.user.email,   // ⬅️ REQUIRED
+        email: session.user.email,
       }),
     });
 
