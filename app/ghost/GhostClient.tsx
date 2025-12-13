@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import ModernLayout from "../components/ModernLayout";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/access";
 
 interface HistoryItem {
   task: string;
@@ -14,6 +15,12 @@ interface HistoryItem {
 export default function GhostClient() {
   const { data: session } = useSession();
 
+  // ⬇️ TEMP: until we fetch from DB (next step)
+  const userTier =
+    (session?.user as any)?.role === "owner"
+      ? "owner"
+      : (session?.user as any)?.subscription_tier || "free";
+
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
   const [response, setResponse] = useState("");
@@ -21,10 +28,17 @@ export default function GhostClient() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   // ------------------------------
-  // AI SUBMIT HANDLER
+  // AI SUBMIT HANDLER (PAYWALL HERE)
   // ------------------------------
   const handleSubmit = async () => {
     if (!task.trim()) return;
+
+    // 🔒 PAYWALL
+    if (!hasAccess(userTier, "pro")) {
+      alert("Upgrade to Pro to continue using GhostAI.");
+      return;
+    }
+
     setLoading(true);
     setResponse("");
 
@@ -42,7 +56,7 @@ export default function GhostClient() {
 
       setResponse(answer);
       setHistory([{ task, category, response: answer }, ...history]);
-    } catch (err) {
+    } catch {
       setResponse("Error contacting AI.");
     }
 
@@ -55,20 +69,18 @@ export default function GhostClient() {
   // ------------------------------
   // STRIPE UPGRADE HANDLER
   // ------------------------------
-  const handleUpgrade = async (priceId: string) => {
-    const res = await fetch("/api/stripe/checkout", {
+  const handleUpgrade = async (plan: "pro" | "ultimate") => {
+    const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        priceId,
+        plan,
         email: session?.user?.email,
       }),
     });
 
     const data = await res.json();
-    if (data.url) {
-      window.location.href = data.url; // Redirect to Stripe Checkout
-    }
+    if (data?.url) window.location.href = data.url;
   };
 
   return (
@@ -83,26 +95,24 @@ export default function GhostClient() {
           Welcome to GhostAI
         </h1>
 
-        {/* UPGRADE BUTTONS */}
-        <div className="flex gap-4 mb-6">
-          <button
-            onClick={() =>
-              handleUpgrade(process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE!)
-            }
-            className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
-          >
-            Upgrade to Pro
-          </button>
+        {/* UPGRADE CTA (FREE USERS ONLY) */}
+        {!hasAccess(userTier, "pro") && (
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => handleUpgrade("pro")}
+              className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+            >
+              Upgrade to Pro
+            </button>
 
-          <button
-            onClick={() =>
-              handleUpgrade(process.env.NEXT_PUBLIC_STRIPE_ULTIMATE_PRICE!)
-            }
-            className="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition"
-          >
-            Upgrade to Ultimate
-          </button>
-        </div>
+            <button
+              onClick={() => handleUpgrade("ultimate")}
+              className="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition"
+            >
+              Upgrade to Ultimate
+            </button>
+          </div>
+        )}
 
         {/* Category Selector */}
         <div className="flex gap-3 justify-center mb-4">
@@ -139,16 +149,7 @@ export default function GhostClient() {
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? (
-            <motion.span
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ repeat: Infinity, duration: 1 }}
-            >
-              Thinking...
-            </motion.span>
-          ) : (
-            "Submit"
-          )}
+          {loading ? "Thinking..." : "Submit"}
         </motion.button>
 
         {/* Clear history */}
@@ -163,41 +164,11 @@ export default function GhostClient() {
 
         {/* AI response */}
         {response && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 p-4 w-full max-w-3xl bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm"
-          >
+          <motion.div className="mt-4 p-4 w-full max-w-3xl bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
             <p className="text-gray-900 dark:text-white whitespace-pre-line">
               {response}
             </p>
           </motion.div>
-        )}
-
-        {/* History */}
-        {history.length > 0 && (
-          <div className="mt-6 w-full max-w-3xl flex flex-col gap-4">
-            {history.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 shadow-sm"
-              >
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                  {item.category} • You asked:
-                </p>
-                <p className="text-gray-900 dark:text-white mb-2">
-                  {item.task}
-                </p>
-                <p className="text-gray-800 dark:text-gray-200">
-                  {item.response}
-                </p>
-              </motion.div>
-            ))}
-          </div>
         )}
       </motion.div>
     </ModernLayout>
