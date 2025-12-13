@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import ModernLayout from "../components/ModernLayout";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { hasAccess } from "@/lib/access";
 
 interface HistoryItem {
   task: string;
@@ -15,12 +14,13 @@ interface HistoryItem {
 export default function GhostClient() {
   const { data: session } = useSession();
 
-  // ⬇️ TEMP: until we fetch from DB (next step)
-  const userTier =
-    (session?.user as any)?.role === "owner"
-      ? "owner"
-      : (session?.user as any)?.subscription_tier || "free";
+  // 🔐 ACCESS LOGIC
+  const OWNER_EMAIL = "ghostaicorp@gmail.com"; // 🔴 CHANGE IF NEEDED
 
+  const isOwner = session?.user?.email === OWNER_EMAIL;
+  const isFreeUser = !isOwner;
+
+  // 🧠 STATE
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
   const [response, setResponse] = useState("");
@@ -31,13 +31,12 @@ export default function GhostClient() {
   // AI SUBMIT HANDLER (PAYWALL HERE)
   // ------------------------------
   const handleSubmit = async () => {
-    if (!task.trim()) return;
-
-    // 🔒 PAYWALL
-    if (!hasAccess(userTier, "pro")) {
+    if (isFreeUser) {
       alert("Upgrade to Pro to continue using GhostAI.");
       return;
     }
+
+    if (!task.trim()) return;
 
     setLoading(true);
     setResponse("");
@@ -69,18 +68,20 @@ export default function GhostClient() {
   // ------------------------------
   // STRIPE UPGRADE HANDLER
   // ------------------------------
-  const handleUpgrade = async (plan: "pro" | "ultimate") => {
-    const res = await fetch("/api/checkout", {
+  const handleUpgrade = async (priceId: string) => {
+    const res = await fetch("/api/stripe/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        plan,
+        priceId,
         email: session?.user?.email,
       }),
     });
 
     const data = await res.json();
-    if (data?.url) window.location.href = data.url;
+    if (data?.url) {
+      window.location.href = data.url;
+    }
   };
 
   return (
@@ -91,22 +92,28 @@ export default function GhostClient() {
         transition={{ duration: 0.5 }}
         className="flex flex-col items-center justify-center w-full"
       >
-        <h1 className="text-5xl font-extrabold mb-8 text-gray-900 dark:text-white text-center">
+        <h1 className="text-5xl font-extrabold mb-8 text-white text-center">
           Welcome to GhostAI
         </h1>
 
-        {/* UPGRADE CTA (FREE USERS ONLY) */}
-        {!hasAccess(userTier, "pro") && (
+        {/* 🔼 UPGRADE BUTTONS */}
+        {isFreeUser && (
           <div className="flex gap-4 mb-6">
             <button
-              onClick={() => handleUpgrade("pro")}
+              onClick={() =>
+                handleUpgrade(process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE!)
+              }
               className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
             >
               Upgrade to Pro
             </button>
 
             <button
-              onClick={() => handleUpgrade("ultimate")}
+              onClick={() =>
+                handleUpgrade(
+                  process.env.NEXT_PUBLIC_STRIPE_ULTIMATE_PRICE!
+                )
+              }
               className="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition"
             >
               Upgrade to Ultimate
@@ -114,7 +121,7 @@ export default function GhostClient() {
           </div>
         )}
 
-        {/* Category Selector */}
+        {/* CATEGORY SELECTOR */}
         <div className="flex gap-3 justify-center mb-4">
           {["Work", "Career", "Money"].map((cat) => (
             <button
@@ -122,7 +129,7 @@ export default function GhostClient() {
               className={`px-4 py-2 rounded ${
                 category === cat
                   ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+                  : "bg-gray-700 text-white"
               }`}
               onClick={() => setCategory(cat)}
             >
@@ -131,44 +138,51 @@ export default function GhostClient() {
           ))}
         </div>
 
-        {/* Task input */}
+        {/* 📝 INPUT (NEVER DISABLED) */}
         <input
           type="text"
-          placeholder="Enter your AI task..."
-          className="border border-gray-300 dark:border-gray-700 p-3 mb-4 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white max-w-xl"
+          placeholder={
+            isFreeUser
+              ? "Upgrade to Pro to continue"
+              : "Enter your AI task..."
+          }
+          className="border border-gray-600 p-3 mb-4 w-full rounded-lg bg-gray-800 text-white max-w-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
         />
 
-        {/* Submit button */}
+        {/* 🚀 SUBMIT BUTTON */}
         <motion.button
           whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.03 }}
-          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition mb-4 w-full sm:w-auto"
+          whileHover={{ scale: isFreeUser ? 1 : 1.03 }}
+          disabled={loading || isFreeUser}
           onClick={handleSubmit}
-          disabled={loading}
+          className={`px-6 py-3 rounded-lg mb-4 w-full sm:w-auto transition
+            ${
+              isFreeUser
+                ? "bg-gray-500 cursor-not-allowed text-white"
+                : "bg-indigo-600 hover:bg-indigo-700 text-white"
+            }`}
         >
-          {loading ? "Thinking..." : "Submit"}
+          {isFreeUser ? "Upgrade Required" : loading ? "Thinking..." : "Submit"}
         </motion.button>
 
-        {/* Clear history */}
+        {/* CLEAR HISTORY */}
         {history.length > 0 && (
           <button
             onClick={handleClearHistory}
-            className="text-sm text-red-500 hover:underline mb-4"
+            className="text-sm text-red-400 hover:underline mb-4"
           >
             Clear History
           </button>
         )}
 
-        {/* AI response */}
+        {/* AI RESPONSE */}
         {response && (
-          <motion.div className="mt-4 p-4 w-full max-w-3xl bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm">
-            <p className="text-gray-900 dark:text-white whitespace-pre-line">
-              {response}
-            </p>
-          </motion.div>
+          <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg shadow">
+            <p className="text-white whitespace-pre-line">{response}</p>
+          </div>
         )}
       </motion.div>
     </ModernLayout>
