@@ -3,81 +3,66 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
+// CONFIG
 const FREE_DAILY_LIMIT = 5;
-const OWNER_EMAIL = "ghostaicorp@gmail.com"; // your owner email
+const OWNER_EMAIL = "ghostaicorp@gmail.com";
+
+// 🔮 ACTUAL AI FUNCTION
+async function runAI(prompt: string, category: string) {
+  // TEMP RESPONSE (replace later with OpenAI / Anthropic)
+  return `The sky appears blue because of Rayleigh scattering. Shorter blue wavelengths of sunlight are scattered in all directions by the gases and particles in Earth’s atmosphere, making the sky look blue to our eyes.`;
+}
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
-  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-}
-
-const userEmail = session.user.email;
-
-// Fetch role from DB (authoritative)
-const { data: user } = await supabase
-  .from("app_users")
-  .select("id, role")
-  .eq("email", userEmail)
-  .single();
-
-const userId = user?.id;
-const role = user?.role ?? "free";
-const isOwner = session.user.email === OWNER_EMAIL;
-
-  // ✅ Owner or paid users = unlimited
-  if (isOwner || role !== "free") {
-    return runAI(req);
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { prompt, category } = await req.json();
+
+  if (!prompt) {
+    return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+  }
+
+  const isOwner = session.user.email === OWNER_EMAIL;
 
   // ---------------------------
   // FREE USER DAILY LIMIT
   // ---------------------------
-  const today = new Date().toISOString().slice(0, 10);
+  if (!isOwner) {
+    const today = new Date().toISOString().slice(0, 10);
 
-  const { data: usage } = await supabase
-    .from("ai_usage")
-    .select("count")
-    .eq("user_id", userId)
-    .eq("date", today)
-    .single();
+    const { data: usage } = await supabase
+      .from("ai_usage")
+      .select("count")
+      .eq("user_id", session.user.email)
+      .eq("date", today)
+      .maybeSingle();
 
-  const used = usage?.count ?? 0;
+    const used = usage?.count ?? 0;
 
-  if (used >= FREE_DAILY_LIMIT) {
-    return NextResponse.json(
-      {
-        error: "Free limit reached",
-        limitReached: true,
-      },
-      { status: 403 }
-    );
-  }
+    if (used >= FREE_DAILY_LIMIT) {
+      return NextResponse.json(
+        { error: "Limit reached", limitReached: true },
+        { status: 403 }
+      );
+    }
 
-  // Increment usage
-  await supabase.from("ai_usage").upsert(
-    {
-      user_id: userId,
+    await supabase.from("ai_usage").upsert({
+      user_id: session.user.email,
       date: today,
       count: used + 1,
-    },
-    {
-      onConflict: "user_id,date",
-    }
-  );
+    });
+  }
 
-  return runAI(req);
-}
+  // ---------------------------
+  // RUN AI
+  // ---------------------------
+  const answer = await runAI(prompt, category);
 
-// ----------------------------------
-// AI EXECUTION (mock for now)
-// ----------------------------------
-async function runAI(req: Request) {
-  const { task, category } = await req.json();
-
-  // Replace this later with OpenAI
-  const result = `GhostAI (${category}) response:\n\n${task}`;
-
-  return NextResponse.json({ result });
+  return NextResponse.json({
+    result: answer,
+  });
 }

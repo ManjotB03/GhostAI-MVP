@@ -1,42 +1,42 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSession } from "next-auth/react";
+import ModernLayout from "../components/ModernLayout";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 
-const FREE_DAILY_LIMIT = 5;
-const OWNER_EMAIL = "ghostaicorp@gmail.com";
+interface HistoryItem {
+  task: string;
+  category: string;
+  response: string;
+}
 
 export default function GhostClient() {
   const { data: session } = useSession();
 
+  // 🔐 ACCESS LOGIC
+  const OWNER_EMAIL = "ghostaicorp@gmail.com"; // 🔴 CHANGE IF NEEDED
+
+  const isOwner = session?.user?.email === OWNER_EMAIL;
+  const isFreeUser = !isOwner;
+
+  // 🧠 STATE
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  const [usageCount, setUsageCount] = useState(0);
-  const [limitReached, setLimitReached] = useState(false);
-
-  const isOwner = session?.user?.email === OWNER_EMAIL;
-  const role = "free"; // default until Stripe upgrades
-
-  const isFreeUser = !isOwner && role === "free";
-
-  // 🚨 IMPORTANT CHANGE:
-  // INPUT IS NEVER DISABLED
-  // ONLY SUBMIT IS BLOCKED
-  const canSubmit = !isFreeUser || !limitReached;
-
+  // ------------------------------
+  // AI SUBMIT HANDLER (PAYWALL HERE)
+  // ------------------------------
   const handleSubmit = async () => {
-    if (!task.trim() || loading) return;
-
-    if (!canSubmit) {
-      setResponse(
-        "You’ve reached your free daily limit. Upgrade to continue using GhostAI."
-      );
+    if (isFreeUser) {
+      alert("Upgrade to Pro to continue using GhostAI.");
       return;
     }
+
+    if (!task.trim()) return;
 
     setLoading(true);
     setResponse("");
@@ -49,103 +49,142 @@ export default function GhostClient() {
       });
 
       const data = await res.json();
+      const answer = res.ok
+        ? data.result
+        : `Error: ${data.error || "Something went wrong"}`;
 
-      if (res.status === 403 && data.limitReached) {
-        setLimitReached(true);
-        setResponse(
-          "You’ve reached your free daily limit. Upgrade to continue using GhostAI."
-        );
-        setLoading(false);
-        return;
-      }
-
-      if (!res.ok) {
-        setResponse(data.error || "Something went wrong.");
-      } else {
-        setResponse(data.result);
-        setUsageCount((prev) => prev + 1);
-      }
+      setResponse(answer);
+      setHistory([{ task, category, response: answer }, ...history]);
     } catch {
       setResponse("Error contacting AI.");
     }
 
-    setTask("");
     setLoading(false);
+    setTask("");
+  };
+
+  const handleClearHistory = () => setHistory([]);
+
+  // ------------------------------
+  // STRIPE UPGRADE HANDLER
+  // ------------------------------
+  const handleUpgrade = async (priceId: string) => {
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        priceId,
+        email: session?.user?.email,
+      }),
+    });
+
+    const data = await res.json();
+    if (data?.url) {
+      window.location.href = data.url;
+    }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center w-full max-w-3xl mx-auto"
-    >
-      <h1 className="text-5xl font-extrabold mb-8 text-white text-center">
-        Welcome to GhostAI
-      </h1>
-
-      {/* Upgrade buttons */}
-      <div className="flex gap-4 mb-6">
-        <button className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700">
-          Upgrade to Pro
-        </button>
-        <button className="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700">
-          Upgrade to Ultimate
-        </button>
-      </div>
-
-      {/* Categories */}
-      <div className="flex gap-3 mb-4">
-        {["Work", "Career", "Money"].map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={`px-4 py-2 rounded ${
-              category === cat
-                ? "bg-indigo-600 text-white"
-                : "bg-gray-700 text-gray-300"
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* INPUT — ALWAYS ENABLED */}
-      <input
-        type="text"
-        placeholder="Enter your AI task..."
-        value={task}
-        onChange={(e) => setTask(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-        className="w-full p-4 rounded-lg mb-4 text-white bg-gray-800 focus:ring-2 focus:ring-indigo-500"
-      />
-
-      {/* SUBMIT */}
-      <button
-        onClick={handleSubmit}
-        disabled={loading || !canSubmit}
-        className={`px-6 py-3 rounded-lg text-white ${
-          !canSubmit
-            ? "bg-gray-600 cursor-not-allowed"
-            : "bg-indigo-600 hover:bg-indigo-700"
-        }`}
+    <ModernLayout>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center justify-center w-full"
       >
-        {loading ? "Thinking..." : canSubmit ? "Submit" : "Upgrade Required"}
-      </button>
+        <h1 className="text-5xl font-extrabold mb-8 text-white text-center">
+          Welcome to GhostAI
+        </h1>
 
-      {/* Usage */}
-      {isFreeUser && !limitReached && (
-        <p className="text-sm text-gray-400 mt-3">
-          Free usage: {usageCount}/{FREE_DAILY_LIMIT}
-        </p>
-      )}
+        {/* 🔼 UPGRADE BUTTONS */}
+        {isFreeUser && (
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() =>
+                handleUpgrade(process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE!)
+              }
+              className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+            >
+              Upgrade to Pro
+            </button>
 
-      {/* Response */}
-      {response && (
-        <div className="mt-6 p-4 bg-gray-800 rounded-lg w-full text-white">
-          {response}
+            <button
+              onClick={() =>
+                handleUpgrade(
+                  process.env.NEXT_PUBLIC_STRIPE_ULTIMATE_PRICE!
+                )
+              }
+              className="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition"
+            >
+              Upgrade to Ultimate
+            </button>
+          </div>
+        )}
+
+        {/* CATEGORY SELECTOR */}
+        <div className="flex gap-3 justify-center mb-4">
+          {["Work", "Career", "Money"].map((cat) => (
+            <button
+              key={cat}
+              className={`px-4 py-2 rounded ${
+                category === cat
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-700 text-white"
+              }`}
+              onClick={() => setCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
-      )}
-    </motion.div>
+
+        {/* 📝 INPUT (NEVER DISABLED) */}
+        <input
+          type="text"
+          placeholder={
+            isFreeUser
+              ? "Upgrade to Pro to continue"
+              : "Enter your AI task..."
+          }
+          className="border border-gray-600 p-3 mb-4 w-full rounded-lg bg-gray-800 text-white max-w-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        />
+
+        {/* 🚀 SUBMIT BUTTON */}
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: isFreeUser ? 1 : 1.03 }}
+          disabled={loading || isFreeUser}
+          onClick={handleSubmit}
+          className={`px-6 py-3 rounded-lg mb-4 w-full sm:w-auto transition
+            ${
+              isFreeUser
+                ? "bg-gray-500 cursor-not-allowed text-white"
+                : "bg-indigo-600 hover:bg-indigo-700 text-white"
+            }`}
+        >
+          {isFreeUser ? "Upgrade Required" : loading ? "Thinking..." : "Submit"}
+        </motion.button>
+
+        {/* CLEAR HISTORY */}
+        {history.length > 0 && (
+          <button
+            onClick={handleClearHistory}
+            className="text-sm text-red-400 hover:underline mb-4"
+          >
+            Clear History
+          </button>
+        )}
+
+        {/* AI RESPONSE */}
+        {response && (
+          <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg shadow">
+            <p className="text-white whitespace-pre-line">{response}</p>
+          </div>
+        )}
+      </motion.div>
+    </ModernLayout>
   );
 }
