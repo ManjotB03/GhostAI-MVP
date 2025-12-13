@@ -2,102 +2,82 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
-const OWNER_EMAIL = "ghostaicorp@gmail.com";
-
-// Daily limits
-const LIMITS = {
-  free: 5,
-  pro: 50,
-  ultimate: Infinity,
-};
+const FREE_DAILY_LIMIT = 5;
+const OWNER_EMAIL = "ghostaicorp@gmail.com"; // your owner email
 
 export async function POST(req: Request) {
-  try {
-    // 1️⃣ Auth
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const session = await getServerSession(authOptions);
 
-    const email = session.user.email;
+  if (!session?.user?.email) {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
 
-    // 2️⃣ Get user
-    const { data: user, error: userError } = await supabase
-      .from("app_users")
-      .select("*")
-      .eq("email", email)
-      .single();
+const userEmail = session.user.email;
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+// Fetch role from DB (authoritative)
+const { data: user } = await supabase
+  .from("app_users")
+  .select("id, role")
+  .eq("email", userEmail)
+  .single();
 
-    // 3️⃣ Owner bypass (YOU)
-    const isOwner = email === OWNER_EMAIL;
-    if (!isOwner) {
-      const today = new Date().toISOString().split("T")[0];
+const userId = user?.id;
+const role = user?.role ?? "free";
+const isOwner = session.user.email === OWNER_EMAIL;
 
-      // 4️⃣ Get usage for today
-      const { data: usage } = await supabase
-        .from("ai_usage")
-        .select("count")
-        .eq("user_id", user.id)
-        .eq("date", today)
-        .single();
+  // ✅ Owner or paid users = unlimited
+  if (isOwner || role !== "free") {
+    return runAI(req);
+  }
 
-      const usedToday = usage?.count ?? 0;
-      const limit = LIMITS[user.role as keyof typeof LIMITS] ?? 0;
+  // ---------------------------
+  // FREE USER DAILY LIMIT
+  // ---------------------------
+  const today = new Date().toISOString().slice(0, 10);
 
-      // 5️⃣ Enforce limit
-      if (usedToday >= limit) {
-        return NextResponse.json(
-          {
-            error: "Daily limit reached. Upgrade to continue.",
-            limitReached: true,
-          },
-          { status: 403 }
-        );
-      }
+  const { data: usage } = await supabase
+    .from("ai_usage")
+    .select("count")
+    .eq("user_id", userId)
+    .eq("date", today)
+    .single();
 
-      // 6️⃣ Increment usage
-      await supabase
-        .from("ai_usage")
-        .upsert(
-          {
-            user_id: user.id,
-            date: today,
-            count: usedToday + 1,
-          },
-          { onConflict: "user_id,date" }
-        );
-    }
+  const used = usage?.count ?? 0;
 
-    // 7️⃣ AI call
-    const { task, category } = await req.json();
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: `You are GhostAI for ${category}.` },
-        { role: "user", content: task },
-      ],
-    });
-
-    return NextResponse.json({
-      result: completion.choices[0].message.content,
-    });
-
-  } catch (err) {
-    console.error(err);
+  if (used >= FREE_DAILY_LIMIT) {
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      {
+        error: "Free limit reached",
+        limitReached: true,
+      },
+      { status: 403 }
     );
   }
+
+  // Increment usage
+  await supabase.from("ai_usage").upsert(
+    {
+      user_id: userId,
+      date: today,
+      count: used + 1,
+    },
+    {
+      onConflict: "user_id,date",
+    }
+  );
+
+  return runAI(req);
+}
+
+// ----------------------------------
+// AI EXECUTION (mock for now)
+// ----------------------------------
+async function runAI(req: Request) {
+  const { task, category } = await req.json();
+
+  // Replace this later with OpenAI
+  const result = `GhostAI (${category}) response:\n\n${task}`;
+
+  return NextResponse.json({ result });
 }
