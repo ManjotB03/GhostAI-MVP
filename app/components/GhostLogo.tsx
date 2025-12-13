@@ -9,13 +9,10 @@ export default function GhostLogo() {
       <Image
         src="/ghostai-logo.png"
         alt="GhostAI Logo"
-        width={40}
+        width={140}
         height={40}
         priority
       />
-      <span className="text-xl font-bold tracking-wide text-gray-900 dark:text-white">
-        GhostAI
-      </span>
     </Link>
   );
 }
