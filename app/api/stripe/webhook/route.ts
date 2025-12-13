@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const sig = req.headers.get("stripe-signature");
 
   if (!sig) {
-    return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
 
   let event: Stripe.Event;
@@ -25,58 +25,37 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
-    console.error("❌ Webhook signature verification failed:", err.message);
+    console.error("Webhook verification failed:", err.message);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   try {
-    switch (event.type) {
-      case "checkout.session.completed":
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
-        break;
+    if (
+      event.type === "customer.subscription.created" ||
+      event.type === "customer.subscription.updated"
+    ) {
+      await upsertSubscription(event.data.object as Stripe.Subscription);
+    }
 
-      case "customer.subscription.created":
-      case "customer.subscription.updated":
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
-        break;
-
-      case "customer.subscription.deleted":
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
-        break;
+    if (event.type === "customer.subscription.deleted") {
+      await cancelSubscription(event.data.object as Stripe.Subscription);
     }
   } catch (err) {
-    console.error("❌ Stripe webhook handling error:", err);
+    console.error("Webhook handling error:", err);
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
 }
 
-/* ----------------------------- HANDLERS ----------------------------- */
-
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const email = session.customer_email;
-  const customerId = session.customer as string;
-
-  if (!email || !customerId) return;
-
-  await supabase
-    .from("app_users")
-    .update({
-      stripe_customer_id: customerId,
-      updated_at: new Date(),
-    })
-    .eq("email", email);
-}
-
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function upsertSubscription(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
-  const priceId = subscription.items.data[0]?.price.id;
+  const priceId = subscription.items.data[0].price.id;
 
-  let tier: "pro" | "ultimate" | "free" = "free";
-
-  if (priceId === process.env.STRIPE_PRICE_ID) tier = "pro";
-  if (priceId === process.env.STRIPE_ULTIMATE_PRICE_ID) tier = "ultimate";
+  const tier =
+    priceId === process.env.STRIPE_ULTIMATE_PRICE_ID
+      ? "ultimate"
+      : "pro";
 
   await supabase
     .from("app_users")
@@ -89,7 +68,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     .eq("stripe_customer_id", customerId);
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function cancelSubscription(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
 
   await supabase
