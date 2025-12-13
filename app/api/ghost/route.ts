@@ -1,54 +1,103 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+});
 
-const SYSTEM_PROMPTS: Record<string, string> = {
-  work: `You are GhostAI – a productivity assistant that writes emails, summaries, proposals and workplace documents. Be concise, professional and helpful.`,
-  career: `You are GhostAI – a career assistant that rewrites CV bullets, drafts cover letters and generates interview answers. Be clear, confident and structured.`,
-  money: `You are GhostAI – a simple financial explainer. You give beginner-friendly advice, explain ETFs/stocks, budgeting, saving, and financial concepts. Avoid giving personalised regulated investment advice.`,
+const OWNER_EMAIL = "ghostaicorp@gmail.com";
+
+// Daily limits
+const LIMITS = {
+  free: 5,
+  pro: 50,
+  ultimate: Infinity,
 };
-
-let lastCall = 0;
 
 export async function POST(req: Request) {
   try {
-    const { task, mode } = await req.json();
-
-    if (!task) return NextResponse.json({ error: "Task is required." }, { status: 400 });
-
-    const now = Date.now();
-    if (now - lastCall < 1500) {
-      return NextResponse.json({ error: "Too many requests. Slow down." }, { status: 429 });
+    // 1️⃣ Auth
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    lastCall = now;
 
-    const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS["work"];
+    const email = session.user.email;
 
-    try {
-      const completion = await client.responses.create({
-        model: "gpt-4.1-mini",
-        input: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: task },
-        ],
-      });
+    // 2️⃣ Get user
+    const { data: user, error: userError } = await supabase
+      .from("app_users")
+      .select("*")
+      .eq("email", email)
+      .single();
 
-      // Prefer the SDK's concatenated text if available, otherwise fall back to inspecting the output array safely
-      const text =
-        completion.output_text ??
-        ((Array.isArray(completion.output) && (completion.output[0] as any).content?.[0]?.text) ?? "");
-
-      return NextResponse.json({ result: text });
-    } catch (error: any) {
-      console.error("OpenAI error:", error);
-      return NextResponse.json({
-        result: `⚠️ OpenAI quota error — mock response for "${task}"`,
-        error: "OpenAI quota exceeded or unavailable.",
-      });
+    if (userError || !user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    // 3️⃣ Owner bypass (YOU)
+    const isOwner = email === OWNER_EMAIL;
+    if (!isOwner) {
+      const today = new Date().toISOString().split("T")[0];
+
+      // 4️⃣ Get usage for today
+      const { data: usage } = await supabase
+        .from("ai_usage")
+        .select("count")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .single();
+
+      const usedToday = usage?.count ?? 0;
+      const limit = LIMITS[user.role as keyof typeof LIMITS] ?? 0;
+
+      // 5️⃣ Enforce limit
+      if (usedToday >= limit) {
+        return NextResponse.json(
+          {
+            error: "Daily limit reached. Upgrade to continue.",
+            limitReached: true,
+          },
+          { status: 403 }
+        );
+      }
+
+      // 6️⃣ Increment usage
+      await supabase
+        .from("ai_usage")
+        .upsert(
+          {
+            user_id: user.id,
+            date: today,
+            count: usedToday + 1,
+          },
+          { onConflict: "user_id,date" }
+        );
+    }
+
+    // 7️⃣ AI call
+    const { task, category } = await req.json();
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: `You are GhostAI for ${category}.` },
+        { role: "user", content: task },
+      ],
+    });
+
+    return NextResponse.json({
+      result: completion.choices[0].message.content,
+    });
+
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Server error." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
