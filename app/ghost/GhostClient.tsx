@@ -14,32 +14,19 @@ interface HistoryItem {
 export default function GhostClient() {
   const { data: session } = useSession();
 
-  // 🔐 ACCESS LOGIC
-  const OWNER_EMAIL = "ghostaicorp@gmail.com"; // 🔴 CHANGE IF NEEDED
-
-  const isOwner = session?.user?.email === OWNER_EMAIL;
-  const isFreeUser = !isOwner;
-
-  // 🧠 STATE
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [limitReached, setLimitReached] = useState(false);
 
-  // ------------------------------
-  // AI SUBMIT HANDLER (PAYWALL HERE)
-  // ------------------------------
   const handleSubmit = async () => {
-    if (isFreeUser) {
-      alert("Upgrade to Pro to continue using GhostAI.");
-      return;
-    }
-
     if (!task.trim()) return;
 
     setLoading(true);
     setResponse("");
+    setLimitReached(false);
 
     try {
       const res = await fetch("/api/ghost", {
@@ -49,38 +36,24 @@ export default function GhostClient() {
       });
 
       const data = await res.json();
-      const answer = res.ok
-        ? data.result
-        : `Error: ${data.error || "Something went wrong"}`;
 
-      setResponse(answer);
-      setHistory([{ task, category, response: answer }, ...history]);
+      if (res.status === 403 && data.limitReached) {
+        setLimitReached(true);
+        return;
+      }
+
+      if (!res.ok) {
+        setResponse(data.error || "Something went wrong");
+        return;
+      }
+
+      setResponse(data.result);
+      setHistory([{ task, category, response: data.result }, ...history]);
+      setTask("");
     } catch {
       setResponse("Error contacting AI.");
-    }
-
-    setLoading(false);
-    setTask("");
-  };
-
-  const handleClearHistory = () => setHistory([]);
-
-  // ------------------------------
-  // STRIPE UPGRADE HANDLER
-  // ------------------------------
-  const handleUpgrade = async (priceId: string) => {
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        priceId,
-        email: session?.user?.email,
-      }),
-    });
-
-    const data = await res.json();
-    if (data?.url) {
-      window.location.href = data.url;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,33 +69,8 @@ export default function GhostClient() {
           Welcome to GhostAI
         </h1>
 
-        {/* 🔼 UPGRADE BUTTONS */}
-        {isFreeUser && (
-          <div className="flex gap-4 mb-6">
-            <button
-              onClick={() =>
-                handleUpgrade(process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE!)
-              }
-              className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
-            >
-              Upgrade to Pro
-            </button>
-
-            <button
-              onClick={() =>
-                handleUpgrade(
-                  process.env.NEXT_PUBLIC_STRIPE_ULTIMATE_PRICE!
-                )
-              }
-              className="bg-purple-600 text-white px-5 py-2 rounded-lg hover:bg-purple-700 transition"
-            >
-              Upgrade to Ultimate
-            </button>
-          </div>
-        )}
-
-        {/* CATEGORY SELECTOR */}
-        <div className="flex gap-3 justify-center mb-4">
+        {/* CATEGORY */}
+        <div className="flex gap-3 mb-4">
           {["Work", "Career", "Money"].map((cat) => (
             <button
               key={cat}
@@ -138,47 +86,43 @@ export default function GhostClient() {
           ))}
         </div>
 
-        {/* 📝 INPUT (NEVER DISABLED) */}
+        {/* INPUT */}
         <input
           type="text"
-          placeholder={
-            isFreeUser
-              ? "Upgrade to Pro to continue"
-              : "Enter your AI task..."
-          }
+          placeholder="Enter your AI task..."
           className="border border-gray-600 p-3 mb-4 w-full rounded-lg bg-gray-800 text-white max-w-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
         />
 
-        {/* 🚀 SUBMIT BUTTON */}
+        {/* SUBMIT */}
         <motion.button
           whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: isFreeUser ? 1 : 1.03 }}
-          disabled={loading || isFreeUser}
+          whileHover={{ scale: 1.03 }}
           onClick={handleSubmit}
-          className={`px-6 py-3 rounded-lg mb-4 w-full sm:w-auto transition
-            ${
-              isFreeUser
-                ? "bg-gray-500 cursor-not-allowed text-white"
-                : "bg-indigo-600 hover:bg-indigo-700 text-white"
-            }`}
+          disabled={loading}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg mb-4"
         >
-          {isFreeUser ? "Upgrade Required" : loading ? "Thinking..." : "Submit"}
+          {loading ? "Thinking..." : "Submit"}
         </motion.button>
 
-        {/* CLEAR HISTORY */}
-        {history.length > 0 && (
-          <button
-            onClick={handleClearHistory}
-            className="text-sm text-red-400 hover:underline mb-4"
-          >
-            Clear History
-          </button>
+        {/* PAYWALL MESSAGE */}
+        {limitReached && (
+          <div className="bg-gray-800 p-4 rounded-lg text-center">
+            <p className="text-white mb-2">
+              You’ve reached your free daily limit.
+            </p>
+            <a
+              href="/pricing"
+              className="text-indigo-400 hover:underline"
+            >
+              Upgrade to Pro →
+            </a>
+          </div>
         )}
 
-        {/* AI RESPONSE */}
+        {/* RESPONSE */}
         {response && (
           <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg shadow">
             <p className="text-white whitespace-pre-line">{response}</p>
