@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -21,6 +22,9 @@ export default function GhostClient() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [limitReached, setLimitReached] = useState(false);
 
+  // ------------------------------
+  // SUBMIT TO AI (NO UI PAYWALL)
+  // ------------------------------
   const handleSubmit = async () => {
     if (!task.trim()) return;
 
@@ -37,6 +41,7 @@ export default function GhostClient() {
 
       const data = await res.json();
 
+      // 🔒 Free limit hit (from API)
       if (res.status === 403 && data.limitReached) {
         setLimitReached(true);
         return;
@@ -57,13 +62,17 @@ export default function GhostClient() {
     }
   };
 
+  const handleUpgrade = () => {
+    window.location.href = "/pricing";
+  };
+
   return (
     <ModernLayout>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center justify-center w-full"
+        className="flex flex-col items-center w-full"
       >
         <h1 className="text-5xl font-extrabold mb-8 text-white text-center">
           Welcome to GhostAI
@@ -74,12 +83,12 @@ export default function GhostClient() {
           {["Work", "Career", "Money"].map((cat) => (
             <button
               key={cat}
+              onClick={() => setCategory(cat)}
               className={`px-4 py-2 rounded ${
                 category === cat
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-700 text-white"
               }`}
-              onClick={() => setCategory(cat)}
             >
               {cat}
             </button>
@@ -90,7 +99,7 @@ export default function GhostClient() {
         <input
           type="text"
           placeholder="Enter your AI task..."
-          className="border border-gray-600 p-3 mb-4 w-full rounded-lg bg-gray-800 text-white max-w-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-gray-800 text-white"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -107,24 +116,24 @@ export default function GhostClient() {
           {loading ? "Thinking..." : "Submit"}
         </motion.button>
 
-        {/* PAYWALL MESSAGE */}
+        {/* LIMIT MESSAGE */}
         {limitReached && (
-          <div className="bg-gray-800 p-4 rounded-lg text-center">
-            <p className="text-white mb-2">
-              You’ve reached your free daily limit.
+          <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl">
+            <p className="mb-2">
+              You’ve reached your free daily limit (5 prompts).
             </p>
-            <a
-              href="/pricing"
-              className="text-indigo-400 hover:underline"
+            <button
+              onClick={handleUpgrade}
+              className="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700"
             >
-              Upgrade to Pro →
-            </a>
+              Upgrade to Pro
+            </button>
           </div>
         )}
 
         {/* RESPONSE */}
         {response && (
-          <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg shadow">
+          <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg">
             <p className="text-white whitespace-pre-line">{response}</p>
           </div>
         )}

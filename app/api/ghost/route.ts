@@ -16,34 +16,29 @@ export async function POST(req: Request) {
 
   const { task, category } = await req.json();
 
-  // 🔴 THIS WAS THE ROOT CAUSE
   if (!task || !task.trim()) {
     return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
   }
 
-  const isOwner = session.user.email === OWNER_EMAIL;
+  const email = session.user.email;
+  const today = new Date().toISOString().slice(0, 10);
 
-  // ---------------------------
-  // OWNER = UNLIMITED
-  // ---------------------------
-  if (isOwner) {
+  // 👑 OWNER = UNLIMITED
+  if (email === OWNER_EMAIL) {
     return runAI(task, category);
   }
 
-  // ---------------------------
-  // FREE USER LIMIT
-  // ---------------------------
-  const today = new Date().toISOString().slice(0, 10);
-
+  // 🔍 Fetch usage
   const { data: usage } = await supabase
     .from("ai_usage")
-    .select("count")
-    .eq("user_id", session.user)
+    .select("id, count")
+    .eq("user_email", email)
     .eq("date", today)
-    .single();
+    .maybeSingle();
 
   const used = usage?.count ?? 0;
 
+  // 🚫 Limit reached
   if (used >= FREE_DAILY_LIMIT) {
     return NextResponse.json(
       { error: "Limit reached", limitReached: true },
@@ -51,11 +46,19 @@ export async function POST(req: Request) {
     );
   }
 
-  await supabase.from("ai_usage").upsert({
-    user_id: session.user,
-    date: today,
-    count: used + 1,
-  });
+  // ➕ Increment safely
+  if (usage) {
+    await supabase
+      .from("ai_usage")
+      .update({ count: used + 1 })
+      .eq("id", usage.id);
+  } else {
+    await supabase.from("ai_usage").insert({
+      user_email: email,
+      date: today,
+      count: 1,
+    });
+  }
 
   return runAI(task, category);
 }
