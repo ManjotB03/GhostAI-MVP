@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { runAI } from "@/lib/runAI";
 
-const FREE_DAILY_LIMIT = 5;
+const FREE_DAILY_LIMIT = 15;
 const OWNER_EMAIL = "ghostaicorp@gmail.com";
 
 export async function POST(req: Request) {

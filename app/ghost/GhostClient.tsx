@@ -1,10 +1,8 @@
-
 "use client";
 
 import React, { useState } from "react";
 import ModernLayout from "../components/ModernLayout";
 import { motion } from "framer-motion";
-import { useSession } from "next-auth/react";
 
 interface HistoryItem {
   task: string;
@@ -13,17 +11,16 @@ interface HistoryItem {
 }
 
 export default function GhostClient() {
-  const { data: session } = useSession();
-
   const [task, setTask] = useState("");
   const [category, setCategory] = useState("Work");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [limitReached, setLimitReached] = useState(false);
+  const [usageCount, setUsageCount] = useState<number | null>(null);
 
   // ------------------------------
-  // SUBMIT TO AI (NO UI PAYWALL)
+  // SUBMIT TO AI (SERVER CONTROLS LIMITS)
   // ------------------------------
   const handleSubmit = async () => {
     if (!task.trim()) return;
@@ -41,9 +38,10 @@ export default function GhostClient() {
 
       const data = await res.json();
 
-      // 🔒 Free limit hit (from API)
+      // 🔒 Free daily limit reached
       if (res.status === 403 && data.limitReached) {
         setLimitReached(true);
+        setUsageCount(15);
         return;
       }
 
@@ -52,8 +50,10 @@ export default function GhostClient() {
         return;
       }
 
+      // ✅ Success
       setResponse(data.result);
       setHistory([{ task, category, response: data.result }, ...history]);
+      setUsageCount((prev) => (prev === null ? 1 : prev + 1));
       setTask("");
     } catch {
       setResponse("Error contacting AI.");
@@ -99,10 +99,11 @@ export default function GhostClient() {
         <input
           type="text"
           placeholder="Enter your AI task..."
-          className="border border-gray-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-gray-800 text-white"
+          className="border border-gray-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          disabled={limitReached}
         />
 
         {/* SUBMIT */}
@@ -110,17 +111,28 @@ export default function GhostClient() {
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.03 }}
           onClick={handleSubmit}
-          disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg mb-4"
+          disabled={loading || limitReached}
+          className={`px-6 py-3 rounded-lg mb-2 transition ${
+            loading || limitReached
+              ? "bg-gray-500 cursor-not-allowed text-white"
+              : "bg-indigo-600 hover:bg-indigo-700 text-white"
+          }`}
         >
           {loading ? "Thinking..." : "Submit"}
         </motion.button>
 
+        {/* USAGE COUNTER */}
+        {usageCount !== null && !limitReached && (
+          <p className="text-sm text-gray-400 mb-3">
+            Free usage: {usageCount} / 15
+          </p>
+        )}
+
         {/* LIMIT MESSAGE */}
         {limitReached && (
-          <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl">
+          <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl mt-4">
             <p className="mb-2">
-              You’ve reached your free daily limit (5 prompts).
+              You’ve reached your free daily limit (15 prompts).
             </p>
             <button
               onClick={handleUpgrade}
@@ -133,7 +145,7 @@ export default function GhostClient() {
 
         {/* RESPONSE */}
         {response && (
-          <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg">
+          <div className="mt-6 p-4 w-full max-w-3xl bg-gray-800 rounded-lg shadow">
             <p className="text-white whitespace-pre-line">{response}</p>
           </div>
         )}
