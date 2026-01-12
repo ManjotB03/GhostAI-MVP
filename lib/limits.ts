@@ -2,8 +2,8 @@
 export type Tier = "free" | "pro" | "ultimate";
 
 export const LIMITS: Record<Tier, number> = {
-  free: 15,
-  pro: 60,
+  free: 2,
+  pro: 3,
   ultimate: 1_000_000, // treat as unlimited
 };
 
