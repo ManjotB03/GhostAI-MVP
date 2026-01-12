@@ -17,17 +17,15 @@ export default function GhostClient() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [limitReached, setLimitReached] = useState(false);
-  const [usageCount, setUsageCount] = useState<number | null>(null);
+  const [limitInfo, setLimitInfo] = useState<{ used?: number; limit?: number; tier?: string }>({});
 
-  // ------------------------------
-  // SUBMIT TO AI (SERVER CONTROLS LIMITS)
-  // ------------------------------
   const handleSubmit = async () => {
     if (!task.trim()) return;
 
     setLoading(true);
     setResponse("");
     setLimitReached(false);
+    setLimitInfo({});
 
     try {
       const res = await fetch("/api/ghost", {
@@ -38,32 +36,25 @@ export default function GhostClient() {
 
       const data = await res.json();
 
-      // 🔒 Free daily limit reached
-      if (res.status === 403 && data.limitReached) {
+      if (res.status === 403 && data?.limitReached) {
         setLimitReached(true);
-        setUsageCount(15);
+        setLimitInfo({ used: data.used, limit: data.limit, tier: data.tier });
         return;
       }
 
       if (!res.ok) {
-        setResponse(data.error || "Something went wrong");
+        setResponse(data?.error || "Something went wrong");
         return;
       }
 
-      // ✅ Success
       setResponse(data.result);
       setHistory([{ task, category, response: data.result }, ...history]);
-      setUsageCount((prev) => (prev === null ? 1 : prev + 1));
       setTask("");
     } catch {
       setResponse("Error contacting AI.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleUpgrade = () => {
-    window.location.href = "/pricing";
   };
 
   return (
@@ -85,9 +76,7 @@ export default function GhostClient() {
               key={cat}
               onClick={() => setCategory(cat)}
               className={`px-4 py-2 rounded ${
-                category === cat
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-700 text-white"
+                category === cat ? "bg-indigo-600 text-white" : "bg-gray-700 text-white"
               }`}
             >
               {cat}
@@ -99,11 +88,10 @@ export default function GhostClient() {
         <input
           type="text"
           placeholder="Enter your AI task..."
-          className="border border-gray-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-gray-800 text-white"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          disabled={limitReached}
         />
 
         {/* SUBMIT */}
@@ -111,42 +99,44 @@ export default function GhostClient() {
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.03 }}
           onClick={handleSubmit}
-          disabled={loading || limitReached}
-          className={`px-6 py-3 rounded-lg mb-2 transition ${
-            loading || limitReached
-              ? "bg-gray-500 cursor-not-allowed text-white"
-              : "bg-indigo-600 hover:bg-indigo-700 text-white"
-          }`}
+          disabled={loading}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg mb-4"
         >
           {loading ? "Thinking..." : "Submit"}
         </motion.button>
 
-        {/* USAGE COUNTER */}
-        {usageCount !== null && !limitReached && (
-          <p className="text-sm text-gray-400 mb-3">
-            Free usage: {usageCount} / 15
-          </p>
-        )}
-
         {/* LIMIT MESSAGE */}
         {limitReached && (
-          <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl mt-4">
+          <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl">
             <p className="mb-2">
-              You’ve reached your free daily limit (15 prompts).
+              You’ve reached your daily limit{limitInfo?.limit ? ` (${limitInfo.limit})` : ""}.
             </p>
             <button
-              onClick={handleUpgrade}
+              onClick={() => (window.location.href = "/pricing")}
               className="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700"
             >
-              Upgrade to Pro
+              Upgrade
             </button>
           </div>
         )}
 
         {/* RESPONSE */}
         {response && (
-          <div className="mt-6 p-4 w-full max-w-3xl bg-gray-800 rounded-lg shadow">
+          <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg">
             <p className="text-white whitespace-pre-line">{response}</p>
+          </div>
+        )}
+
+        {/* HISTORY */}
+        {history.length > 0 && (
+          <div className="mt-6 w-full max-w-3xl flex flex-col gap-3">
+            {history.map((h, i) => (
+              <div key={i} className="p-3 rounded-lg bg-gray-900/60 border border-gray-700">
+                <p className="text-sm text-gray-400">{h.category} • You asked:</p>
+                <p className="text-white">{h.task}</p>
+                <p className="text-gray-200 mt-2">{h.response}</p>
+              </div>
+            ))}
           </div>
         )}
       </motion.div>

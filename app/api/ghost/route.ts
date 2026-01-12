@@ -1,11 +1,43 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import OpenAI from "openai";
 import { authOptions } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import { runAI } from "@/lib/runAI";
+import { LIMITS, OWNER_EMAIL, type Tier } from "@/lib/limits";
 
-const FREE_DAILY_LIMIT = 15;
-const OWNER_EMAIL = "ghostaicorp@gmail.com";
+export const runtime = "nodejs";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+});
+
+function normalizeTier(input: any): Tier {
+  const t = String(input ?? "free").toLowerCase();
+  if (t === "free" || t === "pro" || t === "ultimate") return t;
+  return "free";
+}
+
+function systemPrompt(category: string) {
+  if (category === "Career")
+    return "You are GhostAI, a practical career coach. Give structured, actionable advice with clear next steps.";
+  if (category === "Money")
+    return "You are GhostAI, a practical money coach. Be realistic, actionable, and risk-aware. Provide steps and examples.";
+  return "You are GhostAI, a practical work assistant. Help the user get results quickly with clear steps and templates.";
+}
+
+async function runAI(task: string, category: string) {
+  const completion = await openai.chat.completions.create({
+    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+    messages: [
+      { role: "system", content: systemPrompt(category) },
+      { role: "user", content: task },
+    ],
+    temperature: 0.7,
+  });
+
+  const text = completion.choices?.[0]?.message?.content?.trim() || "";
+  return text || "No response generated.";
+}
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -14,51 +46,58 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { task, category } = await req.json();
+  const email = session.user.email;
+  const isOwner = email === OWNER_EMAIL;
 
-  if (!task || !task.trim()) {
+  // ✅ Read body ONCE here
+  const body = await req.json().catch(() => null);
+  const task = body?.task?.trim();
+  const category = body?.category ?? "Work";
+
+  if (!task) {
     return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
   }
 
-  const email = session.user.email;
-  const today = new Date().toISOString().slice(0, 10);
+  // ✅ Pull tier from DB (source of truth)
+  const { data: userRow } = await supabase
+    .from("app_users")
+    .select("subscription_tier")
+    .eq("email", email)
+    .maybeSingle();
 
-  // 👑 OWNER = UNLIMITED
-  if (email === OWNER_EMAIL) {
-    return runAI(task, category);
+  const tier: Tier = normalizeTier(userRow?.subscription_tier);
+
+  // ✅ Unlimited for owner + ultimate
+  if (isOwner || tier === "ultimate") {
+    const result = await runAI(task, category);
+    return NextResponse.json({ result });
   }
 
-  // 🔍 Fetch usage
-  const { data: usage } = await supabase
+  const dailyLimit = LIMITS[tier]; // free/pro
+  const today = new Date().toISOString().slice(0, 10);
+
+  // ✅ Usage keyed by email (stable for Google + credentials)
+  const { data: usageRow } = await supabase
     .from("ai_usage")
-    .select("id, count")
-    .eq("user_email", email)
+    .select("count")
+    .eq("email", email)
     .eq("date", today)
     .maybeSingle();
 
-  const used = usage?.count ?? 0;
+  const used = usageRow?.count ?? 0;
 
-  // 🚫 Limit reached
-  if (used >= FREE_DAILY_LIMIT) {
+  if (used >= dailyLimit) {
     return NextResponse.json(
-      { error: "Limit reached", limitReached: true },
+      { error: "Limit reached", limitReached: true, limit: dailyLimit, used, tier },
       { status: 403 }
     );
   }
 
-  // ➕ Increment safely
-  if (usage) {
-    await supabase
-      .from("ai_usage")
-      .update({ count: used + 1 })
-      .eq("id", usage.id);
-  } else {
-    await supabase.from("ai_usage").insert({
-      user_email: email,
-      date: today,
-      count: 1,
-    });
-  }
+  await supabase.from("ai_usage").upsert(
+    { email, date: today, count: used + 1 },
+    { onConflict: "email,date" }
+  );
 
-  return runAI(task, category);
+  const result = await runAI(task, category);
+  return NextResponse.json({ result });
 }
