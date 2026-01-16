@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { signIn } from "next-auth/react";
-import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -12,7 +12,7 @@ export default function SignUpPage() {
 
   // CREATE USER IN SUPABASE (our user DB)
   const createUserRecord = async (email: string, password_hash: string) => {
-    const { error } = await supabase.from("app_users").insert([
+    const { error } = await supabaseServer.from("app_users").insert([
       {
         email,
         password_hash,
