@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 const FREE_DAILY_LIMIT = 5;
 const OWNER_EMAIL = "ghostaicorp@gmail.com"; // 🔴 your owner account
@@ -35,7 +35,7 @@ export async function GET() {
   const today = new Date().toISOString().slice(0, 10);
 
   // 🔎 Fetch usage
-  const { data: usage, error } = await supabase
+  const { data: usage, error } = await supabaseServer
     .from("ai_usage")
     .select("count")
     .eq("email", email)

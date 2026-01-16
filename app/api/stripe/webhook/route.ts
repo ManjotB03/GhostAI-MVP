@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 
@@ -57,7 +57,7 @@ async function upsertSubscription(subscription: Stripe.Subscription) {
       ? "ultimate"
       : "pro";
 
-  await supabase
+  await supabaseServer
     .from("app_users")
     .update({
       subscription_tier: tier,
@@ -71,7 +71,7 @@ async function upsertSubscription(subscription: Stripe.Subscription) {
 async function cancelSubscription(subscription: Stripe.Subscription) {
   const customerId = subscription.customer as string;
 
-  await supabase
+  await supabaseServer
     .from("app_users")
     .update({
       subscription_tier: "free",
