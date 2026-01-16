@@ -66,12 +66,16 @@ export default function GhostClient() {
         className="flex flex-col items-center w-full"
       >
         <h1 className="text-5xl font-extrabold mb-8 text-white text-center">
-          Welcome to GhostAI
+          GhostAI Career Coach
         </h1>
+
+        <p className="text-gray-300 mb-8 text-center max-w-xl">
+          Get clear, actionable career advice — CVs, interviews, job strategy, and salary growth.
+        </p>
 
         {/* CATEGORY */}
         <div className="flex gap-3 mb-4">
-          {["Work", "Career", "Money"].map((cat) => (
+          {["Career"].map((cat) => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}

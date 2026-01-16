@@ -1,31 +1,42 @@
 export default function AboutPage() {
   return (
-    <div className="max-w-3xl mx-auto mt-16 px-6 text-center">
-      <h1 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+    <div className="max-w-4xl mx-auto mt-16 px-6">
+      <h1 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent">
         About GhostAI
       </h1>
 
-      <p className="text-lg text-gray-300 leading-relaxed mb-8">
-        GhostAI is a modern AI assistant built to help you with <span className="font-semibold text-cyan-400">Work</span>,{" "}
-        <span className="font-semibold text-blue-400">Career</span>, and{" "}
-        <span className="font-semibold text-indigo-400">Money</span>.
-        Our mission is to create an intelligent tool that improves your daily life,
-        boosts productivity, and makes complex tasks simple.
+      <p className="text-gray-300 text-lg leading-relaxed mb-8">
+        GhostAI is a modern AI-powered <span className="text-white font-semibold">career coach</span>{" "}
+        built to help you level up your professional life. Our mission is to
+        give you clear, practical guidance that helps you land better roles,
+        perform in interviews, and grow your career with confidence.
       </p>
 
-      <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 text-cyan-300">What GhostAI Can Do:</h2>
-        <ul className="text-gray-300 space-y-3"> 
-          <li>• Generate answers instantly using advanced AI</li>
-          <li>• Help with CVs, career guidance, and job applications</li>
-          <li>• Assist with money management, investing, and financial advice</li>
-          <li>• Solve work tasks, create content, write emails, and more</li>
+      <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl mb-10">
+        <h2 className="text-2xl font-bold text-white mb-4">
+          What GhostAI Can Help You With
+        </h2>
+
+        <ul className="text-gray-300 space-y-3 text-left">
+          <li>• CV / resume improvements (bullet points, structure, wording)</li>
+          <li>• Cover letters tailored to specific job descriptions</li>
+          <li>• Interview preparation (questions, answers, mock interview practice)</li>
+          <li>• Career switching strategy and job search planning</li>
+          <li>• Salary negotiation guidance and long-term career growth plans</li>
         </ul>
       </div>
 
-      <p className="text-gray-400 mt-10">
-        Built with ❤️ using Next.js, Tailwind CSS, and AI technology.
-      </p>
+      <div className="bg-gray-800/60 border border-gray-700 rounded-2xl p-8 shadow-xl">
+        <h2 className="text-2xl font-bold text-white mb-4">Built With</h2>
+
+        <p className="text-gray-300 leading-relaxed">
+          GhostAI is built using{" "}
+          <span className="text-white font-semibold">Next.js</span>,{" "}
+          <span className="text-white font-semibold">Tailwind CSS</span>, and modern{" "}
+          <span className="text-white font-semibold">AI technology</span> to deliver fast, secure,
+          and helpful career support anytime you need it.
+        </p>
+      </div>
     </div>
   );
 }

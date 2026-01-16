@@ -3,7 +3,7 @@ import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { supabase } from "./supabase";
+import { supabaseServer } from "./supabaseServer";
 
 export const authOptions: NextAuthOptions = {
   pages: {
@@ -29,7 +29,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Missing email or password");
         }
 
-        const { data: user, error } = await supabase
+        const { data: user, error } = await supabaseServer
           .from("app_users")
           .select("*")
           .eq("email", credentials.email)

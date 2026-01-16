@@ -1,11 +1,11 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 export async function saveUserToSupabase(user: any) {
     if (!user?.email) return;
 
     try {
 
-        const { data: existingUser, error: findError } = await supabase
+        const { data: existingUser, error: findError } = await supabaseServer
             .from("app_users")
             .select("*")
             .eq("email", user.email)
@@ -13,7 +13,7 @@ export async function saveUserToSupabase(user: any) {
 
         if (!existingUser) {
 
-            const { data, error: insertError } = await supabase
+            const { data, error: insertError } = await supabaseServer
                 .from("app_users")
                 .insert({
                     email: user.email,
