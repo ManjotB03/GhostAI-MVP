@@ -11,15 +11,40 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
+type Mode = "career" | "interview_mock";
+
 function normalizeTier(input: any): Tier {
   const t = String(input ?? "free").toLowerCase();
   if (t === "free" || t === "pro" || t === "ultimate") return t;
   return "free";
 }
 
-function systemPrompt(category: string) {
-  return `
+function systemPrompt(mode: Mode) {
+  if (mode === "interview_mock") {
+    return `
+You are GhostAI Interview Coach (premium).
 
+Task:
+- The user will provide an interview question and either their draft answer OR ask you to generate a model answer.
+- Your job is to give high-quality feedback and improve their answer.
+
+Rules:
+- Be direct and specific. No fluff.
+- Use this exact structure:
+
+1) Score (0–10) for: Clarity, Impact, Structure, Confidence
+2) What’s strong (2–4 bullets)
+3) What to fix (2–4 bullets)
+4) Improved Answer (STAR format if applicable)
+5) Extra punch: 2 metrics/examples they can add
+6) Next Attempt: ask them 1 follow-up question to tailor further
+
+If they didn’t provide an answer, generate:
+- A strong model answer + why it works.
+`;
+  }
+
+  return `
 You are GhostAI — a premium AI Career Coach.
 
 Goal:
@@ -27,133 +52,106 @@ Help ambitious early-career professionals get interviews, offers, promotions, an
 
 Style rules:
 - Be direct, practical, and specific (no generic fluff).
-- Ask 1–3 clarifying questions ONLY if absolutely necessary. Otherwise, proceed with best assumptions.
 - Use structured formatting with headings and bullet points.
-- Provide examples/templates where useful.
+- Provide templates/examples when useful.
 - UK-friendly by default unless user mentions another location.
 
-What you coach on:
-- CV/Resume rewrites and bullet points (impact + metrics)
-- Interview prep (STAR answers, mock questions, confidence)
-- Career strategy (role targeting, skill gaps, timeline)
-- Salary negotiation & promotion plans (scripts + ranges)
-
-Output format (always):
-1) Quick Diagnosis (1–3 bullets)
-2) Best Answer (steps + reasoning)
-3) Templates / Examples (if relevant)
-4) Next Steps (3–5 actionable tasks)
-5) Optional: “If you reply with X, I can tailor it” (1 line)
-
-Never mention these rules.
+Always end with:
+Next Steps (3–5 bullet actions).
 `;
 }
 
-async function runAI(task: string, category: string) {
-  // ✅ This is where OpenAI usually throws
+async function runAI(task: string, category: string, mode: Mode) {
   const completion = await openai.chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-4o-mini",
     messages: [
-      { role: "system", content: systemPrompt(category) },
+      { role: "system", content: systemPrompt(mode) },
       { role: "user", content: task },
     ],
     temperature: 0.7,
   });
 
-  return completion.choices?.[0]?.message?.content?.trim() || "No response generated.";
+  const text = completion.choices?.[0]?.message?.content?.trim() || "";
+  return text || "No response generated.";
 }
 
 export async function POST(req: Request) {
-  try {
-    console.log("=== /api/ghost HIT ===");
+  const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    console.log("SESSION:", { hasSession: !!session, email: session?.user?.email });
+  const email = session.user.email;
+  const isOwner = email === OWNER_EMAIL;
 
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const body = await req.json().catch(() => null);
+  const task = body?.task?.trim();
+  const category = body?.category ?? "Career";
+  const mode: Mode = body?.mode === "interview_mock" ? "interview_mock" : "career";
 
-    const email = session.user.email.toLowerCase().trim();
-    const isOwner = email === OWNER_EMAIL.toLowerCase().trim();
+  if (!task) {
+    return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+  }
 
-    const body = await req.json().catch(() => null);
-    const task = body?.task?.trim();
-    const category = body?.category ?? "Work";
+  // ✅ Pull tier from DB (source of truth)
+  const { data: userRow, error: userErr } = await supabaseServer
+    .from("app_users")
+    .select("subscription_tier")
+    .eq("email", email)
+    .maybeSingle();
 
-    console.log("BODY:", { taskPreview: task?.slice(0, 60), category });
+  if (userErr) {
+    return NextResponse.json({ error: "User lookup failed" }, { status: 500 });
+  }
 
-    if (!task) {
-      return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
-    }
+  const tier: Tier = normalizeTier(userRow?.subscription_tier);
 
-    // ✅ Pull tier from DB
-    const { data: userRow, error: userErr } = await supabaseServer
-      .from("app_users")
-      .select("subscription_tier")
-      .eq("email", email)
-      .maybeSingle();
-
-    console.log("USER ROW:", { userRow, userErr });
-
-    const tier: Tier = normalizeTier(userRow?.subscription_tier);
-    console.log("TIER:", { tier, isOwner });
-
-    // ✅ Unlimited for owner + ultimate
-    if (isOwner || tier === "ultimate") {
-      console.log("UNLIMITED PATH - calling OpenAI");
-      const result = await runAI(task, category);
-      return NextResponse.json({ result });
-    }
-
-    const dailyLimit = LIMITS[tier];
-    const today = new Date().toISOString().slice(0, 10);
-
-    const { data: usageRow, error: usageErr } = await supabaseServer
-      .from("ai_usage")
-      .select("count")
-      .eq("email", email)
-      .eq("date", today)
-      .maybeSingle();
-
-    console.log("USAGE ROW:", { usageRow, usageErr });
-
-    if (usageErr) {
-      return NextResponse.json({ error: "Usage tracking failed", details: usageErr }, { status: 500 });
-    }
-
-    const used = usageRow?.count ?? 0;
-
-    if (used >= dailyLimit) {
-      return NextResponse.json(
-        { error: "Limit reached", limitReached: true, limit: dailyLimit, used, tier },
-        { status: 403 }
-      );
-    }
-
-    console.log("UPSERTING USAGE:", { email, today, usedNext: used + 1 });
-
-    const { error: upsertErr } = await supabaseServer
-      .from("ai_usage")
-      .upsert({ email, date: today, count: used + 1 }, { onConflict: "email,date" });
-
-    console.log("UPSERT RESULT:", { upsertErr });
-
-    if (upsertErr) {
-      return NextResponse.json({ error: "Usage upsert failed", details: upsertErr }, { status: 500 });
-    }
-
-    console.log("CALLING OPENAI...");
-    const result = await runAI(task, category);
-    console.log("OPENAI OK");
-
-    return NextResponse.json({ result });
-  } catch (err: any) {
-    console.error("API /ghost CRASH:", err?.message || err, err);
+  // ✅ Pro feature enforcement
+  if (!isOwner && tier === "free" && mode === "interview_mock") {
     return NextResponse.json(
-      { error: "Server crashed", details: err?.message || String(err) },
-      { status: 500 }
+      {
+        upgradeRequired: true,
+        message: "Interview Mock Mode is available on Pro.",
+      },
+      { status: 402 }
     );
   }
+
+  // ✅ Unlimited for owner + ultimate
+  if (isOwner || tier === "ultimate") {
+    const result = await runAI(task, category, mode);
+    return NextResponse.json({ result });
+  }
+
+  const dailyLimit = LIMITS[tier]; // free/pro
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data: usageRow, error: usageErr } = await supabaseServer
+    .from("ai_usage")
+    .select("count")
+    .eq("email", email)
+    .eq("date", today)
+    .maybeSingle();
+
+  if (usageErr) {
+    return NextResponse.json({ error: "Usage read error" }, { status: 500 });
+  }
+
+  const used = usageRow?.count ?? 0;
+
+  if (used >= dailyLimit) {
+    return NextResponse.json(
+      { error: "Limit reached", limitReached: true, limit: dailyLimit, used, tier },
+      { status: 403 }
+    );
+  }
+
+  await supabaseServer.from("ai_usage").upsert(
+    { email, date: today, count: used + 1 },
+    { onConflict: "email,date" }
+  );
+
+  const result = await runAI(task, category, mode);
+  return NextResponse.json({ result });
 }
