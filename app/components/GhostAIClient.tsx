@@ -1,88 +1,131 @@
 "use client";
+
 import React, { useState } from "react";
+import ModernLayout from "../components/ModernLayout";
+import { motion } from "framer-motion";
 
-type Mode = "work" | "career" | "money";
+interface HistoryItem {
+  task: string;
+  response: string;
+}
 
-export default function GhostAIClient() {
+export default function GhostClient() {
   const [task, setTask] = useState("");
   const [response, setResponse] = useState("");
-  const [mode, setMode] = useState<Mode>("work");
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [limitReached, setLimitReached] = useState(false);
+  const [limitInfo, setLimitInfo] = useState<{ used: number; limit: number } | null>(null);
 
-  async function handleSubmit() {
-    if (!task) return;
+  const handleSubmit = async () => {
+    if (!task.trim()) return;
 
     setLoading(true);
     setResponse("");
+    setLimitReached(false);
 
     try {
       const res = await fetch("/api/ghost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task, mode }),
+        body: JSON.stringify({
+          task,
+          category: "Career", // 🔒 fixed, no UI choice
+        }),
       });
 
       const data = await res.json();
-      setResponse(data.result || "No response from AI.");
-    } catch (err) {
-      console.error(err);
+
+      if (res.status === 403 && data.limitReached) {
+        setLimitReached(true);
+        setLimitInfo({ used: data.used ?? 0, limit: data.limit ?? 0 });
+        return;
+      }
+
+      if (!res.ok) {
+        setResponse(data.error || "Something went wrong");
+        return;
+      }
+
+      setResponse(data.result);
+      setHistory([{ task, response: data.result }, ...history]);
+      setTask("");
+
+      if (typeof data.used === "number" && typeof data.limit === "number") {
+        setLimitInfo({ used: data.used, limit: data.limit });
+      }
+    } catch {
       setResponse("Error contacting AI.");
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const handleUpgrade = () => {
+    window.location.href = "/pricing";
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black font-sans">
-      <main className="flex flex-col items-center justify-center min-h-screen p-8 bg-white dark:bg-black w-full max-w-3xl rounded-lg shadow-md">
-        <h1 className="text-4xl font-bold mb-6 text-black dark:text-white">
-          Welcome to GhostAI
+    <ModernLayout>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center w-full"
+      >
+        <h1 className="text-5xl font-extrabold mb-4 text-white text-center">
+          GhostAI Career Coach
         </h1>
 
-        {/* Mode Selector */}
-        <div className="flex gap-2 mb-4">
-          {(["work", "career", "money"] as Mode[]).map((m) => (
-            <button
-              key={m}
-              className={`px-4 py-2 rounded ${
-                mode === m ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-black dark:text-white"
-              }`}
-              onClick={() => setMode(m)}
-            >
-              {m.charAt(0).toUpperCase() + m.slice(1)}
-            </button>
-          ))}
-        </div>
+        <p className="text-slate-300 mb-6 text-center max-w-xl">
+          CVs, interviews, career decisions, salary growth — clear answers, real steps.
+        </p>
 
-        {/* Task Input */}
+        {limitInfo && !limitReached && (
+          <p className="text-sm text-slate-400 mb-4">
+            Today: <strong>{limitInfo.used}</strong> / <strong>{limitInfo.limit}</strong> prompts
+          </p>
+        )}
+
         <input
           type="text"
-          placeholder="Enter your AI task..."
-          className="border border-gray-400 p-3 mb-4 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Ask a career question (CV, job switch, interview, salary...)"
+          className="border border-gray-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-gray-800 text-white"
           value={task}
           onChange={(e) => setTask(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
         />
 
-        {/* Submit Button */}
-        <button
-          className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition mb-4"
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
           onClick={handleSubmit}
           disabled={loading}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg mb-4"
         >
-          {loading ? "Loading..." : "Submit"}
-        </button>
+          {loading ? "Thinking..." : "Ask GhostAI"}
+        </motion.button>
 
-        {/* AI Response */}
-        {response && (
-          <div className="mt-4 p-4 w-full bg-gray-100 dark:bg-gray-800 rounded">
-            <p className="text-black dark:text-white">{response}</p>
+        {limitReached && (
+          <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl">
+            <p className="mb-2">
+              You’ve reached your daily free limit.
+            </p>
+            <button
+              onClick={handleUpgrade}
+              className="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700"
+            >
+              Upgrade to Pro
+            </button>
           </div>
         )}
 
-        <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-          Powered by GhostAI • Built with Next.js & Tailwind CSS
-        </p>
-      </main>
-    </div>
+        {response && (
+          <div className="mt-4 p-4 w-full max-w-3xl bg-gray-800 rounded-lg">
+            <p className="text-white whitespace-pre-line">{response}</p>
+          </div>
+        )}
+      </motion.div>
+    </ModernLayout>
   );
 }

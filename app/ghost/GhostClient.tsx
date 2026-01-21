@@ -20,6 +20,15 @@ const STARTER_PROMPTS = [
   "What should I do in the next 30 days to get interviews?",
 ];
 
+// ✅ simple client-side logging helper
+function track(event: string, payload?: Record<string, any>) {
+  // Only log in dev OR keep it for production too (your choice)
+  // If you want logs only locally, uncomment this:
+  // if (process.env.NODE_ENV === "production") return;
+
+  console.log(`[TRACK] ${event}`, payload || {});
+}
+
 export default function GhostClient() {
   const [mode, setMode] = useState<Mode>("career");
 
@@ -29,6 +38,7 @@ export default function GhostClient() {
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [limitReached, setLimitReached] = useState(false);
+
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [upgradeMsg, setUpgradeMsg] = useState<string>("");
 
@@ -39,8 +49,16 @@ export default function GhostClient() {
     return "Ask about CVs, interviews, career moves, or salary growth…";
   }, [mode]);
 
+  const handleUpgradeClick = () => {
+    track("upgrade_clicked", { from: "ghost", mode });
+    window.location.href = "/pricing";
+  };
+
   const handleSubmit = async () => {
     if (!task.trim()) return;
+
+    // tracking: user tried to submit
+    track("submit_clicked", { mode, taskPreview: task.slice(0, 60) });
 
     setLoading(true);
     setResponse("");
@@ -55,20 +73,32 @@ export default function GhostClient() {
         body: JSON.stringify({
           task,
           category: "Career",
-          mode, // ✅ NEW
+          mode, // ✅ used by API for Pro-gate on interview_mock
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       // ✅ Free daily limit hit
       if (res.status === 403 && data.limitReached) {
+        track("limit_hit", {
+          mode,
+          tier: data.tier,
+          used: data.used,
+          limit: data.limit,
+        });
+
         setLimitReached(true);
         return;
       }
 
-      // ✅ Pro feature blocked
+      // ✅ Pro feature blocked (interview_mock)
       if ((res.status === 402 || res.status === 403) && data.upgradeRequired) {
+        track("pro_gate_hit", {
+          mode,
+          message: data.message,
+        });
+
         setUpgradeRequired(true);
         setUpgradeMsg(
           data.message || "Upgrade to Pro to use Interview Mock Mode."
@@ -77,14 +107,33 @@ export default function GhostClient() {
       }
 
       if (!res.ok) {
-        setResponse(data.error || "Something went wrong");
+        track("api_error", {
+          mode,
+          status: res.status,
+          error: data?.error,
+        });
+
+        setResponse(data?.error || "Something went wrong");
         return;
       }
+
+      // ✅ success
+      track("ai_success", {
+        mode,
+        tier: data?.tier,
+        used: data?.used,
+        limit: data?.limit,
+      });
 
       setResponse(data.result);
       setHistory([{ task, response: data.result, mode }, ...history]);
       setTask("");
-    } catch {
+    } catch (err: any) {
+      track("network_error", {
+        mode,
+        message: err?.message || String(err),
+      });
+
       setResponse("Error contacting AI.");
     } finally {
       setLoading(false);
@@ -104,7 +153,8 @@ export default function GhostClient() {
         </h1>
 
         <p className="text-gray-300 mb-6 text-center max-w-2xl">
-          Career advice that feels like a real coach — CVs, interviews, and salary growth.
+          Career advice that feels like a real coach — CVs, interviews, and
+          salary growth.
         </p>
 
         {/* ✅ MODE SELECTOR */}
@@ -137,7 +187,10 @@ export default function GhostClient() {
           {STARTER_PROMPTS.map((prompt) => (
             <button
               key={prompt}
-              onClick={() => setTask(prompt)}
+              onClick={() => {
+                track("starter_prompt_clicked", { mode, prompt });
+                setTask(prompt);
+              }}
               className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition"
             >
               {prompt}
@@ -163,19 +216,23 @@ export default function GhostClient() {
           disabled={loading}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg mb-4"
         >
-          {loading ? "Thinking..." : mode === "interview_mock" ? "Get Feedback" : "Get Advice"}
+          {loading
+            ? "Thinking..."
+            : mode === "interview_mock"
+            ? "Get Feedback"
+            : "Get Advice"}
         </motion.button>
 
         {/* LIMIT MESSAGE */}
         {limitReached && (
           <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl w-full">
             <p className="mb-2">You’ve reached your free daily limit.</p>
-            <a
-              href="/pricing"
+            <button
+              onClick={handleUpgradeClick}
               className="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700 inline-block"
             >
               Upgrade to Pro
-            </a>
+            </button>
           </div>
         )}
 
@@ -184,12 +241,12 @@ export default function GhostClient() {
           <div className="bg-purple-900 text-white p-4 rounded-lg text-center max-w-xl w-full">
             <p className="mb-2 font-semibold">Pro feature</p>
             <p className="mb-3">{upgradeMsg}</p>
-            <a
-              href="/pricing"
+            <button
+              onClick={handleUpgradeClick}
               className="bg-white text-purple-900 px-4 py-2 rounded hover:bg-gray-200 inline-block font-semibold"
             >
               See Pro Plan
-            </a>
+            </button>
           </div>
         )}
 

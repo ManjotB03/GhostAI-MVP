@@ -13,55 +13,41 @@ const openai = new OpenAI({
 
 type Mode = "career" | "interview_mock";
 
+const DEV = process.env.NODE_ENV !== "production";
+function log(...args: any[]) {
+  if (DEV) console.log(...args);
+}
+
 function normalizeTier(input: any): Tier {
   const t = String(input ?? "free").toLowerCase();
   if (t === "free" || t === "pro" || t === "ultimate") return t;
   return "free";
 }
 
-function systemPrompt(mode: Mode) {
-  if (mode === "interview_mock") {
-    return `
-You are GhostAI Interview Coach (premium).
-
-Task:
-- The user will provide an interview question and either their draft answer OR ask you to generate a model answer.
-- Your job is to give high-quality feedback and improve their answer.
-
-Rules:
-- Be direct and specific. No fluff.
-- Use this exact structure:
-
-1) Score (0–10) for: Clarity, Impact, Structure, Confidence
-2) What’s strong (2–4 bullets)
-3) What to fix (2–4 bullets)
-4) Improved Answer (STAR format if applicable)
-5) Extra punch: 2 metrics/examples they can add
-6) Next Attempt: ask them 1 follow-up question to tailor further
-
-If they didn’t provide an answer, generate:
-- A strong model answer + why it works.
-`;
-  }
-
-  return `
-You are GhostAI — a premium AI Career Coach.
-
-Goal:
-Help ambitious early-career professionals get interviews, offers, promotions, and higher salary.
-
-Style rules:
-- Be direct, practical, and specific (no generic fluff).
-- Use structured formatting with headings and bullet points.
-- Provide templates/examples when useful.
-- UK-friendly by default unless user mentions another location.
-
-Always end with:
-Next Steps (3–5 bullet actions).
-`;
+function normalizeMode(input: any): Mode {
+  const m = String(input ?? "career").toLowerCase();
+  if (m === "career" || m === "interview_mock") return m;
+  return "career";
 }
 
-async function runAI(task: string, category: string, mode: Mode) {
+function systemPrompt(mode: Mode) {
+  if (mode === "interview_mock") {
+    return [
+      "You are GhostAI, an interview coach.",
+      "Act like a tough but fair interviewer + coach.",
+      "Give direct feedback, identify weak points, rewrite answers, and provide a better STAR answer.",
+      "Then give 3 follow-up questions and what a strong answer should include.",
+    ].join(" ");
+  }
+
+  return [
+    "You are GhostAI, a practical career coach.",
+    "Give structured, actionable advice with clear next steps.",
+    "Be realistic and tailored to UK job market when relevant.",
+  ].join(" ");
+}
+
+async function runAI(task: string, mode: Mode) {
   const completion = await openai.chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-4o-mini",
     messages: [
@@ -79,6 +65,7 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
+    log("❌ Unauthorized (no session)");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -87,45 +74,52 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   const task = body?.task?.trim();
-  const category = body?.category ?? "Career";
-  const mode: Mode = body?.mode === "interview_mock" ? "interview_mock" : "career";
+  const mode = normalizeMode(body?.mode);
+
+  log("SESSION:", { email, hasSession: true });
+  log("BODY:", { taskPreview: task?.slice?.(0, 40), mode });
 
   if (!task) {
+    log("❌ Missing prompt");
     return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
   }
 
-  // ✅ Pull tier from DB (source of truth)
+  // Tier from DB
   const { data: userRow, error: userErr } = await supabaseServer
     .from("app_users")
     .select("subscription_tier")
     .eq("email", email)
     .maybeSingle();
 
-  if (userErr) {
-    return NextResponse.json({ error: "User lookup failed" }, { status: 500 });
-  }
-
   const tier: Tier = normalizeTier(userRow?.subscription_tier);
 
-  // ✅ Pro feature enforcement
+  log("USER ROW:", { userRow, userErr });
+  log("TIER:", { tier, isOwner });
+
+  // Pro feature gate (interview_mock is Pro+)
   if (!isOwner && tier === "free" && mode === "interview_mock") {
+    log("🔒 Blocked: interview_mock requires Pro");
     return NextResponse.json(
       {
         upgradeRequired: true,
-        message: "Interview Mock Mode is available on Pro.",
+        message: "Upgrade to Pro to use Interview Mock Mode.",
       },
       { status: 402 }
     );
   }
 
-  // ✅ Unlimited for owner + ultimate
+  // Unlimited for owner + ultimate
   if (isOwner || tier === "ultimate") {
-    const result = await runAI(task, category, mode);
+    log("✅ Unlimited path:", { tier });
+    const result = await runAI(task, mode);
     return NextResponse.json({ result });
   }
 
-  const dailyLimit = LIMITS[tier]; // free/pro
+  // Daily limits for free/pro
+  const dailyLimit = LIMITS[tier];
   const today = new Date().toISOString().slice(0, 10);
+
+  log("LIMIT CHECK:", { email, today, tier, dailyLimit });
 
   const { data: usageRow, error: usageErr } = await supabaseServer
     .from("ai_usage")
@@ -134,24 +128,51 @@ export async function POST(req: Request) {
     .eq("date", today)
     .maybeSingle();
 
+  const used = usageRow?.count ?? 0;
+
+  log("USAGE ROW:", { usageRow, usageErr });
+
   if (usageErr) {
+    log("❌ Usage read error:", usageErr);
     return NextResponse.json({ error: "Usage read error" }, { status: 500 });
   }
 
-  const used = usageRow?.count ?? 0;
-
   if (used >= dailyLimit) {
+    log("⛔ Limit reached:", { used, dailyLimit });
     return NextResponse.json(
-      { error: "Limit reached", limitReached: true, limit: dailyLimit, used, tier },
+      {
+        error: "Limit reached",
+        limitReached: true,
+        tier,
+        used,
+        limit: dailyLimit,
+      },
       { status: 403 }
     );
   }
 
-  await supabaseServer.from("ai_usage").upsert(
+  log("UPSERTING USAGE:", { email, today, usedNext: used + 1 });
+
+  const { error: upsertErr } = await supabaseServer.from("ai_usage").upsert(
     { email, date: today, count: used + 1 },
     { onConflict: "email,date" }
   );
 
-  const result = await runAI(task, category, mode);
-  return NextResponse.json({ result });
+  log("UPSERT RESULT:", { upsertErr });
+
+  if (upsertErr) {
+    log("❌ Usage upsert error:", upsertErr);
+    return NextResponse.json({ error: "Usage upsert error" }, { status: 500 });
+  }
+
+  log("CALLING OPENAI ...");
+  const result = await runAI(task, mode);
+  log("OPENAI OK");
+
+  return NextResponse.json({
+    result,
+    tier,
+    used: used + 1,
+    limit: dailyLimit,
+  });
 }
