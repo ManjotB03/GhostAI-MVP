@@ -9,47 +9,38 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => null);
-    const plan = body?.plan as "pro" | "ultimate" | undefined;
-    const email = body?.email as string | undefined;
+    const { plan, email } = await req.json();
 
-    if (!plan) {
-      return NextResponse.json({ error: "Missing plan" }, { status: 400 });
-    }
-    if (!email) {
-      return NextResponse.json({ error: "Missing email" }, { status: 400 });
+    if (!plan || !email) {
+      return NextResponse.json({ error: "Missing plan or email" }, { status: 400 });
     }
 
     const priceId =
       plan === "pro"
-        ? process.env.STRIPE_PRICE_ID
+        ? process.env.STRIPE_PRICE_ID!
         : plan === "ultimate"
-        ? process.env.STRIPE_ULTIMATE_PRICE_ID
-        : undefined;
+        ? process.env.STRIPE_ULTIMATE_PRICE_ID!
+        : null;
 
     if (!priceId) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_URL!;
-    if (!baseUrl) {
-      return NextResponse.json(
-        { error: "Missing NEXT_PUBLIC_URL" },
-        { status: 500 }
-      );
-    }
+    // IMPORTANT: {CHECKOUT_SESSION_ID} lets us verify/lookup later if needed
+    const successUrl = `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${baseUrl}/pricing`;
 
-    // ✅ Create Checkout session + attach email + metadata
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      customer_email: email,
+      customer_email: email, // ✅ KEY FIX
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
-        plan,
-        email,
+        email, // ✅ KEY FIX
+        plan,  // ✅ helpful
       },
     });
 
