@@ -9,38 +9,47 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: Request) {
   try {
-    const { plan, email } = await req.json();
+    const body = await req.json().catch(() => null);
+    const plan = body?.plan as "pro" | "ultimate" | undefined;
+    const email = body?.email as string | undefined;
 
-    if (!plan || !email) {
-      return NextResponse.json({ error: "Missing plan or email" }, { status: 400 });
+    if (!plan) {
+      return NextResponse.json({ error: "Missing plan" }, { status: 400 });
+    }
+    if (!email) {
+      return NextResponse.json({ error: "Missing email" }, { status: 400 });
     }
 
     const priceId =
       plan === "pro"
-        ? process.env.STRIPE_PRICE_ID!
+        ? process.env.STRIPE_PRICE_ID
         : plan === "ultimate"
-        ? process.env.STRIPE_ULTIMATE_PRICE_ID!
-        : null;
+        ? process.env.STRIPE_ULTIMATE_PRICE_ID
+        : undefined;
 
     if (!priceId) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_URL!;
-    // IMPORTANT: {CHECKOUT_SESSION_ID} lets us verify/lookup later if needed
-    const successUrl = `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${baseUrl}/pricing`;
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: "Missing NEXT_PUBLIC_URL" },
+        { status: 500 }
+      );
+    }
 
+    // ✅ Create Checkout session + attach email + metadata
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
-      customer_email: email, // ✅ KEY FIX
+      customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/pricing`,
       metadata: {
-        email, // ✅ KEY FIX
-        plan,  // ✅ helpful
+        plan,
+        email,
       },
     });
 

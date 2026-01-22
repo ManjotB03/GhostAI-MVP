@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Best event to set tier right after checkout
+    // ✅ Best event to update user right after payment
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
@@ -41,45 +41,40 @@ export async function POST(req: Request) {
       const customerId = session.customer as string;
       const subscriptionId = session.subscription as string;
 
-      if (!email || !customerId || !subscriptionId) {
-        console.error("Missing email/customer/subscription on checkout session");
+      if (!email) {
+        console.error("No email found on checkout.session.completed");
         return NextResponse.json({ received: true });
       }
 
+      // Fetch subscription to determine tier from price id
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       const priceId = subscription.items.data[0]?.price?.id;
 
       const tier =
         priceId === process.env.STRIPE_ULTIMATE_PRICE_ID ? "ultimate" : "pro";
 
-      const { error } = await supabaseServer.from("app_users").upsert(
-        {
-          email,
+      await supabaseServer
+        .from("app_users")
+        .update({
           stripe_customer_id: customerId,
           subscription_id: subscriptionId,
           subscription_status: subscription.status,
           subscription_tier: tier,
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: "email" }
-      );
-
-      if (error) {
-        console.error("Supabase upsert error:", error);
-        return NextResponse.json({ error: "Supabase upsert failed" }, { status: 500 });
-      }
+        })
+        .eq("email", email);
 
       return NextResponse.json({ received: true });
     }
 
-    // Keep tier in sync if it changes/cancels
+    // ✅ Keep status in sync if Stripe updates/cancels later
     if (
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"
     ) {
-      const sub = event.data.object as Stripe.Subscription;
-      const customerId = sub.customer as string;
-      const priceId = sub.items.data[0]?.price?.id;
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = subscription.customer as string;
+      const priceId = subscription.items.data[0]?.price?.id;
 
       const tier =
         event.type === "customer.subscription.deleted"
@@ -88,21 +83,18 @@ export async function POST(req: Request) {
           ? "ultimate"
           : "pro";
 
-      const { error } = await supabaseServer
+      await supabaseServer
         .from("app_users")
         .update({
-          subscription_id: sub.id,
+          subscription_id: subscription.id,
           subscription_status:
-            event.type === "customer.subscription.deleted" ? "canceled" : sub.status,
+            event.type === "customer.subscription.deleted"
+              ? "canceled"
+              : subscription.status,
           subscription_tier: tier,
           updated_at: new Date().toISOString(),
         })
         .eq("stripe_customer_id", customerId);
-
-      if (error) {
-        console.error("Supabase update error:", error);
-        return NextResponse.json({ error: "Supabase update failed" }, { status: 500 });
-      }
 
       return NextResponse.json({ received: true });
     }
