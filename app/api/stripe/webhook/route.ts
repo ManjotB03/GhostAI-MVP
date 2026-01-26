@@ -8,100 +8,109 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-11-17.clover",
 });
 
+function tierFromPriceId(priceId?: string | null) {
+  if (!priceId) return "free";
+  if (priceId === process.env.STRIPE_ULTIMATE_PRICE_ID) return "ultimate";
+  if (priceId === process.env.STRIPE_PRICE_ID) return "pro";
+  return "pro"; // fallback if you add more later
+}
+
 export async function POST(req: Request) {
   const sig = req.headers.get("stripe-signature");
   if (!sig) {
-    return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
+    return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
   }
 
-  const body = await req.text();
+  const rawBody = await req.text();
 
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(
-      body,
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
-    console.error("Webhook signature verification failed:", err.message);
-    return NextResponse.json({ error: "Bad signature" }, { status: 400 });
+    console.error("❌ Webhook signature verification failed:", err?.message || err);
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   try {
-    // ✅ Best event to update user right after payment
+    // ✅ 1) Checkout completed: best place to map Stripe -> your user via email
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      const email =
-        (session.customer_details?.email as string) ||
-        (session.customer_email as string) ||
-        (session.metadata?.email as string);
-
-      const customerId = session.customer as string;
-      const subscriptionId = session.subscription as string;
+      const email = session.customer_details?.email || session.customer_email || null;
+      const customerId = typeof session.customer === "string" ? session.customer : null;
+      const subscriptionId =
+        typeof session.subscription === "string" ? session.subscription : null;
 
       if (!email) {
-        console.error("No email found on checkout.session.completed");
+        console.warn("⚠️ checkout.session.completed missing email");
         return NextResponse.json({ received: true });
       }
 
-      // Fetch subscription to determine tier from price id
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      const priceId = subscription.items.data[0]?.price?.id;
+      // pull subscription to read price id (tier)
+      let tier = "pro";
+      let status: string | null = null;
 
-      const tier =
-        priceId === process.env.STRIPE_ULTIMATE_PRICE_ID ? "ultimate" : "pro";
+      if (subscriptionId) {
+        const sub = await stripe.subscriptions.retrieve(subscriptionId);
+        const priceId = sub.items.data?.[0]?.price?.id;
+        tier = tierFromPriceId(priceId);
+        status = sub.status;
+      }
 
-      await supabaseServer
+      // ✅ update user row by email (source of truth)
+      const { error: upErr } = await supabaseServer
         .from("app_users")
         .update({
           stripe_customer_id: customerId,
           subscription_id: subscriptionId,
-          subscription_status: subscription.status,
+          subscription_status: status || "active",
           subscription_tier: tier,
           updated_at: new Date().toISOString(),
         })
         .eq("email", email);
 
-      return NextResponse.json({ received: true });
+      if (upErr) {
+        console.error("❌ Supabase update failed:", upErr);
+        return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+      }
+
+      console.log("✅ Updated user from checkout:", { email, tier, customerId, subscriptionId });
     }
 
-    // ✅ Keep status in sync if Stripe updates/cancels later
+    // ✅ 2) Subscription updated/deleted: keep tier/status in sync later
     if (
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"
     ) {
-      const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
-      const priceId = subscription.items.data[0]?.price?.id;
+      const sub = event.data.object as Stripe.Subscription;
+      const customerId = typeof sub.customer === "string" ? sub.customer : null;
+      const priceId = sub.items.data?.[0]?.price?.id;
+      const tier = event.type === "customer.subscription.deleted" ? "free" : tierFromPriceId(priceId);
+      const status = sub.status;
 
-      const tier =
-        event.type === "customer.subscription.deleted"
-          ? "free"
-          : priceId === process.env.STRIPE_ULTIMATE_PRICE_ID
-          ? "ultimate"
-          : "pro";
+      if (customerId) {
+        const { error: upErr } = await supabaseServer
+          .from("app_users")
+          .update({
+            subscription_id: sub.id,
+            subscription_status: status,
+            subscription_tier: tier,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_customer_id", customerId);
 
-      await supabaseServer
-        .from("app_users")
-        .update({
-          subscription_id: subscription.id,
-          subscription_status:
-            event.type === "customer.subscription.deleted"
-              ? "canceled"
-              : subscription.status,
-          subscription_tier: tier,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("stripe_customer_id", customerId);
-
-      return NextResponse.json({ received: true });
+        if (upErr) console.error("❌ Supabase update failed (sub event):", upErr);
+        else console.log("✅ Synced user from sub event:", { customerId, tier, status });
+      }
     }
 
     return NextResponse.json({ received: true });
-  } catch (err) {
-    console.error("Webhook handler error:", err);
-    return NextResponse.json({ error: "Webhook handler error" }, { status: 500 });
+  } catch (err: any) {
+    console.error("❌ Webhook handler error:", err?.message || err);
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }
