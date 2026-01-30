@@ -9,14 +9,10 @@ export const metadata = {
   description: "Your AI-powered assistant",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={inter.className}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>
