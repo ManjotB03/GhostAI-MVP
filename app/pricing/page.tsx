@@ -103,12 +103,17 @@ export default function PricingPage() {
           </ul>
 
           <button
+            type="button"
             onClick={() => handleSubscribe("pro")}
             disabled={status === "loading"}
             className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
           >
             Upgrade to Pro
           </button>
+
+          {status === "loading" && (
+            <p className="text-xs text-slate-400 mt-3">Checking login…</p>
+          )}
         </div>
 
         {/* ULTIMATE */}
@@ -134,6 +139,7 @@ export default function PricingPage() {
           </ul>
 
           <button
+            type="button"
             onClick={() => handleSubscribe("ultimate")}
             disabled={status === "loading"}
             className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
