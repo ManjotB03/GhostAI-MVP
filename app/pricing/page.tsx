@@ -1,49 +1,44 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import ModernLayout from "../components/ModernLayout";
-
 
 export default function PricingPage() {
   const { data: session, status } = useSession();
 
   const handleSubscribe = async (plan: "pro" | "ultimate") => {
-    try {
-      if (!session?.user?.email) {
-        alert("You must be signed in to upgrade your plan.");
-        return;
-      }
+    if (!session?.user?.email) {
+      alert("You must be signed in to upgrade your plan.");
+      return;
+    }
 
+    try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan,
-          email: session.user.email,
-        }),
+        body: JSON.stringify({ plan }),
       });
 
       const data = await res.json();
 
-      // ✅ Helps debug on LIVE if it fails
-      console.log("CHECKOUT RESPONSE:", { status: res.status, data });
-
       if (!res.ok) {
-        alert(data?.error || "Checkout failed.");
+        alert(data?.error || "Checkout failed");
+        console.log("CHECKOUT FAIL:", { status: res.status, data });
         return;
       }
 
       if (data?.url) {
-        window.location.assign(data.url); // assign is slightly more reliable than href
-        return;
+        window.location.href = data.url;
+      } else {
+        alert("No checkout URL returned.");
+        console.log("NO URL:", data);
       }
-
-      alert("No checkout URL returned.");
-    } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Checkout error. Check console.");
+    } catch (e) {
+      console.error(e);
+      alert("Checkout request failed.");
     }
   };
+
+  const disabled = status === "loading";
 
   return (
     <div className="max-w-5xl mx-auto mt-16 px-6 text-center text-white">
@@ -75,7 +70,10 @@ export default function PricingPage() {
             <li>• Secure Google login</li>
           </ul>
 
-          <button className="w-full py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition">
+          <button
+            type="button"
+            className="w-full py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition"
+          >
             Current Plan
           </button>
         </div>
@@ -87,7 +85,8 @@ export default function PricingPage() {
           </p>
           <h2 className="text-2xl font-bold mb-2">Pro</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">
-            £4.99<span className="text-base font-semibold text-slate-300">/mo</span>
+            £4.99
+            <span className="text-base font-semibold text-slate-300">/mo</span>
           </p>
 
           <p className="text-slate-300 mb-5">
@@ -104,16 +103,12 @@ export default function PricingPage() {
 
           <button
             type="button"
+            disabled={disabled}
             onClick={() => handleSubscribe("pro")}
-            disabled={status === "loading"}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Upgrade to Pro
           </button>
-
-          {status === "loading" && (
-            <p className="text-xs text-slate-400 mt-3">Checking login…</p>
-          )}
         </div>
 
         {/* ULTIMATE */}
@@ -123,7 +118,8 @@ export default function PricingPage() {
           </p>
           <h2 className="text-2xl font-bold mb-2">Ultimate</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">
-            £14.99<span className="text-base font-semibold text-slate-300">/mo</span>
+            £14.99
+            <span className="text-base font-semibold text-slate-300">/mo</span>
           </p>
 
           <p className="text-slate-300 mb-5">
@@ -140,16 +136,18 @@ export default function PricingPage() {
 
           <button
             type="button"
+            disabled={disabled}
             onClick={() => handleSubscribe("ultimate")}
-            disabled={status === "loading"}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Unlock Ultimate
           </button>
         </div>
       </div>
 
-      <p className="text-slate-400 text-sm mt-10">Cancel anytime. No hidden fees.</p>
+      <p className="text-slate-400 text-sm mt-10">
+        Cancel anytime. No hidden fees.
+      </p>
     </div>
   );
 }
