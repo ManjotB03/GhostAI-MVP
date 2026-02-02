@@ -20,21 +20,15 @@ export default function PricingPage() {
       }),
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = await res.json();
 
-    // ✅ If Stripe fails, show the real reason
     if (!res.ok) {
       console.log("CHECKOUT RESPONSE:", { status: res.status, data });
-      alert(data?.details || data?.error || "Checkout failed");
+      alert(data?.error || "Checkout failed");
       return;
     }
 
-    if (data?.url) {
-      window.location.href = data.url;
-      return;
-    }
-
-    alert("Checkout failed: No checkout URL returned.");
+    if (data?.url) window.location.href = data.url;
   };
 
   return (
@@ -50,15 +44,11 @@ export default function PricingPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* FREE */}
         <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-8 shadow-xl text-left">
-          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">
-            Try it first
-          </p>
+          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">Try it first</p>
           <h2 className="text-2xl font-bold mb-2">Free</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">£0</p>
 
-          <p className="text-slate-300 mb-5">
-            Get real career value with no commitment.
-          </p>
+          <p className="text-slate-300 mb-5">Get real career value with no commitment.</p>
 
           <ul className="text-slate-300 space-y-3 mb-6">
             <li>• Daily career questions limit</li>
@@ -74,13 +64,10 @@ export default function PricingPage() {
 
         {/* PRO */}
         <div className="bg-slate-950 border-2 border-indigo-500 rounded-2xl p-8 shadow-2xl text-left transform scale-105">
-          <p className="text-xs uppercase tracking-wider text-indigo-300 mb-2">
-            Most Popular
-          </p>
+          <p className="text-xs uppercase tracking-wider text-indigo-300 mb-2">Most Popular</p>
           <h2 className="text-2xl font-bold mb-2">Pro</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">
-            £4.99
-            <span className="text-base font-semibold text-slate-300">/mo</span>
+            £4.99<span className="text-base font-semibold text-slate-300">/mo</span>
           </p>
 
           <p className="text-slate-300 mb-5">
@@ -105,13 +92,10 @@ export default function PricingPage() {
 
         {/* ULTIMATE */}
         <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-8 shadow-xl text-left">
-          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">
-            Max Power
-          </p>
+          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">Max Power</p>
           <h2 className="text-2xl font-bold mb-2">Ultimate</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">
-            £14.99
-            <span className="text-base font-semibold text-slate-300">/mo</span>
+            £14.99<span className="text-base font-semibold text-slate-300">/mo</span>
           </p>
 
           <p className="text-slate-300 mb-5">
