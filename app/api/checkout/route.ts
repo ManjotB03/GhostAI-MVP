@@ -1,81 +1,70 @@
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "nodejs"; // ✅ IMPORTANT: Stripe needs Node runtime
+export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  // ✅ Don’t set apiVersion if it was giving you red errors
+});
 
-function getBaseUrl(req: NextRequest) {
-  // Prefer NEXTAUTH_URL in prod, otherwise fall back to request origin
-  const envUrl =
-    process.env.NEXTAUTH_URL ||
-    process.env.NEXT_PUBLIC_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL;
+type Plan = "pro" | "ultimate";
 
-  if (envUrl) return envUrl.replace(/\/$/, "");
-  const origin = req.headers.get("origin") || "http://localhost:3000";
-  return origin.replace(/\/$/, "");
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => null);
 
-    const plan = body?.plan as "pro" | "ultimate" | undefined;
+    const plan = body?.plan as Plan | undefined;
     const email = body?.email as string | undefined;
 
-    if (!plan) {
-      return NextResponse.json({ error: "Missing plan" }, { status: 400 });
-    }
-    if (!email) {
-      return NextResponse.json({ error: "Missing email" }, { status: 400 });
-    }
-
-    const priceId =
-      plan === "pro"
-        ? process.env.STRIPE_PRICE_ID
-        : plan === "ultimate"
-        ? process.env.STRIPE_ULTIMATE_PRICE_ID
-        : null;
-
-    if (!priceId) {
+    if (!plan || !email) {
       return NextResponse.json(
-        { error: "Missing Stripe price id for plan" },
+        { error: "Missing plan or email" },
+        { status: 400 }
+      );
+    }
+
+    const proPrice = process.env.STRIPE_PRICE_ID;
+    const ultimatePrice = process.env.STRIPE_ULTIMATE_PRICE_ID;
+
+    if (!proPrice || !ultimatePrice) {
+      return NextResponse.json(
+        { error: "Missing STRIPE price env vars" },
         { status: 500 }
       );
     }
 
-    const baseUrl = getBaseUrl(req);
+    const price =
+      plan === "pro" ? proPrice : plan === "ultimate" ? ultimatePrice : null;
 
+    if (!price) {
+      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+
+    // ✅ Works on localhost + live domain
+    const origin =
+      req.headers.get("origin") ||
+      process.env.NEXTAUTH_URL ||
+      "http://localhost:3000";
+
+    // ✅ Put plan + email in metadata so webhook can update Supabase reliably
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
-
-      // ✅ ties Stripe checkout to the logged-in user
       customer_email: email,
-
-      line_items: [{ price: priceId, quantity: 1 }],
-
-      // ✅ MUST be a real URL that exists on your site
-      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing`,
-
+      line_items: [{ price, quantity: 1 }],
       allow_promotion_codes: true,
+
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/pricing`,
+
+      metadata: {
+        plan,
+        email,
+      },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (err: any) {
-    // ✅ This will show in Vercel function logs
-    console.error("CHECKOUT ERROR:", err?.message || err, err);
-
-    return NextResponse.json(
-      {
-        error: "Checkout failed",
-        // helpful hint (safe):
-        hint:
-          "Check STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_ULTIMATE_PRICE_ID, and Stripe mode (test vs live).",
-      },
-      { status: 500 }
-    );
+    console.error("CHECKOUT ERROR:", err?.message || err);
+    return NextResponse.json({ error: "Checkout failed" }, { status: 500 });
   }
 }
