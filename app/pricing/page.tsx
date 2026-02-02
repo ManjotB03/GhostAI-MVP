@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 
 export default function PricingPage() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const handleSubscribe = async (plan: "pro" | "ultimate") => {
     if (!session?.user?.email) {
@@ -11,34 +11,31 @@ export default function PricingPage() {
       return;
     }
 
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        plan,
+        email: session.user.email,
+      }),
+    });
 
-      const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        alert(data?.error || "Checkout failed");
-        console.log("CHECKOUT FAIL:", { status: res.status, data });
-        return;
-      }
-
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        alert("No checkout URL returned.");
-        console.log("NO URL:", data);
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Checkout request failed.");
+    // ✅ If Stripe fails, show the real reason
+    if (!res.ok) {
+      console.log("CHECKOUT RESPONSE:", { status: res.status, data });
+      alert(data?.details || data?.error || "Checkout failed");
+      return;
     }
-  };
 
-  const disabled = status === "loading";
+    if (data?.url) {
+      window.location.href = data.url;
+      return;
+    }
+
+    alert("Checkout failed: No checkout URL returned.");
+  };
 
   return (
     <div className="max-w-5xl mx-auto mt-16 px-6 text-center text-white">
@@ -70,10 +67,7 @@ export default function PricingPage() {
             <li>• Secure Google login</li>
           </ul>
 
-          <button
-            type="button"
-            className="w-full py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition"
-          >
+          <button className="w-full py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition">
             Current Plan
           </button>
         </div>
@@ -102,10 +96,8 @@ export default function PricingPage() {
           </ul>
 
           <button
-            type="button"
-            disabled={disabled}
             onClick={() => handleSubscribe("pro")}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
           >
             Upgrade to Pro
           </button>
@@ -135,19 +127,15 @@ export default function PricingPage() {
           </ul>
 
           <button
-            type="button"
-            disabled={disabled}
             onClick={() => handleSubscribe("ultimate")}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
           >
             Unlock Ultimate
           </button>
         </div>
       </div>
 
-      <p className="text-slate-400 text-sm mt-10">
-        Cancel anytime. No hidden fees.
-      </p>
+      <p className="text-slate-400 text-sm mt-10">Cancel anytime. No hidden fees.</p>
     </div>
   );
 }

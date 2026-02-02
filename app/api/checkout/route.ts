@@ -1,73 +1,69 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import Stripe from "stripe";
-import { authOptions } from "@/lib/auth";
+import { NextResponse } from "next/server";
 
-export const runtime = "nodejs";
+export const runtime = "nodejs"; // ✅ IMPORTANT (prevents Edge runtime issues)
+export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-11-17.clover",
+  // ✅ DO NOT set apiVersion unless you know it is valid for your Stripe account
+  // apiVersion: "2024-06-20",
+  maxNetworkRetries: 2,
+  timeout: 30000,
 });
-
-type Plan = "pro" | "ultimate";
-
-function getPriceId(plan: Plan) {
-  if (plan === "pro") return process.env.STRIPE_PRICE_ID!;
-  return process.env.STRIPE_ULTIMATE_PRICE_ID!;
-}
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Not signed in" }, { status: 401 });
-    }
-
     const body = await req.json().catch(() => null);
-    const plan = body?.plan as Plan;
 
-    if (!plan || (plan !== "pro" && plan !== "ultimate")) {
-      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    const plan = body?.plan as "pro" | "ultimate" | undefined;
+    const email = body?.email as string | undefined;
+
+    if (!plan) {
+      return NextResponse.json({ error: "Missing plan" }, { status: 400 });
+    }
+    if (!email) {
+      return NextResponse.json({ error: "Missing email" }, { status: 400 });
     }
 
-    const priceId = getPriceId(plan);
+    const priceId =
+      plan === "pro"
+        ? process.env.STRIPE_PRICE_ID
+        : process.env.STRIPE_ULTIMATE_PRICE_ID;
+
     if (!priceId) {
       return NextResponse.json(
-        { error: `Missing price id for ${plan}` },
+        { error: "Missing Stripe price id for plan" },
         { status: 500 }
       );
     }
 
-    // ✅ Use NEXTAUTH_URL as the canonical base
+    // ✅ Use NEXTAUTH_URL so it works on localhost + live
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
-    const checkoutSession = await stripe.checkout.sessions.create({
+    const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
+      customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
-      customer_email: session.user.email,
-      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${baseUrl}/success`,
       cancel_url: `${baseUrl}/pricing`,
-      metadata: {
-        email: session.user.email,
-        plan,
-      },
-      allow_promotion_codes: true,
     });
 
-    return NextResponse.json({ url: checkoutSession.url });
+    return NextResponse.json({ url: session.url });
   } catch (err: any) {
-    // ✅ Return the REAL Stripe error to the frontend (huge for debugging)
-    console.error("CHECKOUT ERROR:", err);
-
-    const message =
-      err?.raw?.message ||
-      err?.message ||
-      "Checkout failed";
+    // ✅ Surface the REAL Stripe error to you
+    console.error("STRIPE CHECKOUT ERROR:", {
+      type: err?.type,
+      message: err?.message,
+      code: err?.code,
+      statusCode: err?.statusCode,
+      raw: err?.raw?.message,
+    });
 
     return NextResponse.json(
-      { error: message },
+      {
+        error: "Checkout failed",
+        details: err?.message || "Unknown Stripe error",
+      },
       { status: 500 }
     );
   }
