@@ -1,114 +1,120 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
+import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-11-17.clover",
 });
 
-export async function POST(req: Request) {
-  const sig = req.headers.get("stripe-signature");
-  if (!sig) return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
+function tierFromPriceId(priceId?: string | null) {
+  if (!priceId) return "free";
+  if (priceId === process.env.STRIPE_PRICE_ID) return "pro";
+  if (priceId === process.env.STRIPE_ULTIMATE_PRICE_ID) return "ultimate";
+  return "free";
+}
 
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
-  if (!webhookSecret) {
-    return NextResponse.json({ error: "Missing STRIPE_WEBHOOK_SECRET" }, { status: 500 });
+export async function POST(req: Request) {
+  const sig = (await headers()).get("stripe-signature");
+  const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!sig || !whSecret) {
+    return NextResponse.json({ error: "Missing Stripe signature or webhook secret" }, { status: 400 });
   }
 
   let event: Stripe.Event;
 
   try {
-    const body = await req.text();
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    const rawBody = await req.text();
+    event = stripe.webhooks.constructEvent(rawBody, sig, whSecret);
   } catch (err: any) {
-    console.error("Webhook signature verification failed:", err?.message);
+    console.error("WEBHOOK SIGNATURE ERROR:", err?.message || err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   try {
+    // ✅ handle checkout completion (most important)
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
+      const subscriptionId =
+        typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+
+      // Pull plan from metadata OR inspect subscription items
+      const metaPlan = (session.metadata?.plan || "").toLowerCase();
+      let tier: "free" | "pro" | "ultimate" =
+        metaPlan === "pro" || metaPlan === "ultimate" ? (metaPlan as any) : "free";
+
+      // If metadata missing, attempt to infer from subscription price
+      if (tier === "free" && subscriptionId) {
+        const sub = await stripe.subscriptions.retrieve(subscriptionId, {
+          expand: ["items.data.price"],
+        });
+        const priceId = (sub.items.data?.[0]?.price as Stripe.Price | undefined)?.id || null;
+        tier = tierFromPriceId(priceId) as any;
+      }
+
+      // Update app_users by stripe_customer_id (best key)
+      if (customerId) {
+        const { error } = await supabaseServer
+          .from("app_users")
+          .update({
+            subscription_tier: tier,
+            subscription_status: "active",
+            subscription_id: subscriptionId || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_customer_id", customerId);
+
+        if (error) {
+          console.error("DB UPDATE ERROR (checkout.session.completed):", error);
+          return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+        }
+      }
+
+      return NextResponse.json({ received: true });
+    }
+
+    // ✅ subscription updates (keep status in sync)
     if (
-      event.type === "checkout.session.completed" ||
-      event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.updated" ||
+      event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.deleted"
     ) {
-      await handleStripeEvent(event);
+      const sub = event.data.object as Stripe.Subscription;
+
+      const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+      const status = sub.status; // active, canceled, past_due etc.
+      const priceId = (sub.items.data?.[0]?.price as Stripe.Price | undefined)?.id || null;
+      const tier = tierFromPriceId(priceId);
+
+      if (customerId) {
+        const { error } = await supabaseServer
+          .from("app_users")
+          .update({
+            subscription_tier: tier,
+            subscription_status: status,
+            subscription_id: sub.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_customer_id", customerId);
+
+        if (error) {
+          console.error("DB UPDATE ERROR (subscription event):", error);
+          return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+        }
+      }
+
+      return NextResponse.json({ received: true });
     }
 
+    // Ignore other events
     return NextResponse.json({ received: true });
   } catch (err: any) {
-    console.error("Webhook handler error:", err?.message);
+    console.error("WEBHOOK HANDLER ERROR:", err?.message || err);
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
-}
-
-async function handleStripeEvent(event: Stripe.Event) {
-  const proPrice = process.env.STRIPE_PRICE_ID?.trim();
-  const ultimatePrice = process.env.STRIPE_ULTIMATE_PRICE_ID?.trim();
-
-  // ---- CASE 1: checkout.session.completed (best source of email) ----
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-
-    const email = String(session.customer_details?.email || session.customer_email || "").trim();
-    const customerId = String(session.customer || "").trim();
-    const subscriptionId = String(session.subscription || "").trim();
-
-    if (!email) {
-      console.warn("checkout.session.completed had no email");
-      return;
-    }
-
-    // Pull the subscription to identify the price
-    let tier: "free" | "pro" | "ultimate" = "pro";
-    if (subscriptionId) {
-      const sub = await stripe.subscriptions.retrieve(subscriptionId);
-      const priceId = sub.items.data?.[0]?.price?.id;
-      tier = priceId === ultimatePrice ? "ultimate" : "pro";
-    }
-
-    await supabaseServer
-      .from("app_users")
-      .update({
-        subscription_tier: tier,
-        subscription_status: "active",
-        stripe_customer_id: customerId || null,
-        subscription_id: subscriptionId || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("email", email);
-
-    return;
-  }
-
-  // ---- CASE 2: customer.subscription.* (no email, so map by customer id) ----
-  const sub = event.data.object as Stripe.Subscription;
-  const customerId = String(sub.customer || "").trim();
-  const subscriptionId = String(sub.id || "").trim();
-
-  const priceId = sub.items.data?.[0]?.price?.id;
-  const tier: "free" | "pro" | "ultimate" =
-    event.type === "customer.subscription.deleted"
-      ? "free"
-      : priceId === ultimatePrice
-      ? "ultimate"
-      : "pro";
-
-  const status =
-    event.type === "customer.subscription.deleted" ? "canceled" : String(sub.status || "active");
-
-  if (!customerId) return;
-
-  await supabaseServer
-    .from("app_users")
-    .update({
-      subscription_tier: tier,
-      subscription_status: status,
-      subscription_id: tier === "free" ? null : subscriptionId,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("stripe_customer_id", customerId);
 }

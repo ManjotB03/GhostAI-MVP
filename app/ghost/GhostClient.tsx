@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import ModernLayout from "../components/ModernLayout";
 import { motion } from "framer-motion";
 
@@ -20,15 +20,6 @@ const STARTER_PROMPTS = [
   "What should I do in the next 30 days to get interviews?",
 ];
 
-// ✅ simple client-side logging helper
-function track(event: string, payload?: Record<string, any>) {
-  // Only log in dev OR keep it for production too (your choice)
-  // If you want logs only locally, uncomment this:
-  // if (process.env.NODE_ENV === "production") return;
-
-  console.log(`[TRACK] ${event}`, payload || {});
-}
-
 export default function GhostClient() {
   const [mode, setMode] = useState<Mode>("career");
 
@@ -38,9 +29,11 @@ export default function GhostClient() {
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [limitReached, setLimitReached] = useState(false);
-
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [upgradeMsg, setUpgradeMsg] = useState<string>("");
+
+  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const placeholder = useMemo(() => {
     if (mode === "interview_mock") {
@@ -49,16 +42,8 @@ export default function GhostClient() {
     return "Ask about CVs, interviews, career moves, or salary growth…";
   }, [mode]);
 
-  const handleUpgradeClick = () => {
-    track("upgrade_clicked", { from: "ghost", mode });
-    window.location.href = "/pricing";
-  };
-
   const handleSubmit = async () => {
-    if (!task.trim()) return;
-
-    // tracking: user tried to submit
-    track("submit_clicked", { mode, taskPreview: task.slice(0, 60) });
+    if (!task.trim() && !file) return;
 
     setLoading(true);
     setResponse("");
@@ -67,73 +52,76 @@ export default function GhostClient() {
     setUpgradeMsg("");
 
     try {
+      let extractedText: string | null = null;
+
+      // 1) If there is a file, parse it FIRST via /api/filetext
+      if (file) {
+        const form = new FormData();
+        form.append("file", file);
+
+        const fileRes = await fetch("/api/filetext", {
+          method: "POST",
+          body: form,
+        });
+
+        const fileData = await fileRes.json();
+
+        if (!fileRes.ok) {
+          setResponse(fileData.error || "File parsing failed.");
+          return;
+        }
+
+        extractedText = fileData.text;
+      }
+
+      // 2) Build final prompt (JSON) for /api/ghost
+      const finalTask = extractedText
+        ? `INSTRUCTIONS:\n${task?.trim() || "Please review this document as my career coach and improve it."}\n\n---\nDOCUMENT CONTENT:\n${extractedText}\n---\n\nNow respond following the instructions.`
+        : task.trim();
+
+      // File should cost 2 prompts
+      const cost = extractedText ? 2 : 1;
+
       const res = await fetch("/api/ghost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          task,
+          task: finalTask,
           category: "Career",
-          mode, // ✅ used by API for Pro-gate on interview_mock
+          mode,
+          cost, // ✅ tells backend to deduct 2 when file used
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json();
 
-      // ✅ Free daily limit hit
+      // Free daily limit hit
       if (res.status === 403 && data.limitReached) {
-        track("limit_hit", {
-          mode,
-          tier: data.tier,
-          used: data.used,
-          limit: data.limit,
-        });
-
         setLimitReached(true);
         return;
       }
 
-      // ✅ Pro feature blocked (interview_mock)
+      // Pro feature blocked
       if ((res.status === 402 || res.status === 403) && data.upgradeRequired) {
-        track("pro_gate_hit", {
-          mode,
-          message: data.message,
-        });
-
         setUpgradeRequired(true);
-        setUpgradeMsg(
-          data.message || "Upgrade to Pro to use Interview Mock Mode."
-        );
+        setUpgradeMsg(data.message || "Upgrade to Pro to use Interview Mock Mode.");
         return;
       }
 
       if (!res.ok) {
-        track("api_error", {
-          mode,
-          status: res.status,
-          error: data?.error,
-        });
-
-        setResponse(data?.error || "Something went wrong");
+        setResponse(data.error || "Something went wrong");
         return;
       }
 
-      // ✅ success
-      track("ai_success", {
-        mode,
-        tier: data?.tier,
-        used: data?.used,
-        limit: data?.limit,
-      });
-
       setResponse(data.result);
-      setHistory([{ task, response: data.result, mode }, ...history]);
-      setTask("");
-    } catch (err: any) {
-      track("network_error", {
-        mode,
-        message: err?.message || String(err),
-      });
+      setHistory([
+        { task: task || (file ? `(file) ${file.name}` : "(empty)"), response: data.result, mode },
+        ...history,
+      ]);
 
+      setTask("");
+      setFile(null);
+    } catch {
       setResponse("Error contacting AI.");
     } finally {
       setLoading(false);
@@ -153,11 +141,10 @@ export default function GhostClient() {
         </h1>
 
         <p className="text-gray-300 mb-6 text-center max-w-2xl">
-          Career advice that feels like a real coach — CVs, interviews, and
-          salary growth.
+          Career advice that feels like a real coach — CVs, interviews, and salary growth.
         </p>
 
-        {/* ✅ MODE SELECTOR */}
+        {/* MODE SELECTOR */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6 w-full max-w-xl">
           <button
             onClick={() => setMode("career")}
@@ -187,15 +174,48 @@ export default function GhostClient() {
           {STARTER_PROMPTS.map((prompt) => (
             <button
               key={prompt}
-              onClick={() => {
-                track("starter_prompt_clicked", { mode, prompt });
-                setTask(prompt);
-              }}
+              onClick={() => setTask(prompt)}
               className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition"
             >
               {prompt}
             </button>
           ))}
+        </div>
+
+        {/* FILE ROW */}
+        <div className="w-full max-w-xl flex items-center gap-3 mb-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.txt,.md"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0] || null;
+              setFile(f);
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 hover:bg-gray-800 transition"
+          >
+            Attach file
+          </button>
+
+          {file ? (
+            <div className="text-sm text-gray-300 truncate">
+              Attached: <span className="font-semibold">{file.name}</span>{" "}
+              <button
+                className="ml-2 text-red-300 hover:text-red-200 underline"
+                onClick={() => setFile(null)}
+              >
+                remove
+              </button>
+            </div>
+          ) : (
+            <div className="text-sm text-gray-500">PDF/text supported (file costs 2 prompts)</div>
+          )}
         </div>
 
         {/* INPUT */}
@@ -216,37 +236,33 @@ export default function GhostClient() {
           disabled={loading}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg mb-4"
         >
-          {loading
-            ? "Thinking..."
-            : mode === "interview_mock"
-            ? "Get Feedback"
-            : "Get Advice"}
+          {loading ? "Thinking..." : mode === "interview_mock" ? "Get Feedback" : "Get Advice"}
         </motion.button>
 
         {/* LIMIT MESSAGE */}
         {limitReached && (
           <div className="bg-red-900 text-white p-4 rounded-lg text-center max-w-xl w-full">
             <p className="mb-2">You’ve reached your free daily limit.</p>
-            <button
-              onClick={handleUpgradeClick}
+            <a
+              href="/pricing"
               className="bg-purple-600 px-4 py-2 rounded hover:bg-purple-700 inline-block"
             >
               Upgrade to Pro
-            </button>
+            </a>
           </div>
         )}
 
-        {/* UPGRADE REQUIRED (PRO FEATURE) */}
+        {/* UPGRADE REQUIRED */}
         {upgradeRequired && (
           <div className="bg-purple-900 text-white p-4 rounded-lg text-center max-w-xl w-full">
             <p className="mb-2 font-semibold">Pro feature</p>
             <p className="mb-3">{upgradeMsg}</p>
-            <button
-              onClick={handleUpgradeClick}
+            <a
+              href="/pricing"
               className="bg-white text-purple-900 px-4 py-2 rounded hover:bg-gray-200 inline-block font-semibold"
             >
               See Pro Plan
-            </button>
+            </a>
           </div>
         )}
 

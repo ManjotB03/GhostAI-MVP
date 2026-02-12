@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { authOptions } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { LIMITS, OWNER_EMAIL, type Tier } from "@/lib/limits";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 export const runtime = "nodejs";
 
@@ -13,41 +14,29 @@ const openai = new OpenAI({
 
 type Mode = "career" | "interview_mock";
 
-const DEV = process.env.NODE_ENV !== "production";
-function log(...args: any[]) {
-  if (DEV) console.log(...args);
-}
-
 function normalizeTier(input: any): Tier {
   const t = String(input ?? "free").toLowerCase();
   if (t === "free" || t === "pro" || t === "ultimate") return t;
   return "free";
 }
 
-function normalizeMode(input: any): Mode {
-  const m = String(input ?? "career").toLowerCase();
-  if (m === "career" || m === "interview_mock") return m;
-  return "career";
-}
-
 function systemPrompt(mode: Mode) {
   if (mode === "interview_mock") {
-    return [
-      "You are GhostAI, an interview coach.",
-      "Act like a tough but fair interviewer + coach.",
-      "Give direct feedback, identify weak points, rewrite answers, and provide a better STAR answer.",
-      "Then give 3 follow-up questions and what a strong answer should include.",
-    ].join(" ");
+    return `You are GhostAI, an expert interview coach.
+Give tough but constructive feedback.
+Rewrite the answer using STAR format.
+Add missing metrics.
+Suggest improvements clearly.`;
   }
 
-  return [
-    "You are GhostAI, a practical career coach.",
-    "Give structured, actionable advice with clear next steps.",
-    "Be realistic and tailored to UK job market when relevant.",
-  ].join(" ");
+  return `You are GhostAI, a practical career coach.
+Give structured, actionable advice.
+Be direct, specific, and provide examples/templates.`;
 }
 
 async function runAI(task: string, mode: Mode) {
+  console.log("CALLING OPENAI ...");
+
   const completion = await openai.chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-4o-mini",
     messages: [
@@ -57,122 +46,195 @@ async function runAI(task: string, mode: Mode) {
     temperature: 0.7,
   });
 
-  const text = completion.choices?.[0]?.message?.content?.trim() || "";
-  return text || "No response generated.";
+  console.log("OPENAI OK");
+
+  return (
+    completion.choices?.[0]?.message?.content?.trim() ||
+    "No response generated."
+  );
 }
 
+/* ===========================
+   PDF PARSER (STABLE VERSION)
+   =========================== */
+async function parsePdfToText(file: File) {
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const loadingTask = pdfjsLib.getDocument({ data: buffer });
+  const pdf = await loadingTask.promise;
+
+  let fullText = "";
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+
+    const strings = content.items.map((item: any) => item.str);
+    fullText += strings.join(" ") + "\n";
+  }
+
+  return fullText.trim();
+}
+
+async function fileToText(file: File) {
+  const name = file.name.toLowerCase();
+
+  if (name.endsWith(".pdf")) {
+    return await parsePdfToText(file);
+  }
+
+  return (await file.text()).trim();
+}
+
+/* ===========================
+   MAIN API
+   =========================== */
+
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session?.user?.email) {
-    log("❌ Unauthorized (no session)");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    console.log("SESSION:", {
+      hasSession: !!session,
+      email: session?.user?.email || null,
+    });
 
-  const email = session.user.email;
-  const isOwner = email === OWNER_EMAIL;
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const body = await req.json().catch(() => null);
-  const task = body?.task?.trim();
-  const mode = normalizeMode(body?.mode);
+    const email = session.user.email;
+    const isOwner = email === OWNER_EMAIL;
 
-  log("SESSION:", { email, hasSession: true });
-  log("BODY:", { taskPreview: task?.slice?.(0, 40), mode });
+    const contentType = req.headers.get("content-type") || "";
 
-  if (!task) {
-    log("❌ Missing prompt");
-    return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
-  }
+    let task = "";
+    let mode: Mode = "career";
+    let file: File | null = null;
 
-  // Tier from DB
-  const { data: userRow, error: userErr } = await supabaseServer
-    .from("app_users")
-    .select("subscription_tier")
-    .eq("email", email)
-    .maybeSingle();
+    if (contentType.includes("multipart/form-data")) {
+      const form = await req.formData();
+      task = String(form.get("task") || "").trim();
+      mode = (String(form.get("mode") || "career") as Mode) || "career";
+      const f = form.get("file");
+      file = f instanceof File ? f : null;
+    } else {
+      const body = await req.json().catch(() => null);
+      task = String(body?.task || "").trim();
+      mode = (String(body?.mode || "career") as Mode) || "career";
+    }
 
-  const tier: Tier = normalizeTier(userRow?.subscription_tier);
+    console.log("BODY:", {
+      taskPreview: task ? task.slice(0, 40) : null,
+      mode,
+      hasFile: !!file,
+      fileName: file?.name ?? null,
+    });
 
-  log("USER ROW:", { userRow, userErr });
-  log("TIER:", { tier, isOwner });
+    /* ===== FILE HANDLING ===== */
+    if (file) {
+      const extracted = await fileToText(file);
 
-  // Pro feature gate (interview_mock is Pro+)
-  if (!isOwner && tier === "free" && mode === "interview_mock") {
-    log("🔒 Blocked: interview_mock requires Pro");
-    return NextResponse.json(
-      {
-        upgradeRequired: true,
-        message: "Upgrade to Pro to use Interview Mock Mode.",
-      },
-      { status: 402 }
+      console.log("FILE TEXT LEN:", extracted?.length ?? 0);
+
+      if (!extracted) {
+        return NextResponse.json(
+          { error: "Could not extract text from file" },
+          { status: 400 }
+        );
+      }
+
+      const clipped = extracted.slice(0, 12000);
+
+      const instructions =
+        task && task.length > 0
+          ? task
+          : "Review this document and provide detailed career feedback.";
+
+      task = `INSTRUCTIONS:\n${instructions}\n\n---\nDOCUMENT CONTENT:\n${clipped}\n---\n\nNow respond following the instructions.`;
+    }
+
+    if (!task) {
+      return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
+    }
+
+    /* ===== TIER CHECK ===== */
+
+    const { data: userRow } = await supabaseServer
+      .from("app_users")
+      .select("subscription_tier")
+      .eq("email", email)
+      .maybeSingle();
+
+    const tier: Tier = normalizeTier(userRow?.subscription_tier);
+
+    console.log("TIER:", { tier, isOwner });
+
+    if (!isOwner && tier === "free" && mode === "interview_mock") {
+      return NextResponse.json(
+        {
+          upgradeRequired: true,
+          message: "Upgrade to Pro to use Interview Mock Mode.",
+        },
+        { status: 402 }
+      );
+    }
+
+    if (isOwner || tier === "ultimate") {
+      const result = await runAI(task, mode);
+      return NextResponse.json({ result, unlimited: true });
+    }
+
+    /* ===== LIMIT CHECK ===== */
+
+    const dailyLimit = LIMITS[tier];
+    const today = new Date().toISOString().slice(0, 10);
+    const cost = file ? 2 : 1;
+
+    const { data: usageRow } = await supabaseServer
+      .from("ai_usage")
+      .select("count")
+      .eq("email", email)
+      .eq("date", today)
+      .maybeSingle();
+
+    const used = usageRow?.count ?? 0;
+
+    if (used + cost > dailyLimit) {
+      return NextResponse.json(
+        {
+          error: "Limit reached",
+          limitReached: true,
+          used,
+          limit: dailyLimit,
+        },
+        { status: 403 }
+      );
+    }
+
+    const usedNext = used + cost;
+
+    await supabaseServer.from("ai_usage").upsert(
+      { email, date: today, count: usedNext },
+      { onConflict: "email,date" }
     );
-  }
 
-  // Unlimited for owner + ultimate
-  if (isOwner || tier === "ultimate") {
-    log("✅ Unlimited path:", { tier });
+    console.log("UPSERTED:", { usedNext });
+
+    /* ===== AI CALL ===== */
+
     const result = await runAI(task, mode);
-    return NextResponse.json({ result });
-  }
 
-  // Daily limits for free/pro
-  const dailyLimit = LIMITS[tier];
-  const today = new Date().toISOString().slice(0, 10);
-
-  log("LIMIT CHECK:", { email, today, tier, dailyLimit });
-
-  const { data: usageRow, error: usageErr } = await supabaseServer
-    .from("ai_usage")
-    .select("count")
-    .eq("email", email)
-    .eq("date", today)
-    .maybeSingle();
-
-  const used = usageRow?.count ?? 0;
-
-  log("USAGE ROW:", { usageRow, usageErr });
-
-  if (usageErr) {
-    log("❌ Usage read error:", usageErr);
-    return NextResponse.json({ error: "Usage read error" }, { status: 500 });
-  }
-
-  if (used >= dailyLimit) {
-    log("⛔ Limit reached:", { used, dailyLimit });
+    return NextResponse.json({
+      result,
+      used: usedNext,
+      limit: dailyLimit,
+    });
+  } catch (err: any) {
+    console.error("API /ghost ERROR:", err?.message || err);
     return NextResponse.json(
-      {
-        error: "Limit reached",
-        limitReached: true,
-        tier,
-        used,
-        limit: dailyLimit,
-      },
-      { status: 403 }
+      { error: "Server error", details: err?.message || "Unknown" },
+      { status: 500 }
     );
   }
-
-  log("UPSERTING USAGE:", { email, today, usedNext: used + 1 });
-
-  const { error: upsertErr } = await supabaseServer.from("ai_usage").upsert(
-    { email, date: today, count: used + 1 },
-    { onConflict: "email,date" }
-  );
-
-  log("UPSERT RESULT:", { upsertErr });
-
-  if (upsertErr) {
-    log("❌ Usage upsert error:", upsertErr);
-    return NextResponse.json({ error: "Usage upsert error" }, { status: 500 });
-  }
-
-  log("CALLING OPENAI ...");
-  const result = await runAI(task, mode);
-  log("OPENAI OK");
-
-  return NextResponse.json({
-    result,
-    tier,
-    used: used + 1,
-    limit: dailyLimit,
-  });
 }
