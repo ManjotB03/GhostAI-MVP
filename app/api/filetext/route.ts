@@ -1,49 +1,57 @@
 import { NextResponse } from "next/server";
 
+// ✅ Force Node runtime on Vercel (prevents Edge/browser-only pdfjs build issues)
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-// ---- helpers ----
-function clampText(s: string, max = 20000) {
-  const t = String(s || "").replace(/\u0000/g, "");
-  return t.length > max ? t.slice(0, max) : t;
+async function ensureDomMatrixPolyfill() {
+  // In some pdfjs bundles, DOMMatrix is referenced even for text extraction.
+  // Node doesn't have it, so we polyfill.
+  if (typeof (globalThis as any).DOMMatrix === "undefined") {
+    try {
+      // Small, safe polyfill package
+      const mod: any = await import("dommatrix");
+      (globalThis as any).DOMMatrix = mod.DOMMatrix || mod.default || mod;
+    } catch (e) {
+      // Minimal fallback if polyfill fails
+      (globalThis as any).DOMMatrix = class DOMMatrix {
+        // enough to satisfy pdfjs when it checks existence
+        constructor() {}
+      };
+    }
+  }
 }
 
-async function extractPdfText(buf: Buffer): Promise<string> {
-  // Use dynamic import so Next doesn't try to bundle it weirdly
+async function extractPdfText(buffer: ArrayBuffer) {
+  await ensureDomMatrixPolyfill();
+
+  // ✅ Use legacy build (best compatibility in Node)
   const pdfjs: any = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
-  // IMPORTANT: disable worker in Node (fixes your exact error)
+  const uint8 = new Uint8Array(buffer);
+
+  // ✅ disableWorker avoids workerSrc issues in Node / serverless
   const loadingTask = pdfjs.getDocument({
-    data: new Uint8Array(buf),
+    data: uint8,
     disableWorker: true,
+    verbosity: 0,
   });
 
   const pdf = await loadingTask.promise;
 
   let out = "";
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const page = await pdf.getPage(pageNum);
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    const strings = content.items?.map((it: any) => it.str).filter(Boolean) || [];
-    out += strings.join(" ") + "\n";
+    const strings = (content.items || [])
+      .map((it: any) => it.str)
+      .filter(Boolean);
+    out += strings.join(" ") + "\n\n";
   }
 
   return out.trim();
 }
 
-async function extractTextFromFile(file: File): Promise<string> {
-  const name = (file.name || "").toLowerCase();
-
-  if (name.endsWith(".pdf")) {
-    const buf = Buffer.from(await file.arrayBuffer());
-    return await extractPdfText(buf);
-  }
-
-  // txt/md/etc
-  return (await file.text()).trim();
-}
-
-// ---- routes ----
 export async function GET() {
   return NextResponse.json({
     ok: true,
@@ -54,47 +62,54 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const ct = req.headers.get("content-type") || "";
-    if (!ct.includes("multipart/form-data")) {
-      return NextResponse.json(
-        { ok: false, error: "Expected multipart/form-data" },
-        { status: 400 }
-      );
-    }
-
     const form = await req.formData();
-    const f = form.get("file");
-    const file = f instanceof File ? f : null;
+    const file = form.get("file");
 
-    if (!file) {
+    if (!(file instanceof File)) {
       return NextResponse.json(
-        { ok: false, error: "Missing file field 'file'" },
+        { ok: false, error: "Missing file field 'file'." },
         { status: 400 }
       );
     }
 
-    // optional: basic size guard (10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    const name = (file.name || "").toLowerCase();
+
+    // ✅ Plain text formats
+    if (name.endsWith(".txt") || name.endsWith(".md")) {
+      const text = (await file.text()).trim();
+      return NextResponse.json({
+        ok: true,
+        fileName: file.name,
+        fileSize: file.size,
+        text,
+        textLen: text.length,
+        preview: text.slice(0, 200),
+      });
+    }
+
+    // ✅ PDF
+    if (!name.endsWith(".pdf")) {
       return NextResponse.json(
-        { ok: false, error: "File too large (max 10MB)" },
+        { ok: false, error: "Unsupported file type. Use .pdf, .txt, or .md." },
         { status: 400 }
       );
     }
 
-    const raw = await extractTextFromFile(file);
-    const text = clampText(raw, 20000);
+    const buf = await file.arrayBuffer();
+    const text = await extractPdfText(buf);
 
     return NextResponse.json({
       ok: true,
       fileName: file.name,
       fileSize: file.size,
-      textLen: text.length,
-      preview: text.slice(0, 400),
       text,
+      textLen: text.length,
+      preview: text.slice(0, 200),
     });
   } catch (err: any) {
+    console.error("/api/filetext ERROR:", err?.message || err);
     return NextResponse.json(
-      { ok: false, error: err?.message || String(err) },
+      { ok: false, error: err?.message || "File parsing failed." },
       { status: 500 }
     );
   }
