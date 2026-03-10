@@ -1,34 +1,87 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 export default function PricingPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const [loadingPlan, setLoadingPlan] = useState<null | "pro" | "ultimate">(null);
 
-  const handleSubscribe = async (plan: "pro" | "ultimate") => {
+  const handleSubscribe = async (tier: "pro" | "ultimate") => {
+    if (status === "loading") return;
+
     if (!session?.user?.email) {
       alert("You must be signed in to upgrade your plan.");
+      window.location.href = "/login";
       return;
     }
 
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        plan,
-        email: session.user.email,
-      }),
-    });
+    try {
+      setLoadingPlan(tier);
 
-    const data = await res.json();
+      // ✅ canonical route
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier }),
+      });
 
-    if (!res.ok) {
-      console.log("CHECKOUT RESPONSE:", { status: res.status, data });
-      alert(data?.error || "Checkout failed");
+      const data = await res.json();
+
+      // Already subscribed → send to billing portal
+      if (res.ok && data?.alreadySubscribed) {
+        const portalRes = await fetch("/api/stripe/portal", { method: "POST" });
+        const portalData = await portalRes.json();
+
+        if (portalRes.ok && portalData?.url) {
+          window.location.href = portalData.url;
+          return;
+        }
+
+        alert(data?.message || "You already have an active subscription.");
+        return;
+      }
+
+      if (!res.ok) {
+        console.log("STRIPE CHECKOUT RESPONSE:", { status: res.status, data });
+        alert(data?.error || data?.message || "Checkout failed");
+        return;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      alert("Checkout failed: missing checkout URL.");
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.message || "Checkout error");
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
+  const handleManageBilling = async () => {
+    if (!session?.user?.email) {
+      alert("You must be signed in.");
+      window.location.href = "/login";
       return;
     }
 
-    if (data?.url) window.location.href = data.url;
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data?.error || data?.message || "Could not open billing portal");
+        return;
+      }
+
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      alert(err?.message || "Portal error");
+    }
   };
 
   return (
@@ -37,9 +90,21 @@ export default function PricingPage() {
         Pricing
       </h1>
 
-      <p className="text-slate-300 text-lg mb-12">
+      <p className="text-slate-300 text-lg mb-10">
         Choose the plan that helps you get hired faster. Upgrade anytime.
       </p>
+
+      {/* Quick manage billing button */}
+      {session?.user?.email && (
+        <div className="mb-10">
+          <button
+            onClick={handleManageBilling}
+            className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 transition"
+          >
+            Manage Billing
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* FREE */}
@@ -57,7 +122,10 @@ export default function PricingPage() {
             <li>• Secure Google login</li>
           </ul>
 
-          <button className="w-full py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition">
+          <button
+            disabled
+            className="w-full py-3 bg-slate-700 text-white rounded-lg opacity-80 cursor-not-allowed"
+          >
             Current Plan
           </button>
         </div>
@@ -84,9 +152,10 @@ export default function PricingPage() {
 
           <button
             onClick={() => handleSubscribe("pro")}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            disabled={loadingPlan === "pro"}
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Upgrade to Pro
+            {loadingPlan === "pro" ? "Redirecting..." : "Upgrade to Pro"}
           </button>
         </div>
 
@@ -112,9 +181,10 @@ export default function PricingPage() {
 
           <button
             onClick={() => handleSubscribe("ultimate")}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            disabled={loadingPlan === "ultimate"}
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Unlock Ultimate
+            {loadingPlan === "ultimate" ? "Redirecting..." : "Unlock Ultimate"}
           </button>
         </div>
       </div>

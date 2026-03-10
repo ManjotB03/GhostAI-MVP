@@ -1,120 +1,124 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { headers } from "next/headers";
+import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-11-17.clover",
-});
+/**
+ * Stripe requires RAW body for signature verification.
+ * Use req.text() (NOT req.json()).
+ */
 
-function tierFromPriceId(priceId?: string | null) {
-  if (!priceId) return "free";
-  if (priceId === process.env.STRIPE_PRICE_ID) return "pro";
-  if (priceId === process.env.STRIPE_ULTIMATE_PRICE_ID) return "ultimate";
-  return "free";
+function tierFromSubscription(sub: any) {
+  // Default to free
+  let tier: "free" | "pro" | "ultimate" = "free";
+
+  const status = String(sub?.status || "");
+  const isPaid = status === "active" || status === "trialing";
+
+  if (!isPaid) return tier;
+
+  const items = sub?.items?.data || [];
+  const priceIds: string[] = items
+    .map((it: any) => it?.price?.id)
+    .filter(Boolean);
+
+  if (priceIds.includes(process.env.STRIPE_ULTIMATE_PRICE_ID!)) return "ultimate";
+  if (priceIds.includes(process.env.STRIPE_PRICE_ID!)) return "pro";
+
+  return tier;
 }
 
 export async function POST(req: Request) {
-  const sig = (await headers()).get("stripe-signature");
-  const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const signature = req.headers.get("stripe-signature");
 
-  if (!sig || !whSecret) {
-    return NextResponse.json({ error: "Missing Stripe signature or webhook secret" }, { status: 400 });
+  if (!signature) {
+    return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
   }
 
-  let event: Stripe.Event;
+  const rawBody = await req.text();
+
+  let event: any;
 
   try {
-    const rawBody = await req.text();
-    event = stripe.webhooks.constructEvent(rawBody, sig, whSecret);
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
   } catch (err: any) {
-    console.error("WEBHOOK SIGNATURE ERROR:", err?.message || err);
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    return NextResponse.json(
+      { error: `Webhook signature verification failed: ${err.message}` },
+      { status: 400 }
+    );
   }
 
   try {
-    // ✅ handle checkout completion (most important)
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
-
-      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
-      const subscriptionId =
-        typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
-
-      // Pull plan from metadata OR inspect subscription items
-      const metaPlan = (session.metadata?.plan || "").toLowerCase();
-      let tier: "free" | "pro" | "ultimate" =
-        metaPlan === "pro" || metaPlan === "ultimate" ? (metaPlan as any) : "free";
-
-      // If metadata missing, attempt to infer from subscription price
-      if (tier === "free" && subscriptionId) {
-        const sub = await stripe.subscriptions.retrieve(subscriptionId, {
-          expand: ["items.data.price"],
-        });
-        const priceId = (sub.items.data?.[0]?.price as Stripe.Price | undefined)?.id || null;
-        tier = tierFromPriceId(priceId) as any;
-      }
-
-      // Update app_users by stripe_customer_id (best key)
-      if (customerId) {
-        const { error } = await supabaseServer
-          .from("app_users")
-          .update({
-            subscription_tier: tier,
-            subscription_status: "active",
-            subscription_id: subscriptionId || null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("stripe_customer_id", customerId);
-
-        if (error) {
-          console.error("DB UPDATE ERROR (checkout.session.completed):", error);
-          return NextResponse.json({ error: "DB update failed" }, { status: 500 });
-        }
-      }
-
-      return NextResponse.json({ received: true });
-    }
-
-    // ✅ subscription updates (keep status in sync)
-    if (
-      event.type === "customer.subscription.updated" ||
+    const relevant =
+      event.type === "checkout.session.completed" ||
       event.type === "customer.subscription.created" ||
-      event.type === "customer.subscription.deleted"
-    ) {
-      const sub = event.data.object as Stripe.Subscription;
+      event.type === "customer.subscription.updated" ||
+      event.type === "customer.subscription.deleted";
 
-      const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
-      const status = sub.status; // active, canceled, past_due etc.
-      const priceId = (sub.items.data?.[0]?.price as Stripe.Price | undefined)?.id || null;
-      const tier = tierFromPriceId(priceId);
-
-      if (customerId) {
-        const { error } = await supabaseServer
-          .from("app_users")
-          .update({
-            subscription_tier: tier,
-            subscription_status: status,
-            subscription_id: sub.id,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("stripe_customer_id", customerId);
-
-        if (error) {
-          console.error("DB UPDATE ERROR (subscription event):", error);
-          return NextResponse.json({ error: "DB update failed" }, { status: 500 });
-        }
-      }
-
+    if (!relevant) {
       return NextResponse.json({ received: true });
     }
 
-    // Ignore other events
+    let subscription: any = null;
+
+    // Subscription events include the subscription directly
+    if (event.type.startsWith("customer.subscription.")) {
+      subscription = event.data.object;
+    }
+
+    // Checkout completed -> retrieve subscription from Stripe
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      if (session?.subscription) {
+        subscription = await stripe.subscriptions.retrieve(String(session.subscription));
+      }
+    }
+
+    if (!subscription) {
+      return NextResponse.json({ received: true });
+    }
+
+    const customerId = String(subscription.customer || "");
+    if (!customerId) {
+      return NextResponse.json({ received: true });
+    }
+
+    const tier = tierFromSubscription(subscription);
+
+    // current_period_end is a unix timestamp (seconds)
+    const currentPeriodEnd =
+      typeof subscription.current_period_end === "number"
+        ? new Date(subscription.current_period_end * 1000).toISOString()
+        : null;
+
+    const { error } = await supabaseServer
+      .from("app_users")
+      .update({
+        subscription_tier: tier,
+        stripe_subscription_id: subscription.id,
+        subscription_status: subscription.status,
+        subscription_current_period_end: currentPeriodEnd,
+      })
+      .eq("stripe_customer_id", customerId);
+
+    if (error) {
+      // Returning 500 makes Stripe retry (good if DB hiccup)
+      return NextResponse.json(
+        { error: "Database update failed", details: error.message },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ received: true });
   } catch (err: any) {
-    console.error("WEBHOOK HANDLER ERROR:", err?.message || err);
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Webhook handler failed", details: err?.message || "Unknown" },
+      { status: 500 }
+    );
   }
 }

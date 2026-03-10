@@ -1,145 +1,169 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { useRouter } from "next/navigation";
 
-export default function SignUpPage() {
+export default function SignupPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  // CREATE USER IN SUPABASE (our user DB)
-  const createUserRecord = async (email: string, password_hash: string) => {
-    const { error } = await supabaseServer.from("app_users").insert([
-      {
-        email,
-        password_hash,
-      },
-    ]);
-
-    if (error) {
-      console.error(error);
-      throw new Error("Failed to create user");
-    }
-  };
-
-  // SIGNUP FORM HANDLER
-  const handleSignUp = async (e: FormEvent) => {
+  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErrorMsg(null);
-    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const cleanConfirm = confirmPassword.trim();
+
+    if (!cleanEmail || !cleanPassword || !cleanConfirm) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (cleanPassword.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (cleanPassword !== cleanConfirm) {
+      setError("Passwords do not match.");
+      return;
+    }
 
     try {
-      // HASH PASSWORD
-      const hashed = await fetch("/api/hash", {
+      setLoading(true);
+
+      const res = await fetch("/api/signup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      }).then((res) => res.json());
-
-      // SAVE USER TO SUPABASE TABLE
-      await createUserRecord(email, hashed.hash);
-
-      // Auto-login after signup
-      await signIn("credentials", {
-        email,
-        password,
-        callbackUrl: "/ghost",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: cleanEmail,
+          password: cleanPassword,
+        }),
       });
-    } catch (err: any) {
-      setErrorMsg(err.message || "Something went wrong.");
-    }
 
-    setLoading(false);
-  };
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setError(data?.error || "Signup failed.");
+        return;
+      }
+
+      setSuccess("Account created. Logging you in...");
+
+      const loginRes = await signIn("credentials", {
+        email: cleanEmail,
+        password: cleanPassword,
+        redirect: false,
+      });
+
+      if (loginRes?.error) {
+        setError("Account created, but login failed. Please go to /login and sign in.");
+        return;
+      }
+
+      router.push("/ghost");
+      router.refresh();
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-md bg-slate-900/90 border border-slate-700 rounded-2xl p-8 shadow-xl">
-        <h1 className="text-3xl font-extrabold text-center mb-6">
-          <span className="text-sky-400">Create</span>{" "}
-          <span className="text-white">your GhostAI account</span>
-        </h1>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+      <div className="w-full max-w-md rounded-2xl border border-gray-800 bg-gray-900 p-8 shadow-xl">
+        <h1 className="text-3xl font-bold text-center mb-2">Sign up for GhostAI</h1>
+        <p className="text-gray-400 text-center mb-6">
+          Create an account to start using GhostAI.
+        </p>
 
-        {errorMsg && (
-          <div className="mb-4 text-red-300 bg-red-500/10 border border-red-500 rounded-lg p-3 text-sm text-center">
-            {errorMsg}
-          </div>
-        )}
-
-        {/* GOOGLE SIGNUP */}
-        <button
-          onClick={() => signIn("google", { callbackUrl: "/ghost" })}
-          className="w-full py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold transition flex items-center justify-center gap-2"
-        >
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            className="w-5 h-5"
-            alt="Google Logo"
-          />
-          Sign up with Google
-        </button>
-
-        {/* APPLE SIGNUP (activate later) */}
-        <button
-          onClick={() => signIn("apple", { callbackUrl: "/ghost" })}
-          className="mt-3 w-full py-2.5 rounded-lg bg-black hover:bg-neutral-900 text-white font-semibold transition flex items-center justify-center gap-2"
-        >
-           Sign up with Apple
-        </button>
-
-        {/* DIVIDER */}
-        <div className="my-6 flex items-center justify-center">
-          <span className="text-slate-500 text-sm">──────── or ────────</span>
-        </div>
-
-        {/* EMAIL SIGNUP FORM */}
-        <form onSubmit={handleSignUp} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="text-sm text-slate-200">Email</label>
+            <label htmlFor="email" className="block text-sm text-gray-300 mb-1">
+              Email
+            </label>
             <input
+              id="email"
               type="email"
-              className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white"
+              autoComplete="email"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white outline-none focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label className="text-sm text-slate-200">Password</label>
+            <label htmlFor="password" className="block text-sm text-gray-300 mb-1">
+              Password
+            </label>
             <input
+              id="password"
               type="password"
-              className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white"
-              placeholder="••••••••"
+              autoComplete="new-password"
+              placeholder="Create a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white outline-none focus:border-indigo-500"
             />
           </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm text-gray-300 mb-1">
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          {error ? (
+            <div className="rounded-lg border border-red-700 bg-red-900/40 px-4 py-3 text-sm text-red-200">
+              {error}
+            </div>
+          ) : null}
+
+          {success ? (
+            <div className="rounded-lg border border-green-700 bg-green-900/40 px-4 py-3 text-sm text-green-200">
+              {success}
+            </div>
+          ) : null}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-semibold transition"
+            className="w-full rounded-lg bg-indigo-600 py-3 font-medium text-white transition hover:bg-indigo-700 disabled:opacity-70"
           >
-            {loading ? "Creating account..." : "Sign Up"}
+            {loading ? "Creating account..." : "Sign up"}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-slate-400 text-sm">
+        <p className="mt-6 text-center text-sm text-gray-400">
           Already have an account?{" "}
-          <a
-            href="/login"
-            className="text-sky-400 hover:text-sky-300 underline underline-offset-2"
-          >
+          <a href="/login" className="text-indigo-400 hover:text-indigo-300">
             Log in
           </a>
         </p>
       </div>
-    </div>
+    </main>
   );
 }

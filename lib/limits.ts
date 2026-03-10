@@ -1,7 +1,7 @@
 // lib/limits.ts
 export type Tier = "free" | "pro" | "ultimate";
 
-export const OWNER_EMAIL = "ghostaicorp@gmail.com";
+export const OWNER_EMAIL = ["ghostaicorp@gmail.com", "msb_01@outlook.com"];
 
 // change these whenever you want
 export const LIMITS: Record<Tier, number> = {

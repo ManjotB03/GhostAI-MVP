@@ -1,21 +1,23 @@
+// lib/supabaseServer.ts
+
 import { createClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+/**
+ * Server-side Supabase client.
+ * Uses SERVICE ROLE KEY.
+ * Never expose this to client.
+ */
+
+// Prefer server-only URL, fallback to public if needed
+const url =
+  process.env.SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL;
+
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-console.log("SUPABASE ENV CHECK", {
-  url,
-  hasAnon: !!anonKey,
-  hasService: !!serviceKey,
-});
-
-console.log("ANON KEY PREFIX:", anonKey?.slice(0, 20));
-console.log("SERVICE ROLE KEY PREFIX:", serviceKey?.slice(0, 20));
 
 if (!url || !serviceKey) {
   throw new Error(
-    "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
+    "Missing SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) or SUPABASE_SERVICE_ROLE_KEY"
   );
 }
 
