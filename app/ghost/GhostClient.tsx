@@ -116,6 +116,12 @@ export default function GhostClient() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+
+  const filteredChats = chats.filter((c) =>
+    c.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   const placeholder = useMemo(() => {
     return mode === "interview_mock"
@@ -157,6 +163,7 @@ export default function GhostClient() {
     setDocPreview("");
     setDocStats(null);
     setFileWarning("");
+    setMobileHistoryOpen(false);
   };
 
   const loadChat = (chat: Chat) => {
@@ -329,6 +336,7 @@ export default function GhostClient() {
   return (
     <ModernLayout>
       <div className="w-full flex min-h-[calc(100vh-0px)]">
+        {/* Desktop / tablet sidebar */}
         <div className="w-72 bg-gray-950 border-r border-gray-800 p-4 hidden md:flex flex-col">
           <button
             onClick={resetComposer}
@@ -341,14 +349,21 @@ export default function GhostClient() {
             History {historyLoading ? "• loading…" : ""}
           </div>
 
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search chats..."
+            className="w-full mb-3 bg-gray-900 border border-gray-700 text-white text-sm rounded-lg p-2"
+          />
+
           <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-            {chats.length === 0 && !historyLoading && (
+            {filteredChats.length === 0 && !historyLoading && (
               <div className="text-sm text-gray-500">
                 No chats yet. Run your first CV analysis.
               </div>
             )}
 
-            {chats.map((chat) => {
+            {filteredChats.map((chat) => {
               const active = chat.id === activeChatId;
               return (
                 <div
@@ -396,6 +411,7 @@ export default function GhostClient() {
           </div>
         </div>
 
+        {/* Main */}
         <div className="flex-1 flex justify-center px-4">
           <motion.div
             initial={{ opacity: 0, y: 14 }}
@@ -403,7 +419,16 @@ export default function GhostClient() {
             transition={{ duration: 0.35 }}
             className="flex flex-col items-center w-full max-w-5xl py-6"
           >
-            <div className="w-full flex items-center justify-end mb-4 md:hidden">
+            {/* Mobile top bar */}
+            <div className="w-full flex items-center justify-between mb-4 md:hidden">
+              <button
+                type="button"
+                onClick={() => setMobileHistoryOpen((prev) => !prev)}
+                className="bg-gray-900 border border-gray-700 text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm"
+              >
+                {mobileHistoryOpen ? "Hide History" : "Show History"}
+              </button>
+
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/login" })}
@@ -412,6 +437,76 @@ export default function GhostClient() {
                 Log out
               </button>
             </div>
+
+            {/* Mobile history panel */}
+            {mobileHistoryOpen && (
+              <div className="w-full mb-6 md:hidden rounded-xl border border-gray-800 bg-gray-950 p-4">
+                <button
+                  onClick={resetComposer}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg mb-4 transition"
+                >
+                  + New chat
+                </button>
+
+                <div className="text-xs text-gray-400 mb-2">
+                  History {historyLoading ? "• loading…" : ""}
+                </div>
+
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search chats..."
+                  className="w-full mb-3 bg-gray-900 border border-gray-700 text-white text-sm rounded-lg p-2"
+                />
+
+                <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                  {filteredChats.length === 0 && !historyLoading && (
+                    <div className="text-sm text-gray-500">
+                      No chats yet. Run your first CV analysis.
+                    </div>
+                  )}
+
+                  {filteredChats.map((chat) => {
+                    const active = chat.id === activeChatId;
+                    return (
+                      <div
+                        key={chat.id}
+                        className={`rounded-lg border transition ${
+                          active
+                            ? "bg-gray-800 border-gray-600"
+                            : "bg-gray-900 border-gray-800 hover:border-gray-700"
+                        }`}
+                      >
+                        <button
+                          className="w-full text-left p-3"
+                          onClick={() => {
+                            loadChat(chat);
+                            setMobileHistoryOpen(false);
+                          }}
+                        >
+                          <div className="text-sm text-white font-medium">{chat.title}</div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {new Date(chat.createdAt).toLocaleString()}
+                          </div>
+                        </button>
+
+                        <div className="px-3 pb-3 flex items-center justify-between">
+                          <div className="text-xs text-gray-400">
+                            {chat.atsScore !== null ? `ATS ${chat.atsScore}/100` : "—"}
+                          </div>
+                          <button
+                            onClick={() => deleteChat(chat.id)}
+                            className="text-xs text-red-300 hover:text-red-200 transition"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <h1 className="text-5xl font-extrabold mb-4 text-white text-center">
               GhostAI Career Coach
