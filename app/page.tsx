@@ -80,6 +80,59 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Example output section */}
+      <section className="max-w-6xl mx-auto px-6 py-16 sm:py-24">
+        <div className="text-center mb-12">
+          <p className="text-sky-400 font-semibold tracking-wide mb-3">
+            See GhostAI in action
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Example of the kind of feedback you can get
+          </h2>
+          <p className="text-slate-300 max-w-2xl mx-auto">
+            GhostAI turns vague CV bullets into stronger, clearer, more
+            interview-worthy achievements.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-8">
+            <p className="text-xs uppercase tracking-wider text-slate-400 mb-3">
+              Original CV Bullet
+            </p>
+            <div className="rounded-2xl bg-slate-950 border border-slate-800 p-5">
+              <p className="text-slate-300 leading-relaxed">
+                Built data pipelines and worked with SQL to support reporting.
+              </p>
+            </div>
+
+            <div className="mt-6 text-sm text-slate-400">
+              A typical bullet that sounds too vague and doesn’t show enough impact.
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-sky-500/30 bg-sky-500/10 p-8 shadow-xl">
+            <p className="text-xs uppercase tracking-wider text-sky-300 mb-3">
+              GhostAI Improvement
+            </p>
+            <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-5">
+              <p className="text-slate-100 leading-relaxed">
+                Designed and improved SQL-based data pipelines to support
+                reporting workflows, helping deliver more reliable business
+                insights and clearer access to decision-critical data.
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-2 text-sm text-slate-200">
+              <p>• Stronger action verb</p>
+              <p>• Clearer technical positioning</p>
+              <p>• More impact and professionalism</p>
+              <p>• Better fit for ATS and recruiter scanning</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="max-w-6xl mx-auto px-6 py-16 sm:py-24">
         <div className="text-center mb-12">
