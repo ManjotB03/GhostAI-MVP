@@ -40,6 +40,22 @@ export default function HomePage() {
               </Link>
             </div>
 
+            {/* Final trust / value strip */}
+            <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                CV feedback
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                ATS score
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                Interview coaching
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                Free plan available
+              </span>
+            </div>
+
             <div className="mt-8 text-sm text-slate-400">
               Built for real career outcomes — practical feedback, clear next
               steps, and better interview preparation.
