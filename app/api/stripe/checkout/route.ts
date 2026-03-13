@@ -124,8 +124,8 @@ export async function POST(req: Request) {
         metadata: { userId: String(userId), email, tier },
       },
 
-      success_url: `${baseUrl}/billing?success=1`,
-      cancel_url: `${baseUrl}/pricing?canceled=1`,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/pricing`,
     });
 
     return NextResponse.json({ url: checkout.url });
