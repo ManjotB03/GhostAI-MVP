@@ -19,14 +19,14 @@ export default function HomePage() {
             </h1>
 
             <p className="text-slate-300 text-lg sm:text-xl max-w-3xl mx-auto mb-10 leading-relaxed">
-              GhostAI helps students, graduates, and early professionals improve
+              GhostAI helps graduates, professionals, and career switchers improve
               their CVs, tailor applications for specific roles, and practise
               stronger interview answers that feel natural and convincing.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/login"
+                href="/signup"
                 className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
               >
                 Get Started Free
@@ -84,10 +84,10 @@ export default function HomePage() {
       <section className="max-w-6xl mx-auto px-6 py-16 sm:py-24">
         <div className="text-center mb-12">
           <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            See GhostAI in action
+            Example GhostAI Output
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Example of the kind of feedback you can get
+            Turn weak CV bullets into stronger achievements
           </h2>
           <p className="text-slate-300 max-w-2xl mx-auto">
             GhostAI turns vague CV bullets into stronger, clearer, more
@@ -185,12 +185,12 @@ export default function HomePage() {
             Built for job seekers
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Ideal for students, graduates, and early-career professionals
+            Built for graduates, professionals, and career switchers
           </h2>
           <p className="text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Whether you’re applying for data, software, analytics, cloud, or AI
-            roles, GhostAI helps you present yourself better and prepare with
-            more confidence.
+            Whether you're a graduate, experienced professional, or switching
+            careers, GhostAI helps you present your experience more clearly and
+            prepare stronger interview answers.
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 text-sm">
