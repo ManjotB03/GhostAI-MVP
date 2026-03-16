@@ -12,10 +12,11 @@ export default function HomePage() {
             <Image
               src="/ghostai-logo.png"
               alt="GhostAI"
-              width={340}
-              height={140}
+              width={420}
+              height={120}
               className="mx-auto mb-8"
               priority
+              unoptimized
             />
 
             <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-6">
