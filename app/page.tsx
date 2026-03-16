@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -8,6 +9,15 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
         <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32 relative">
           <div className="max-w-4xl mx-auto text-center">
+            <Image
+              src="/ghostai-logo.png"
+              alt="GhostAI"
+              width={340}
+              height={140}
+              className="mx-auto mb-8"
+              priority
+            />
+
             <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-6">
               GhostAI Career Coach
             </p>
