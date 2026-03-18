@@ -70,9 +70,7 @@ function clampScore(n: number) {
 function extractAtsScore(raw: string): { score: number | null; cleaned: string } {
   const match = raw.match(/ATS_SCORE:\s*(\d{1,3})\b/i);
   const score = match ? clampScore(parseInt(match[1], 10)) : null;
-
   const cleaned = raw.replace(/\n?\s*ATS_SCORE:\s*\d{1,3}\s*$/i, "").trim();
-
   return { score, cleaned };
 }
 
@@ -103,6 +101,17 @@ export default function GhostClient() {
   const [response, setResponse] = useState("");
   const [atsScore, setAtsScore] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [showUpgradeBox, setShowUpgradeBox] = useState(false);
+  const [upgradeTitle, setUpgradeTitle] = useState("Upgrade to Pro");
+  const [upgradeMessage, setUpgradeMessage] = useState(
+    "Unlock more CV rewrites, interview coaching, and stronger responses."
+  );
+  const [limitMeta, setLimitMeta] = useState<{
+    tier?: string;
+    used?: number;
+    limit?: number;
+  } | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -163,6 +172,8 @@ export default function GhostClient() {
     setDocPreview("");
     setDocStats(null);
     setFileWarning("");
+    setShowUpgradeBox(false);
+    setLimitMeta(null);
     setMobileHistoryOpen(false);
   };
 
@@ -179,6 +190,8 @@ export default function GhostClient() {
     setDocText("");
     setDocPreview("");
     setDocStats(null);
+    setShowUpgradeBox(false);
+    setLimitMeta(null);
     setFileWarning(
       chat.fileName
         ? `Previously used file: ${chat.fileName}. Re-attach it if you want to run again.`
@@ -230,6 +243,33 @@ export default function GhostClient() {
     }
   };
 
+  const showLimitUpgrade = (data: any) => {
+    setResponse("");
+    setAtsScore(null);
+    setUpgradeTitle("You've hit your free limit");
+    setUpgradeMessage(
+      data?.message ||
+        "Upgrade to Pro for more CV rewrites, interview coaching, and stronger answers."
+    );
+    setLimitMeta({
+      tier: data?.tier,
+      used: data?.used,
+      limit: data?.limit,
+    });
+    setShowUpgradeBox(true);
+  };
+
+  const showInterviewUpgrade = (data: any) => {
+    setResponse("");
+    setAtsScore(null);
+    setUpgradeTitle("Interview Mock is a Pro feature");
+    setUpgradeMessage(
+      data?.message || "Upgrade to Pro to unlock Interview Mock Mode."
+    );
+    setLimitMeta(null);
+    setShowUpgradeBox(true);
+  };
+
   const handleSubmit = async () => {
     if (loading) return;
     if (!task.trim() && !file) return;
@@ -237,6 +277,8 @@ export default function GhostClient() {
     setLoading(true);
     setResponse("");
     setAtsScore(null);
+    setShowUpgradeBox(false);
+    setLimitMeta(null);
 
     try {
       if (file && !docText && !extracting) {
@@ -267,6 +309,16 @@ export default function GhostClient() {
       }
 
       if (!res.ok) {
+        if (data?.error === "LIMIT_REACHED" || data?.limitReached) {
+          showLimitUpgrade(data);
+          return;
+        }
+
+        if (data?.upgradeRequired) {
+          showInterviewUpgrade(data);
+          return;
+        }
+
         throw new Error(data?.error || data?.message || `Request failed (${res.status})`);
       }
 
@@ -661,6 +713,36 @@ export default function GhostClient() {
             >
               {loading ? (file ? "Analyzing CV..." : "Thinking...") : file ? "Analyze CV" : "Submit"}
             </motion.button>
+
+            {showUpgradeBox && (
+              <div className="mt-2 mb-6 w-full max-w-2xl rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-5 text-center">
+                <h3 className="text-xl font-bold text-white mb-2">{upgradeTitle}</h3>
+                <p className="text-gray-300 mb-4">{upgradeMessage}</p>
+
+                {limitMeta?.limit !== undefined && limitMeta?.used !== undefined && (
+                  <p className="text-sm text-gray-400 mb-4">
+                    You’ve used {limitMeta.used}/{limitMeta.limit} daily requests.
+                  </p>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <a
+                    href="/pricing"
+                    className="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition"
+                  >
+                    Upgrade to Pro
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowUpgradeBox(false)}
+                    className="px-6 py-3 rounded-lg border border-gray-700 bg-gray-900 hover:bg-gray-800 text-gray-200 transition"
+                  >
+                    Maybe later
+                  </button>
+                </div>
+              </div>
+            )}
 
             {response && (
               <div className="mt-6 p-5 w-full max-w-3xl bg-gray-800 rounded-2xl border border-gray-700">

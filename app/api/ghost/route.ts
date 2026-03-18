@@ -330,12 +330,14 @@ export async function POST(req: Request) {
     if (used + cost > dailyLimit) {
       return NextResponse.json(
         {
-          error: "Limit reached",
+          error: "LIMIT_REACHED",
           limitReached: true,
           tier,
           used,
           limit: dailyLimit,
           cost,
+          message:
+            "You've hit your daily limit. Upgrade to Pro for more CV rewrites, interview coaching, and stronger answers.",
         },
         { status: 403 }
       );
