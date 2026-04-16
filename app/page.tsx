@@ -40,7 +40,7 @@ export default function HomePage() {
                 href="/signup"
                 className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
               >
-                Get Started Free
+                Start Free CV review
               </Link>
 
               <Link
@@ -256,7 +256,7 @@ export default function HomePage() {
               href="/signup"
               className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
             >
-              Start Free
+              Start free CV review
             </Link>
 
             <Link
