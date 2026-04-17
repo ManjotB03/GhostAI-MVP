@@ -7,7 +7,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
-        <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32 relative">
+        <div className="max-w-6xl mx-auto px-6 py-2 sm:py-4 relative">
           <div className="max-w-4xl mx-auto text-center">
             <Image
               src="/ghostai-logo.png"
@@ -23,19 +23,21 @@ export default function HomePage() {
               GhostAI Career Coach
             </p>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
-              Land more interviews with
-              <span className="text-sky-400"> AI-powered </span>
-              CV reviews, ATS scoring, and interview coaching
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
+              Improve your CV and land more interviews with
+              <span className="text-sky-400"> AI-powered feedback</span>
             </h1>
 
-            <p className="text-slate-300 text-lg sm:text-xl max-w-3xl mx-auto mb-10 leading-relaxed">
+            <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
               GhostAI helps graduates, professionals, and career switchers improve
               their CVs, tailor applications for specific roles, and practise
               stronger interview answers that feel natural and convincing.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <p className='mt-4 text-sm text-slate-400'>
+                Create a free account to upload your CV and get instant feedback.
+              </p>
               <Link
                 href="/signup"
                 className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
