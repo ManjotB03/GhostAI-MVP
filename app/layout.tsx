@@ -5,9 +5,20 @@ import Providers from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: "GhostAI",
-  description: "Your AI-powered assistant",
+export const metadata = { 
+  metadataBase: new URL("https://www.ghostaicorp.com"), 
+  title: "GhostAI – Improve Your CV & Land More Interviews", 
+  description: "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.", 
+  alternates: { 
+    canonical: "/", 
+  }, 
+  openGraph: { 
+    title: "GhostAI – Improve Your CV & Land More Interviews", 
+    description: "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.", 
+    url: "https://www.ghostaicorp.com", 
+    siteName: "GhostAI", 
+    type: "website", 
+  }, 
 };
 
 export default function RootLayout({
@@ -18,6 +29,27 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.className}>
       <body>
+        <Script id="schemaorg" type ="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organisation",
+                "name": "GhostAI",
+                "url": "https://www.ghostaicorp.com",
+                "logo": "https://www.ghostaicorp.com/ghostai-logo.png",
+              },
+              {
+                "@type": "WebSite",
+                "name": "GhostAI",
+                "url": "https://www.ghostaicorp.com",
+                "description": "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.",
+              
+              },
+            ],
+          })}
+        </Script>
+        
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-4ENL3PHNKD"
           strategy="afterInteractive"

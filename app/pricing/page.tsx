@@ -3,6 +3,14 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
+export const metadata = {
+  title: "Pricing - GhostAI CV Review & Interview Coaching Plans",
+  description: "Explore GhostAI pricing plans. Get CV feedback, ATS scoring, and inteview coaching with flexible free and paid options.",
+  alternates: {
+    canonical: "/pricing",
+  },
+};
+
 export default function PricingPage() {
   const { data: session, status } = useSession();
   const [loadingPlan, setLoadingPlan] = useState<null | "pro" | "ultimate">(null);
