@@ -5,53 +5,56 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
-        <div className="max-w-6xl mx-auto px-6 py-2 sm:py-4 relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <Image
-              src="/ghostai-logo.png"
-              alt="GhostAI"
-              width={420}
-              height={120}
-              className="mx-auto mb-8"
-              priority
-              unoptimized
-            />
+<section className="relative overflow-hidden">
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
+  <div className="max-w-6xl mx-auto px-6 py-2 sm:py-4 relative">
+    <div className="max-w-4xl mx-auto text-center">
+      <Image
+        src="/ghostai-logo.png"
+        alt="GhostAI logo"
+        width={420}
+        height={120}
+        className="mx-auto mb-8"
+        priority
+        unoptimized
+      />
 
-            <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-6">
-              GhostAI Career Coach
-            </p>
+      <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-6">
+        GhostAI Career Coach
+      </p>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
-              Improve your CV and land more interviews with
-              <span className="text-sky-400"> AI-powered feedback</span>
-            </h1>
+      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
+        Tailor your CV to every job and stop getting
+        <span className="text-sky-400"> filtered out</span>
+      </h1>
 
-            <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
-              GhostAI helps graduates, professionals, and career switchers improve
-              their CVs, tailor applications for specific roles, and practise
-              stronger interview answers that feel natural and convincing.
-            </p>
+      <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
+        GhostAI helps you match your CV to job descriptions, highlight gaps, and improve your chances of getting interviews.
+      </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <p className='mt-4 text-sm text-slate-400'>
-                Create a free account to upload your CV and get instant feedback.
-              </p>
-              <Link
-                href="/signup"
-                className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
-              >
-                Start Free CV review
-              </Link>
+      <p className="text-sm text-slate-400 max-w-xl mx-auto mb-8">
+        Built for students, graduates, and career switchers.
+      </p>
 
-              <Link
-                href="/pricing"
-                className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
-              >
-                View Pricing
-              </Link>
-            </div>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Link
+          href="/signup"
+          className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
+        >
+          Fix My CV for this Job
+        </Link>
+
+        <Link
+          href="/pricing"
+          className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
+        >
+          View Pricing
+        </Link>
+      </div>
+
+      <p className="mt-4 text-sm text-slate-400">
+        Paste your CV + job description • Get instant feedback • Free to start
+      </p>
 
             {/* Final trust / value strip */}
             <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
