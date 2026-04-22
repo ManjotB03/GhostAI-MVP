@@ -2,6 +2,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import Providers from "./providers";
+import { Images } from "openai/resources/images.mjs";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,9 +17,24 @@ export const metadata = {
     title: "GhostAI – Improve Your CV & Land More Interviews", 
     description: "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.", 
     url: "https://www.ghostaicorp.com", 
-    siteName: "GhostAI", 
+    siteName: "GhostAI",
+    Images: [
+      {
+        url: "https://www.ghostaicorp.com/ghostai-logo.png", 
+        width: 1200,
+        height: 630,
+        alt: "GhostAI Logo",
+      },
+    ],
+    locale: "en_GB",
     type: "website", 
-  }, 
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GhostAI – Improve Your CV & Land More Interviews",
+    description: "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.",
+    images: ["https://www.ghostaicorp.com/ghostai-logo.png"],
+  },
 };
 
 export default function RootLayout({
@@ -49,7 +65,7 @@ export default function RootLayout({
             ],
           })}
         </Script>
-        
+
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-4ENL3PHNKD"
           strategy="afterInteractive"
