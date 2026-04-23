@@ -7,14 +7,14 @@ export default function HomePage() {
       {/* Hero */}
 <section className="relative overflow-hidden">
   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
-  <div className="max-w-6xl mx-auto px-6 py-2 sm:py-4 relative">
+  <div className="max-w-6xl mx-auto px-6 pt-2 pb-1 sm:py-3 sm:pb-2 relative">
     <div className="max-w-4xl mx-auto text-center">
       <Image
         src="/ghostai-logo.png"
         alt="GhostAI logo"
-        width={420}
-        height={120}
-        className="mx-auto mb-8"
+        width={280}
+        height={82}
+        className="mx-auto mb-4"
         priority
         unoptimized
       />
@@ -23,42 +23,42 @@ export default function HomePage() {
         GhostAI Career Coach
       </p>
 
-      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
+      <h1 className="text-3xl sm:text-4xl lg:text-[2.9rem] font-extrabold leading-[1.05] mb-4">
         Tailor your CV to every job and stop getting
         <span className="text-sky-400"> filtered out before anyone reads it</span>
       </h1>
 
-      <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
+      <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-4 leading-relaxed">
         GhostAI helps you match your CV to job descriptions, highlight gaps, and improve your chances of getting interviews.
       </p>
 
-      <p className="text-sm text-slate-400 max-w-xl mx-auto mb-8">
+      <p className="text-sm text-slate-400 max-w-xl mx-auto mb-4">
         Built for students, graduates, and career switchers.
       </p>
 
-      {/* 🔥 NEW: Quick proof section */}
-      <div className="mt-8 max-w-2xl mx-auto text-left">
-        <p className="text-sm text-slate-400 mb-2">Before</p>
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 mb-4">
+      {/* Quick proof section */}
+      <div className="mt-4 max-w-2xl mx-auto text-left">
+        <p className="text-sm text-slate-500 mb-2">Before</p>
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 mb-3">
           <p className="text-slate-300">
             Built data pipelines and worked with SQL to support reporting.
           </p>
         </div>
 
-        <p className="text-sm text-sky-400 mb-2">After (GhostAI)</p>
-        <div className="bg-slate-900 border border-sky-500/30 rounded-lg p-4">
+        <p className="text-sm text-sky-400 mb-2 font-semibold">After (GhostAI)</p>
+        <div className="bg-slate-900 border border-sky-500/30 rounded-lg p-3">
           <p className="text-white">
             Designed and improved SQL-based data pipelines to support reporting workflows, delivering more reliable business insights.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center mt-0.5">
         <Link
           href="/signup"
           className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
         >
-          Fix My CV for this Job
+          Fix My CV & Get More Interviews
         </Link>
 
         <Link
@@ -71,6 +71,10 @@ export default function HomePage() {
 
       <p className="mt-4 text-sm text-slate-400">
         Paste your CV + job description • Get instant feedback • Free to start
+      </p>
+
+      <p className="mt-3 text-xs text-slate-500">
+        No signup needed • Try it instantly
       </p>
 
       {/* Trust strip */}
@@ -95,6 +99,7 @@ export default function HomePage() {
     </div>
   </div>
 </section>
+
 
       {/* Feature cards */}
       <section className="max-w-6xl mx-auto px-6 py-8 sm:py-12">
