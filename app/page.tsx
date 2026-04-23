@@ -25,7 +25,7 @@ export default function HomePage() {
 
       <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight mb-6">
         Tailor your CV to every job and stop getting
-        <span className="text-sky-400"> filtered out</span>
+        <span className="text-sky-400"> filtered out before anyone reads it</span>
       </h1>
 
       <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-6 leading-relaxed">
@@ -36,7 +36,24 @@ export default function HomePage() {
         Built for students, graduates, and career switchers.
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      {/* 🔥 NEW: Quick proof section */}
+      <div className="mt-8 max-w-2xl mx-auto text-left">
+        <p className="text-sm text-slate-400 mb-2">Before</p>
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 mb-4">
+          <p className="text-slate-300">
+            Built data pipelines and worked with SQL to support reporting.
+          </p>
+        </div>
+
+        <p className="text-sm text-sky-400 mb-2">After (GhostAI)</p>
+        <div className="bg-slate-900 border border-sky-500/30 rounded-lg p-4">
+          <p className="text-white">
+            Designed and improved SQL-based data pipelines to support reporting workflows, delivering more reliable business insights.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
         <Link
           href="/signup"
           className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
@@ -56,29 +73,28 @@ export default function HomePage() {
         Paste your CV + job description • Get instant feedback • Free to start
       </p>
 
-            {/* Final trust / value strip */}
-            <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                CV feedback
-              </span>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                ATS score
-              </span>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                Interview coaching
-              </span>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                Free plan available
-              </span>
-            </div>
+      {/* Trust strip */}
+      <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
+        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+          CV feedback
+        </span>
+        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+          ATS score
+        </span>
+        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+          Interview coaching
+        </span>
+        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+          Free plan available
+        </span>
+      </div>
 
-            <div className="mt-8 text-sm text-slate-400">
-              Built for real career outcomes — practical feedback, clear next
-              steps, and better interview preparation.
-            </div>
-          </div>
-        </div>
-      </section>
+      <div className="mt-8 text-sm text-slate-400">
+        Built for real career outcomes — practical feedback, clear next steps, and better interview preparation.
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Feature cards */}
       <section className="max-w-6xl mx-auto px-6 py-8 sm:py-12">
