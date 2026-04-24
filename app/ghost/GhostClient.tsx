@@ -89,7 +89,11 @@ function dbToChat(row: any): Chat {
   };
 }
 
-export default function GhostClient() {
+export default function GhostClient({
+  initialPrompt = "",
+}: {
+  initialPrompt?: string;
+}) {
   const { data: session } = useSession();
 
   const [mode, setMode] = useState<Mode>("career");
@@ -97,8 +101,13 @@ export default function GhostClient() {
   const [customRole, setCustomRole] = useState("");
   const effectiveTargetRole = (customRole.trim() || targetRole).trim();
 
-  const [task, setTask] = useState("");
+  const [task, setTask] = useState(initialPrompt);
   const [response, setResponse] = useState("");
+  useEffect(() => {
+  if (initialPrompt && initialPrompt.trim()) {
+    handleSubmit();
+  }
+}, []);
   const [atsScore, setAtsScore] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 

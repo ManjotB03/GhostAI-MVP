@@ -5,101 +5,132 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       {/* Hero */}
-<section className="relative overflow-hidden">
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
-  <div className="max-w-6xl mx-auto px-6 pt-2 pb-1 sm:py-3 sm:pb-2 relative">
-    <div className="max-w-4xl mx-auto text-center">
-      <Image
-        src="/ghostai-logo.png"
-        alt="GhostAI logo"
-        width={280}
-        height={82}
-        className="mx-auto mb-4"
-        priority
-        unoptimized
-      />
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
+        <div className="max-w-6xl mx-auto px-6 pt-2 pb-6 sm:pt-3 sm:pb-8 relative">
+          <div className="max-w-5xl mx-auto text-center">
+            <Image
+              src="/ghostai-logo.png"
+              alt="GhostAI logo"
+              width={260}
+              height={76}
+              className="mx-auto mb-4"
+              priority
+              unoptimized
+            />
 
-      <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-6">
-        GhostAI Career Coach
-      </p>
+            <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-4">
+              Built for real job applications
+            </p>
 
-      <h1 className="text-3xl sm:text-4xl lg:text-[2.9rem] font-extrabold leading-[1.05] mb-4">
-        Tailor your CV to every job and stop getting
-        <span className="text-sky-400"> filtered out before anyone reads it</span>
-      </h1>
+            <p className="text-sky-400 text-sm font-medium mb-2">
+              No more generic CV advice.
+            </p>
 
-      <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-4 leading-relaxed">
-        GhostAI helps you match your CV to job descriptions, highlight gaps, and improve your chances of getting interviews.
-      </p>
+            <h1 className="text-3xl sm:text-4xl lg:text-[2.9rem] font-extrabold leading-[1.05] mb-4">
+              Get more interviews by fixing your CV
+              <span className="text-sky-400"> for every job.</span>
+            </h1>
 
-      <p className="text-sm text-slate-400 max-w-xl mx-auto mb-4">
-        Built for students, graduates, and career switchers.
-      </p>
+            <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-5 leading-relaxed">
+              GhostAI rewrites your CV for specific jobs, highlights gaps, and helps
+              you stand out to recruiters.
+            </p>
 
-      {/* Quick proof section */}
-      <div className="mt-4 max-w-2xl mx-auto text-left">
-        <p className="text-sm text-slate-500 mb-2">Before</p>
-        <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 mb-3">
-          <p className="text-slate-300">
-            Built data pipelines and worked with SQL to support reporting.
-          </p>
+            {/* Quick start input */}
+            <form action="/ghost" method="GET" className="max-w-2xl mx-auto mb-5">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-2 flex flex-col sm:flex-row gap-2">
+                <input
+                  name="prompt"
+                  type="text"
+                  placeholder="Paste your CV or a job description (e.g. Data Analyst role)..."
+                  className="flex-1 bg-transparent px-4 py-3 text-sm outline-none text-white placeholder:text-slate-500"
+                />
+
+                <button
+                  type="submit"
+                  className="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-lg text-sm font-semibold text-white transition whitespace-nowrap"
+                >
+                  Try it now →
+                </button>
+              </div>
+            </form>
+
+            {/* Above-fold proof */}
+            <div className="max-w-4xl mx-auto text-left mb-5">
+              <p className="text-xs text-slate-500 mb-3 text-center">
+                Example: Data Analyst role
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">❌ Weak CV bullet</p>
+                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 h-full">
+                    <p className="text-slate-300">
+                      Built data pipelines and worked with SQL to support reporting.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-sky-400 mb-1 font-semibold">
+                    ✅ Strong, job-matched bullet
+                  </p>
+                  <div className="bg-slate-900 border border-sky-500/30 rounded-xl p-4 h-full shadow-lg shadow-sky-500/10">
+                    <p className="text-white">
+                      Designed SQL-based reporting pipelines that improved data
+                      reliability and supported faster business decision-making.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-sm text-slate-400 mt-8 text-center">
+                See the difference instantly — clearer, stronger, and tailored to the role.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+              <Link
+                href="/signup"
+                className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
+              >
+                Fix My CV for This Job
+              </Link>
+
+              <Link
+                href="/pricing"
+                className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
+              >
+                View Pricing
+              </Link>
+            </div>
+
+            <p className="mt-4 text-sm text-slate-400">
+              Paste your CV + job description • Get instant feedback • Free to start
+            </p>
+
+            <p className="mt-3 text-xs text-slate-500">
+              You can edit every suggestion before using it. Nothing is applied automatically.
+            </p>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                CV feedback
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                ATS score
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                Interview coaching
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                Free plan available
+              </span>
+            </div>
+          </div>
         </div>
-
-        <p className="text-sm text-sky-400 mb-2 font-semibold">After (GhostAI)</p>
-        <div className="bg-slate-900 border border-sky-500/30 rounded-lg p-3">
-          <p className="text-white">
-            Designed and improved SQL-based data pipelines to support reporting workflows, delivering more reliable business insights.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4 justify-center mt-0.5">
-        <Link
-          href="/signup"
-          className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
-        >
-          Fix My CV & Get More Interviews
-        </Link>
-
-        <Link
-          href="/pricing"
-          className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
-        >
-          View Pricing
-        </Link>
-      </div>
-
-      <p className="mt-4 text-sm text-slate-400">
-        Paste your CV + job description • Get instant feedback • Free to start
-      </p>
-
-      <p className="mt-3 text-xs text-slate-500">
-        No signup needed • Try it instantly
-      </p>
-
-      {/* Trust strip */}
-      <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
-        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-          CV feedback
-        </span>
-        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-          ATS score
-        </span>
-        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-          Interview coaching
-        </span>
-        <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-          Free plan available
-        </span>
-      </div>
-
-      <div className="mt-8 text-sm text-slate-400">
-        Built for real career outcomes — practical feedback, clear next steps, and better interview preparation.
-      </div>
-    </div>
-  </div>
-</section>
-
+      </section>
 
       {/* Feature cards */}
       <section className="max-w-6xl mx-auto px-6 py-8 sm:py-12">
@@ -133,59 +164,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Example output section */}
-      <section className="max-w-6xl mx-auto px-6 py-16 sm:py-24">
-        <div className="text-center mb-12">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            Example GhostAI Output
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Turn weak CV bullets into stronger achievements
-          </h2>
-          <p className="text-slate-300 max-w-2xl mx-auto">
-            GhostAI turns vague CV bullets into stronger, clearer, more
-            interview-worthy achievements.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-8">
-            <p className="text-xs uppercase tracking-wider text-slate-400 mb-3">
-              Original CV Bullet
-            </p>
-            <div className="rounded-2xl bg-slate-950 border border-slate-800 p-5">
-              <p className="text-slate-300 leading-relaxed">
-                Built data pipelines and worked with SQL to support reporting.
-              </p>
-            </div>
-
-            <div className="mt-6 text-sm text-slate-400">
-              A typical bullet that sounds too vague and doesn’t show enough impact.
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-sky-500/30 bg-sky-500/10 p-8 shadow-xl">
-            <p className="text-xs uppercase tracking-wider text-sky-300 mb-3">
-              GhostAI Improvement
-            </p>
-            <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-5">
-              <p className="text-slate-100 leading-relaxed">
-                Designed and improved SQL-based data pipelines to support
-                reporting workflows, helping deliver more reliable business
-                insights and clearer access to decision-critical data.
-              </p>
-            </div>
-
-            <div className="mt-6 space-y-2 text-sm text-slate-200">
-              <p>• Stronger action verb</p>
-              <p>• Clearer technical positioning</p>
-              <p>• More impact and professionalism</p>
-              <p>• Better fit for ATS and recruiter scanning</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* How it works */}
       <section className="max-w-6xl mx-auto px-6 py-16 sm:py-24">
         <div className="text-center mb-12">
@@ -206,8 +184,7 @@ export default function HomePage() {
             <div className="text-sky-400 text-sm font-semibold mb-3">STEP 1</div>
             <h3 className="text-xl font-bold mb-3">Upload your CV</h3>
             <p className="text-slate-300 leading-relaxed">
-              Add your CV and choose the role you’re targeting so GhostAI can
-              tailor the feedback.
+              Add your CV and choose the role you’re targeting so GhostAI can tailor the feedback.
             </p>
           </div>
 
@@ -215,8 +192,7 @@ export default function HomePage() {
             <div className="text-sky-400 text-sm font-semibold mb-3">STEP 2</div>
             <h3 className="text-xl font-bold mb-3">Get tailored feedback</h3>
             <p className="text-slate-300 leading-relaxed">
-              Receive ATS-style scoring, stronger bullet rewrites, and specific
-              improvements based on your target role.
+              Receive ATS-style scoring, stronger bullet rewrites, and specific improvements based on your target role.
             </p>
           </div>
 
@@ -224,8 +200,7 @@ export default function HomePage() {
             <div className="text-sky-400 text-sm font-semibold mb-3">STEP 3</div>
             <h3 className="text-xl font-bold mb-3">Practise interview answers</h3>
             <p className="text-slate-300 leading-relaxed">
-              Use Interview Mock mode to turn weak answers into stronger,
-              clearer, more confident responses.
+              Use Interview Mock mode to turn weak answers into stronger, clearer, more confident responses.
             </p>
           </div>
         </div>
@@ -241,9 +216,8 @@ export default function HomePage() {
             Built for graduates, professionals, and career switchers
           </h2>
           <p className="text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Whether you're a graduate, experienced professional, or switching
-            careers, GhostAI helps you present your experience more clearly and
-            prepare stronger interview answers.
+            Whether you're a graduate, experienced professional, or switching careers,
+            GhostAI helps you present your experience more clearly and prepare stronger interview answers.
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 text-sm">
@@ -273,8 +247,7 @@ export default function HomePage() {
             Start improving your career materials today
           </h2>
           <p className="text-slate-300 max-w-2xl mx-auto mb-8">
-            Upload your CV, get targeted feedback, and practise better interview
-            answers with GhostAI.
+            Upload your CV, get targeted feedback, and practise better interview answers with GhostAI.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
