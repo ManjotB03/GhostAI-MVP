@@ -1,0 +1,28 @@
+# GhostAI 
+
+GhostAI is an AI-powered career tool that helps job seekers improve CVs, tailor applications to specific job descriptions, and prepare stronger interview answers. 
+
+## Purpose 
+
+GhostAI helps students, graduates, professionals, and career switchers improve their chances of getting interviews by giving practical, role-specific CV feedback and interview coaching. 
+
+## Key Pages 
+
+- Homepage: https://www.ghostaicorp.com 
+- Pricing: https://www.ghostaicorp.com/pricing 
+- Sign up: https://www.ghostaicorp.com/signup 
+- Privacy Policy: https://www.ghostaicorp.com/privacy 
+- Terms of Service: https://www.ghostaicorp.com/terms 
+
+## Main Features 
+
+- AI CV feedback 
+- Job description matching 
+- ATS-style scoring 
+- CV bullet point improvement 
+- Interview answer coaching 
+- Career guidance 
+
+## Contact 
+
+Email: ghostaicorp@gmail.com

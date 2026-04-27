@@ -242,6 +242,54 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FAQ section */} 
+      <section className="max-w-5xl mx-auto px-6 py-16 sm:py-24">
+        <div className="text-center mb-10">
+          <p className="text-sky-400 font-semibold tracking-wide mb-3">
+            FAQs
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Questions before using GhostAI?
+          </h2>
+          <p className="text-slate-300 max-w-2xl mx-auto">
+            Quick answers about how GhostAI works and what to expect.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {[
+            {
+              q: "What does GhostAI do?",
+              a: "GhostAI helps you tailor your CV to specific job descriptions, highlight gaps, improve weak bullet points, and prepare stronger interview answers.",
+            },
+            {
+              q: "Does GhostAI guarantee interviews or job offers?",
+              a: "No. GhostAI helps improve your CV and preparation, but it cannot guarantee interviews, job offers, or employment outcomes.",
+            },
+            {
+              q: "Can I edit the AI suggestions?",
+              a: "Yes. You stay in control and can edit every suggestion before using it. Nothing is applied automatically.",
+            },
+            {
+              q: "Who is GhostAI for?",
+              a: "GhostAI is built for students, graduates, career switchers, and professionals who want clearer, more targeted job applications.",
+            },
+            {
+              q: "Can I use GhostAI for a specific job description?",
+              a: "Yes. You can paste a job description and use GhostAI to make your CV more relevant to that specific role.",
+            },
+          ].map((item) => (
+            <div
+              key={item.q}
+              className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6"
+            >
+              <h3 className="text-lg font-semibold text-white mb-2">{item.q}</h3>
+              <p className="text-slate-300 leading-relaxed">{item.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+      
       {/* Final CTA */}
       <section className="border-t border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-16 text-center">
