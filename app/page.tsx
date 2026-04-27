@@ -91,6 +91,7 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+            <nav aria-label="Main navigation" className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
               <Link
                 href="/signup"
                 className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
@@ -104,6 +105,7 @@ export default function HomePage() {
               >
                 View Pricing
               </Link>
+            </nav>
             </div>
 
             <p className="mt-4 text-sm text-slate-400">
@@ -267,6 +269,21 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      {/* Footer */}
+      <footer className="border-t border-slate-800">
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+          <p>© 2026 GhostAI. All rights reserved.</p>
+
+          <nav aria-label="Footer navigation" className="flex gap-6">
+            <Link href="/privacy" className="hover:text-slate-300 transition">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-slate-300 transition">
+              Terms of Service
+            </Link>
+          </nav>
+        </div>
+      </footer>
     </main>
   );
 }
