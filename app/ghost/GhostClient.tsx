@@ -103,11 +103,7 @@ export default function GhostClient({
 
   const [task, setTask] = useState(initialPrompt);
   const [response, setResponse] = useState("");
-  useEffect(() => {
-  if (initialPrompt && initialPrompt.trim()) {
-    handleSubmit();
-  }
-}, []);
+  
   const [atsScore, setAtsScore] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -146,8 +142,10 @@ export default function GhostClient({
   const placeholder = useMemo(() => {
     return mode === "interview_mock"
       ? "Paste interview question + your answer…"
-      : "Ask about CVs, interviews, career moves, or salary growth…";
-  }, [mode]);
+      : initialPrompt
+        ? "Now paste your CV or extra context, then press Submit..."
+        : "Paste your CV + job description, or ask for CV/interviewer help...";
+  }, [mode, initialPrompt]);
 
   useEffect(() => {
     const load = async () => {

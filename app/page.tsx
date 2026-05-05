@@ -20,30 +20,29 @@ export default function HomePage() {
             />
 
             <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-4">
-              Built for real job applications
+              For people actively applying to jobs
             </p>
 
             <p className="text-sky-400 text-sm font-medium mb-2">
-              No more generic CV advice.
+              Most CVs get ignored because they don't match the job.
             </p>
 
             <h1 className="text-3xl sm:text-4xl lg:text-[2.9rem] font-extrabold leading-[1.05] mb-4">
-              Get more interviews by fixing your CV
-              <span className="text-sky-400"> for every job.</span>
+              Tailor your CV to every job in seconds -
+              <span className="text-sky-400"> and stop getting ignored.</span>
             </h1>
 
             <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-5 leading-relaxed">
-              GhostAI rewrites your CV for specific jobs, highlights gaps, and helps
-              you stand out to recruiters.
+              Paste your CV and a job description. GhostAI shows what is missing, rewrites weak bullets, and helps you match the role before you apply
             </p>
 
             {/* Quick start input */}
             <form action="/ghost" method="GET" className="max-w-2xl mx-auto mb-5">
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-2 flex flex-col sm:flex-row gap-2">
+              <div className="bg-slate-900 border border-sky-500/20 rounded-xl p-2 flex flex-col sm:flex-row gap-2 shadow-lg shadow-sky-500/10">
                 <input
                   name="prompt"
                   type="text"
-                  placeholder="Paste your CV or a job description (e.g. Data Analyst role)..."
+                  placeholder="Paste a job description - we'll guide you from there..."
                   className="flex-1 bg-transparent px-4 py-3 text-sm outline-none text-white placeholder:text-slate-500"
                 />
 
@@ -51,20 +50,28 @@ export default function HomePage() {
                   type="submit"
                   className="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-lg text-sm font-semibold text-white transition whitespace-nowrap"
                 >
-                  Try it now →
+                Get my CV match score →
                 </button>
               </div>
+
+              <p className = "text-xs text-sky-400 mt-2 text-center">
+                See your match score + missing keywords instantly
+              </p>
+
+              <p className="mt-2 text-xs text-slate-500">
+                Free to start • Takes 30 seconds • No signup required
+              </p>
             </form>
 
             {/* Above-fold proof */}
             <div className="max-w-4xl mx-auto text-left mb-5">
               <p className="text-xs text-slate-500 mb-3 text-center">
-                Example: Data Analyst role
+                Example: turning generic experience into a job-matched bullet
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">❌ Weak CV bullet</p>
+                  <p className="text-xs text-slate-500 mb-1">❌ Generic CV bullet</p>
                   <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 h-full">
                     <p className="text-slate-300">
                       Built data pipelines and worked with SQL to support reporting.
@@ -74,7 +81,7 @@ export default function HomePage() {
 
                 <div>
                   <p className="text-xs text-sky-400 mb-1 font-semibold">
-                    ✅ Strong, job-matched bullet
+                    ✅ Stronger, job-matched bullet
                   </p>
                   <div className="bg-slate-900 border border-sky-500/30 rounded-xl p-4 h-full shadow-lg shadow-sky-500/10">
                     <p className="text-white">
@@ -85,13 +92,15 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <p className="text-sm text-slate-400 mt-8 text-center">
-                See the difference instantly — clearer, stronger, and tailored to the role.
+              <p className="text-sm text-slate-400 mt-6 text-center">
+                Get your match score, missing keywords, and improved bullets in seconds.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
-            <nav aria-label="Main navigation" className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+            <nav
+              aria-label="Main navigation"
+              className="flex flex-col sm:flex-row gap-4 justify-center mt-4"
+            >
               <Link
                 href="/signup"
                 className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
@@ -106,14 +115,9 @@ export default function HomePage() {
                 View Pricing
               </Link>
             </nav>
-            </div>
 
             <p className="mt-4 text-sm text-slate-400">
               Paste your CV + job description • Get instant feedback • Free to start
-            </p>
-
-            <p className="mt-3 text-xs text-slate-500">
-              You can edit every suggestion before using it. Nothing is applied automatically.
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
@@ -121,13 +125,13 @@ export default function HomePage() {
                 CV feedback
               </span>
               <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                ATS score
+                ATS-style score
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
+                Job description matching
               </span>
               <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
                 Interview coaching
-              </span>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                Free plan available
               </span>
             </div>
           </div>
@@ -242,12 +246,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ section */} 
+      {/* FAQ section */}
       <section className="max-w-5xl mx-auto px-6 py-16 sm:py-24">
         <div className="text-center mb-10">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            FAQs
-          </p>
+          <p className="text-sky-400 font-semibold tracking-wide mb-3">FAQs</p>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Questions before using GhostAI?
           </h2>
@@ -289,15 +291,15 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-      
+
       {/* Final CTA */}
       <section className="border-t border-slate-800">
         <div className="max-w-5xl mx-auto px-6 py-16 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Start improving your career materials today
+            Ready to tailor your CV to the next job?
           </h2>
           <p className="text-slate-300 max-w-2xl mx-auto mb-8">
-            Upload your CV, get targeted feedback, and practise better interview answers with GhostAI.
+            Paste your CV and job description, get targeted feedback, and improve your application before you send it.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -317,6 +319,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
       {/* Footer */}
       <footer className="border-t border-slate-800">
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
