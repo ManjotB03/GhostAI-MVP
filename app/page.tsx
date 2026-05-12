@@ -24,7 +24,7 @@ export default function HomePage() {
             </p>
 
             <p className="text-sky-400 text-sm font-medium mb-2">
-              Most CVs get ignored because they don't match the job.
+              Most CVs get ignored because they don&apos;t match the job.
             </p>
 
             <h1 className="text-3xl sm:text-4xl lg:text-[2.9rem] font-extrabold leading-[1.05] mb-4">
@@ -33,7 +33,8 @@ export default function HomePage() {
             </h1>
 
             <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-5 leading-relaxed">
-              Paste your CV and a job description. GhostAI shows what is missing, rewrites weak bullets, and helps you match the role before you apply
+              Paste your CV and a job description. GhostAI shows what is missing,
+              rewrites weak bullets, and helps you match the role before you apply.
             </p>
 
             {/* Quick start input */}
@@ -50,11 +51,11 @@ export default function HomePage() {
                   type="submit"
                   className="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-lg text-sm font-semibold text-white transition whitespace-nowrap"
                 >
-                Get my CV match score →
+                  Get my CV match score →
                 </button>
               </div>
 
-              <p className = "text-xs text-sky-400 mt-2 text-center">
+              <p className="text-xs text-sky-400 mt-2 text-center">
                 See your match score + missing keywords instantly
               </p>
 
@@ -134,6 +135,58 @@ export default function HomePage() {
                 Interview coaching
               </span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Who GhostAI is for */}
+      <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
+        <div className="text-center mb-10">
+          <p className="text-sky-400 font-semibold tracking-wide mb-3">
+            Who GhostAI is for
+          </p>
+
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Built for people tired of getting ignored
+          </h2>
+
+          <p className="text-slate-300 max-w-2xl mx-auto">
+            GhostAI helps job seekers understand why their applications are not
+            converting and how to position themselves more effectively.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <div className="text-2xl mb-3">🎓</div>
+            <h3 className="text-lg font-bold mb-2">Graduates</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Struggling to land interviews even after sending dozens of applications.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <div className="text-2xl mb-3">🔄</div>
+            <h3 className="text-lg font-bold mb-2">Career Switchers</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Trying to break into tech or reposition existing experience for a new role.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <div className="text-2xl mb-3">📄</div>
+            <h3 className="text-lg font-bold mb-2">Job Applicants</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Tired of generic CV advice and unsure why recruiters are not responding.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <div className="text-2xl mb-3">🚀</div>
+            <h3 className="text-lg font-bold mb-2">Professionals</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Looking to improve positioning, interview performance, and career direction.
+            </p>
           </div>
         </div>
       </section>
@@ -222,7 +275,7 @@ export default function HomePage() {
             Built for graduates, professionals, and career switchers
           </h2>
           <p className="text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Whether you're a graduate, experienced professional, or switching careers,
+            Whether you&apos;re a graduate, experienced professional, or switching careers,
             GhostAI helps you present your experience more clearly and prepare stronger interview answers.
           </p>
 
