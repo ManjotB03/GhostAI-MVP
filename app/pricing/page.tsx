@@ -19,7 +19,6 @@ export default function PricingPage() {
     try {
       setLoadingPlan(tier);
 
-      // ✅ canonical route
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -28,7 +27,6 @@ export default function PricingPage() {
 
       const data = await res.json();
 
-      // Already subscribed → send to billing portal
       if (res.ok && data?.alreadySubscribed) {
         const portalRes = await fetch("/api/stripe/portal", { method: "POST" });
         const portalData = await portalRes.json();
@@ -43,7 +41,6 @@ export default function PricingPage() {
       }
 
       if (!res.ok) {
-        console.log("STRIPE CHECKOUT RESPONSE:", { status: res.status, data });
         alert(data?.error || data?.message || "Checkout failed");
         return;
       }
@@ -55,7 +52,6 @@ export default function PricingPage() {
 
       alert("Checkout failed: missing checkout URL.");
     } catch (err: any) {
-      console.error(err);
       alert(err?.message || "Checkout error");
     } finally {
       setLoadingPlan(null);
@@ -85,16 +81,24 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-16 px-6 text-center text-white">
+    <div className="max-w-6xl mx-auto mt-16 px-6 text-center text-white">
+      <p className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1 text-sm font-medium text-indigo-300 mb-4">
+        Start free. Upgrade when you need more.
+      </p>
+
       <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent">
         Pricing
       </h1>
 
-      <p className="text-slate-300 text-lg mb-10">
-        Choose the plan that helps you get hired faster. Upgrade anytime.
+      <p className="text-slate-300 text-lg mb-3 max-w-2xl mx-auto">
+        Clear plans for job seekers who want better CV feedback, stronger applications,
+        and interview coaching without vague limits.
       </p>
 
-      {/* Quick manage billing button */}
+      <p className="text-slate-500 text-sm mb-10">
+        Cancel anytime. No hidden fees. Upgrade only when GhostAI becomes part of your application workflow.
+      </p>
+
       {session?.user?.email && (
         <div className="mb-10">
           <button
@@ -109,17 +113,22 @@ export default function PricingPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* FREE */}
         <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-8 shadow-xl text-left">
-          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">Try it first</p>
+          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+            Try GhostAI
+          </p>
           <h2 className="text-2xl font-bold mb-2">Free</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">£0</p>
 
-          <p className="text-slate-300 mb-5">Get real career value with no commitment.</p>
+          <p className="text-slate-300 mb-5">
+            Best for testing GhostAI and getting your first CV match score.
+          </p>
 
           <ul className="text-slate-300 space-y-3 mb-6">
-            <li>• Daily career questions limit</li>
-            <li>• CV bullet rewrites & improvements</li>
+            <li>• 10 AI requests per day</li>
+            <li>• CV feedback and bullet improvements</li>
+            <li>• ATS-style match score</li>
+            <li>• Missing keyword suggestions</li>
             <li>• Basic interview answer support</li>
-            <li>• Secure Google login</li>
           </ul>
 
           <button
@@ -132,22 +141,25 @@ export default function PricingPage() {
 
         {/* PRO */}
         <div className="bg-slate-950 border-2 border-indigo-500 rounded-2xl p-8 shadow-2xl text-left transform scale-105">
-          <p className="text-xs uppercase tracking-wider text-indigo-300 mb-2">Most Popular</p>
+          <p className="text-xs uppercase tracking-wider text-indigo-300 mb-2">
+            Most Popular
+          </p>
           <h2 className="text-2xl font-bold mb-2">Pro</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">
             £4.99<span className="text-base font-semibold text-slate-300">/mo</span>
           </p>
 
           <p className="text-slate-300 mb-5">
-            Your daily career assistant to help you apply faster and answer better.
+            Best for active job seekers tailoring CVs across multiple applications.
           </p>
 
           <ul className="text-slate-300 space-y-3 mb-6">
-            <li>• Higher daily limit</li>
-            <li>• Better CV & cover letter rewrites</li>
+            <li>• 45 AI requests per day</li>
+            <li>• More CV rewrites and tailored feedback</li>
+            <li>• Stronger ATS keyword suggestions</li>
             <li>• Interview prep with structured STAR answers</li>
-            <li>• Stronger, more actionable responses</li>
-            <li>• Unlimited history access</li>
+            <li>• Unlimited chat history access</li>
+            <li>• Better support for role-specific applications</li>
           </ul>
 
           <button
@@ -161,22 +173,25 @@ export default function PricingPage() {
 
         {/* ULTIMATE */}
         <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-8 shadow-xl text-left">
-          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">Max Power</p>
+          <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">
+            Power User
+          </p>
           <h2 className="text-2xl font-bold mb-2">Ultimate</h2>
           <p className="text-4xl font-extrabold text-indigo-300 mb-4">
             £14.99<span className="text-base font-semibold text-slate-300">/mo</span>
           </p>
 
           <p className="text-slate-300 mb-5">
-            For power users who want maximum performance and zero friction.
+            Best for heavy users, career switchers, and people applying at scale.
           </p>
 
           <ul className="text-slate-300 space-y-3 mb-6">
-            <li>• Very high / near-unlimited usage</li>
-            <li>• Top-tier AI responses</li>
-            <li>• Personalized coaching behaviour</li>
-            <li>• Early access to new features</li>
-            <li>• Best speed and priority</li>
+            <li>• 100,000 AI requests per day</li>
+            <li>• Highest usage limits for heavy application cycles</li>
+            <li>• Top-tier CV, interview, and career coaching responses</li>
+            <li>• Priority access to new features</li>
+            <li>• Best for frequent CV tailoring and interview practice</li>
+            <li>• Designed for maximum flexibility</li>
           </ul>
 
           <button
@@ -189,7 +204,32 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <p className="text-slate-400 text-sm mt-10">Cancel anytime. No hidden fees.</p>
+      <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-left">
+        <h3 className="text-xl font-bold mb-3 text-white">
+          Which plan should I choose?
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-sm text-slate-300">
+          <p>
+            <span className="text-white font-semibold">Free</span> is for testing the product
+            and getting quick feedback before committing.
+          </p>
+
+          <p>
+            <span className="text-white font-semibold">Pro</span> is best if you are actively
+            applying and want to tailor multiple CVs each week.
+          </p>
+
+          <p>
+            <span className="text-white font-semibold">Ultimate</span> is for heavy usage,
+            repeated interview practice, and high-volume job applications.
+          </p>
+        </div>
+      </div>
+
+      <p className="text-slate-400 text-sm mt-10">
+        Your CV suggestions are editable. GhostAI helps you improve applications, but does not guarantee interviews or job offers.
+      </p>
     </div>
   );
 }
