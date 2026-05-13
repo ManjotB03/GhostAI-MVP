@@ -191,6 +191,56 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Early trust / social proof */}
+      <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
+        <div className="rounded-3xl border border-sky-500/20 bg-slate-900/70 p-8 sm:p-10 text-center shadow-lg shadow-sky-500/10">
+          <p className="text-sky-400 font-semibold tracking-wide mb-3">
+            Early traction
+          </p>
+
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+            Built in public with real job seekers in mind
+          </h2>
+
+          <p className="text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
+            GhostAI is being improved through real user feedback, session analytics,
+            and early distribution tests across founder communities and AI tool platforms.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-left">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
+              <p className="text-sky-400 text-sm font-semibold mb-2">
+                Feedback-led
+              </p>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Built around real hesitation points job seekers face when their CVs
+                are not getting responses.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
+              <p className="text-sky-400 text-sm font-semibold mb-2">
+                Data-informed
+              </p>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Uses analytics and session tracking to understand where users get
+                stuck and improve the product quickly.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
+              <p className="text-sky-400 text-sm font-semibold mb-2">
+                Career-focused
+              </p>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Focused on CV matching, missing keywords, stronger bullet points,
+                and interview confidence.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Feature cards */}
       <section className="max-w-6xl mx-auto px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
