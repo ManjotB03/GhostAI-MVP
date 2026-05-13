@@ -59,9 +59,19 @@ export default function HomePage() {
                 See your match score + missing keywords instantly
               </p>
 
-              <p className="mt-2 text-xs text-slate-500">
-                Free to start • Takes 30 seconds • No signup required
-              </p>
+              <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
+                <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sky-300 font-medium">
+                Free to start
+                </span>
+                
+                <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-slate-300">
+                Takes 30 seconds
+                </span>
+
+                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-300 font-medium">
+                No signup required
+                </span>
+              </div>
             </form>
 
             {/* Above-fold proof */}
