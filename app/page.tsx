@@ -364,7 +364,7 @@ export default function HomePage() {
         <div className="text-center mb-10">
           <p className="text-sky-400 font-semibold tracking-wide mb-3">FAQs</p>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Questions before using GhostAI?
+            Common Questions
           </h2>
           <p className="text-slate-300 max-w-2xl mx-auto">
             Quick answers about how GhostAI works and what to expect.
