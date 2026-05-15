@@ -591,6 +591,20 @@ export default function HomePage() {
       <footer className="border-t border-slate-800">
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
           <p>© 2026 GhostAI. All rights reserved.</p>
+          <div className="mt-4 flex justify-center">
+  <a
+    href="https://backlinklog.com/listing/ghostaicorp.com"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <img
+      src="https://backlinklog.com/badge/ghostaicorp.com.svg"
+      alt="Listed on BacklinkLog"
+      width="160"
+      height="40"
+    />
+  </a>
+</div>
 
           <nav aria-label="Footer navigation" className="flex gap-6">
             <Link href="/privacy" className="hover:text-slate-300 transition">
