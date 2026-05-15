@@ -1,7 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function HomePage() {
+  const [demoInput, setDemoInput] = useState("");
+  const [demoOutput, setDemoOutput] = useState("");
+  const [demoLoading, setDemoLoading] = useState(false);
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       {/* Hero */}
@@ -117,13 +124,6 @@ export default function HomePage() {
                 className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
               >
                 Fix My CV for This Job
-              </Link>
-
-              <Link
-                href="/pricing"
-                className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
-              >
-                View Pricing
               </Link>
             </nav>
 
@@ -251,6 +251,91 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Live Demo */}
+<section className="max-w-5xl mx-auto px-6 py-14 sm:py-20">
+  <div className="text-center mb-10">
+    <p className="text-sky-400 font-semibold tracking-wide mb-3">
+      Try GhostAI instantly
+    </p>
+
+    <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+      See how GhostAI improves weak CV bullets
+    </h2>
+
+    <p className="text-slate-300 max-w-2xl mx-auto">
+      Experience the kind of improvements GhostAI gives before you even sign up.
+    </p>
+  </div>
+
+  <div className="max-w-3xl mx-auto rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
+    <div className="mb-5">
+      <p className="text-sm text-slate-400 mb-2">
+        Weak CV bullet
+      </p>
+
+      <textarea
+        value={demoInput}
+        onChange={(e) => {
+          setDemoInput(e.target.value);
+          setDemoOutput("");
+        }}
+        className="w-full rounded-xl bg-slate-950 border border-slate-700 p-4 text-white outline-none min-h-[120px]"
+      />
+    </div>
+
+    <button
+  onClick={async () => {
+    if (!demoInput.trim() || demoLoading) return;
+
+    setDemoLoading(true);
+    setDemoOutput("");
+
+    try {
+      const res = await fetch("/api/ghost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "career",
+          targetRole: "General job application",
+          task: `Rewrite this weak CV bullet into one stronger, concise, impact-focused CV bullet. Only return the improved bullet, no extra explanation:\n\n${demoInput}`,
+          docText: "",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setDemoOutput("Could not generate a rewrite right now. Please try again.");
+        return;
+      }
+
+      setDemoOutput(String(data?.result || "").trim());
+    } catch {
+      setDemoOutput("Could not generate a rewrite right now. Please try again.");
+    } finally {
+      setDemoLoading(false);
+    }
+  }}
+  disabled={demoLoading}
+  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 transition font-semibold disabled:opacity-70"
+>
+  {demoLoading ? "Improving..." : "Improve with GhostAI →"}
+</button>
+
+    {demoOutput && (
+      <div className="mt-6 rounded-2xl border border-sky-500/30 bg-slate-950 p-5">
+        <p className="text-sm text-sky-400 font-semibold mb-2">
+          Improved version
+        </p>
+
+        <p className="text-white leading-relaxed">
+          {demoOutput}
+        </p>
+      </div>
+    )}
+  </div>
+</section>
+
       {/* Feature cards */}
       <section className="max-w-6xl mx-auto px-6 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -321,6 +406,75 @@ export default function HomePage() {
             <p className="text-slate-300 leading-relaxed">
               Use Interview Mock mode to turn weak answers into stronger, clearer, more confident responses.
             </p>
+          </div>
+        </div>
+      </section>
+
+      
+        {/* Testimonials */}
+      <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
+        <div className="text-center mb-10">
+          <p className="text-sky-400 font-semibold tracking-wide mb-3">
+            Early feedback
+          </p>
+
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            What early users are saying
+          </h2>
+
+          <p className="text-slate-300 max-w-2xl mx-auto">
+            GhostAI is being refined through real feedback from graduates,
+            job seekers, and professionals actively applying for roles.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <p className="text-slate-300 leading-relaxed mb-5">
+              “The keyword suggestions were much more actionable than I expected.
+              It actually explained why my CV felt weak.”
+            </p>
+
+            <div>
+              <p className="font-semibold text-white">
+                Graduate Applicant
+              </p>
+              <p className="text-sm text-slate-500">
+                London
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <p className="text-slate-300 leading-relaxed mb-5">
+              “Most tools just give a score. GhostAI felt more like actual coaching
+              and helped me rewrite weak bullet points properly.”
+            </p>
+
+            <div>
+              <p className="font-semibold text-white">
+                Career Switcher
+              </p>
+              <p className="text-sm text-slate-500">
+                Manchester
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <p className="text-slate-300 leading-relaxed mb-5">
+              “The interview feedback was surprisingly useful. It pushed my answers
+              to sound clearer and more structured.”
+            </p>
+
+            <div>
+              <p className="font-semibold text-white">
+                Tech Applicant
+              </p>
+              <p className="text-sm text-slate-500">
+                Birmingham
+              </p>
+            </div>
           </div>
         </div>
       </section>
