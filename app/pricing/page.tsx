@@ -23,7 +23,10 @@ export default function PricingPage() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ 
+          tier,
+          billingCycle,
+        }),
       });
 
       const data = await res.json();
@@ -58,6 +61,40 @@ export default function PricingPage() {
       setLoadingPlan(null);
     }
   };
+
+  const handleCvBoost = async () => {
+  if (status === "loading") return;
+
+  if (!session?.user?.email) {
+    alert("You must be signed in to buy CV Boost.");
+    window.location.href = "/login";
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan: "cv-boost" }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data?.error || data?.message || "Checkout failed");
+      return;
+    }
+
+    if (data?.url) {
+      window.location.href = data.url;
+      return;
+    }
+
+    alert("Checkout failed: missing checkout URL.");
+  } catch (err: any) {
+    alert(err?.message || "Checkout error");
+  }
+};
 
   const handleManageBilling = async () => {
     if (!session?.user?.email) {
@@ -165,7 +202,7 @@ export default function PricingPage() {
           </p>
 
           <ul className="text-slate-300 space-y-3 mb-6">
-            <li>• 10 AI requests per day</li>
+            <li>• 5 AI requests per day</li>
             <li>• CV feedback and bullet improvements</li>
             <li>• ATS-style match score</li>
             <li>• Missing keyword suggestions</li>
@@ -207,7 +244,7 @@ export default function PricingPage() {
           </p>
 
           <ul className="text-slate-300 space-y-3 mb-6">
-            <li>• 45 AI requests per day</li>
+            <li>• 50 AI requests per day</li>
             <li>• More CV rewrites and tailored feedback</li>
             <li>• Stronger ATS keyword suggestions</li>
             <li>• Interview prep with structured STAR answers</li>
@@ -251,7 +288,7 @@ export default function PricingPage() {
           </p>
 
           <ul className="text-slate-300 space-y-3 mb-6">
-            <li>• 100,000 AI requests per day</li>
+            <li>• Unlimited AI requests per day</li>
             <li>• Highest usage limits for heavy application cycles</li>
             <li>• Top-tier CV, interview, and career coaching responses</li>
             <li>• Priority access to new features</li>
@@ -441,6 +478,7 @@ export default function PricingPage() {
   </ul>
 
   <button
+  onClick={handleCvBoost}
     className="w-full py-3 bg-amber-500 text-slate-950 font-semibold rounded-lg hover:bg-amber-400 transition"
   >
     Buy CV Boost — £9.99
