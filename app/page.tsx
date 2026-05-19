@@ -125,7 +125,15 @@ export default function HomePage() {
               >
                 Fix My CV for This Job
               </Link>
-            </nav>
+
+              <Link
+                href="/ats-cv-checker"
+                className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
+              >
+                Try Free ATS Checker
+              </Link>
+
+               </nav>
 
             <p className="mt-4 text-sm text-slate-400">
               Paste your CV + job description • Get instant feedback • Free to start
