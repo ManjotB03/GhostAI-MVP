@@ -122,7 +122,13 @@ export default function HomePage() {
               <Link
                 href="/signup"
                 className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
-              
+              >
+                Fix My CV for This Job
+              </Link>
+
+              <Link
+                href="/ats-cv-checker"
+                className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
               >
                 Try Free ATS Checker
               </Link>
