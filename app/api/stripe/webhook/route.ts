@@ -9,24 +9,66 @@ export const runtime = "nodejs";
  * Use req.text() (NOT req.json()).
  */
 
-function tierFromSubscription(sub: any) {
-  // Default to free
-  let tier: "free" | "pro" | "ultimate" = "free";
+type Tier = "free" | "pro" | "ultimate";
 
+/**
+ * Map a checkout "plan" value (as stamped by the checkout route into
+ * subscription_data.metadata.plan) to a subscription tier.
+ * Returns null if the plan string isn't a recognised subscription plan.
+ */
+function tierFromPlan(plan: string | undefined | null): Tier | null {
+  const p = String(plan || "").toLowerCase();
+  if (p === "pro-monthly" || p === "pro-annual") return "pro";
+  if (p === "ultimate-monthly" || p === "ultimate-annual") return "ultimate";
+  return null; // cv-boost or unknown -> not a subscription tier
+}
+
+/**
+ * Map a Stripe price ID to a tier by comparing against the four
+ * subscription price-ID env vars used by the checkout route.
+ * Returns null if none match.
+ */
+function tierFromPriceId(priceId: string | undefined | null): Tier | null {
+  const id = String(priceId || "");
+  if (!id) return null;
+
+  const proIds = [
+    process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
+    process.env.STRIPE_PRO_ANNUAL_PRICE_ID,
+  ].filter(Boolean) as string[];
+
+  const ultimateIds = [
+    process.env.STRIPE_ULTIMATE_MONTHLY_PRICE_ID,
+    process.env.STRIPE_ULTIMATE_ANNUAL_PRICE_ID,
+  ].filter(Boolean) as string[];
+
+  if (ultimateIds.includes(id)) return "ultimate";
+  if (proIds.includes(id)) return "pro";
+  return null;
+}
+
+function tierFromSubscription(sub: any): Tier {
+  // Not paid -> always free (covers canceled / past_due / unpaid / incomplete).
   const status = String(sub?.status || "");
   const isPaid = status === "active" || status === "trialing";
+  if (!isPaid) return "free";
 
-  if (!isPaid) return tier;
+  // 1) Prefer the plan stamped into subscription metadata by the checkout route.
+  const metaTier = tierFromPlan(sub?.metadata?.plan);
+  if (metaTier) return metaTier;
 
+  // 2) Fall back to matching the subscription's line-item price IDs.
   const items = sub?.items?.data || [];
   const priceIds: string[] = items
     .map((it: any) => it?.price?.id)
     .filter(Boolean);
 
-  if (priceIds.includes(process.env.STRIPE_ULTIMATE_PRICE_ID!)) return "ultimate";
-  if (priceIds.includes(process.env.STRIPE_PRICE_ID!)) return "pro";
+  // Prefer the highest tier present if multiple items exist.
+  if (priceIds.some((id) => tierFromPriceId(id) === "ultimate")) return "ultimate";
+  if (priceIds.some((id) => tierFromPriceId(id) === "pro")) return "pro";
 
-  return tier;
+  // 3) Paid but unrecognised -> default to free (safe).
+  return "free";
 }
 
 export async function POST(req: Request) {
@@ -80,6 +122,8 @@ export async function POST(req: Request) {
     }
 
     if (!subscription) {
+      // e.g. a one-off "cv-boost" payment (mode: "payment") has no subscription.
+      // Nothing to do here for tier changes; acknowledge so Stripe doesn't retry.
       return NextResponse.json({ received: true });
     }
 
