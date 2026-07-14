@@ -151,7 +151,7 @@ export default function HomePage() {
                 AI-powered CV optimization for ATS
               </p>
 
-              <h1 className="text-4xl sm:text-5xl font-extrabold leading-[1.05] mb-5">
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.05] mb-5">
                 Tailor your CV to every job in seconds
                 <span className="text-sky-400"> and stop getting ignored.</span>
               </h1>
@@ -207,14 +207,18 @@ export default function HomePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Before */}
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-xl">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
                   <p className="text-center text-xs font-semibold tracking-wide text-slate-400 mb-3">
                     BEFORE MATCH
                   </p>
                   <p className="text-center text-sm text-slate-400 mb-1">Match Score</p>
-                  <p className="text-center text-4xl font-extrabold text-red-400 mb-4">54%</p>
+                  <p className="text-center text-5xl font-extrabold text-red-400 mb-3">54%</p>
 
-                  <ul className="space-y-2 text-sm text-slate-300">
+                  <div className="h-1.5 w-full rounded-full bg-slate-800 mb-4 overflow-hidden">
+                    <div className="h-full rounded-full bg-red-400/80" style={{ width: "54%" }} />
+                  </div>
+
+                  <ul className="space-y-2.5 text-sm text-slate-300">
                     <li className="flex items-center gap-2">
                       <span className="text-red-400">✕</span> Missing keywords
                     </li>
@@ -231,14 +235,18 @@ export default function HomePage() {
                 </div>
 
                 {/* After */}
-                <div className="rounded-2xl border border-sky-500/30 bg-slate-900/70 p-5 shadow-xl shadow-sky-500/10">
+                <div className="rounded-2xl border border-sky-500/30 bg-slate-900/70 p-6 shadow-xl shadow-sky-500/10">
                   <p className="text-center text-xs font-semibold tracking-wide text-slate-400 mb-3">
                     AFTER MATCH
                   </p>
                   <p className="text-center text-sm text-slate-400 mb-1">Match Score</p>
-                  <p className="text-center text-4xl font-extrabold text-emerald-400 mb-4">89%</p>
+                  <p className="text-center text-5xl font-extrabold text-emerald-400 mb-3">89%</p>
 
-                  <ul className="space-y-2 text-sm text-slate-300">
+                  <div className="h-1.5 w-full rounded-full bg-slate-800 mb-4 overflow-hidden">
+                    <div className="h-full rounded-full bg-emerald-400/80" style={{ width: "89%" }} />
+                  </div>
+
+                  <ul className="space-y-2.5 text-sm text-slate-300">
                     <li className="flex items-center gap-2">
                       <span className="text-emerald-400">✓</span> All keywords added
                     </li>
@@ -254,6 +262,13 @@ export default function HomePage() {
                   </ul>
                 </div>
               </div>
+
+              <p className="mt-4 text-center text-sm text-slate-400">
+                See your real match score in seconds —{" "}
+                <a href="/signup" className="text-sky-400 hover:text-sky-300 font-medium">
+                  run a free review →
+                </a>
+              </p>
             </div>
           </div>
         </div>
@@ -754,32 +769,103 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-          <p>© 2026 GhostAI. All rights reserved.</p>
-          <div className="mt-4 flex justify-center">
-  <a
-    href="https://backlinklog.com/listing/ghostaicorp.com"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <img
-      src="https://backlinklog.com/badge/ghostaicorp.com.svg"
-      alt="Listed on BacklinkLog"
-      width="160"
-      height="40"
-    />
-  </a>
-</div>
+      <footer className="border-t border-slate-800 mt-8">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+            {/* Brand */}
+            <div className="col-span-2">
+              <Link href="/" className="flex items-center gap-2 mb-3">
+                <Image
+                  src="/ghostai-logo.png"
+                  alt="GhostAI"
+                  width={28}
+                  height={28}
+                  unoptimized
+                />
+                <span className="font-bold text-white">GhostAI</span>
+              </Link>
+              <p className="text-sm text-slate-400 leading-relaxed max-w-xs mb-4">
+                AI-powered CV optimization that helps you tailor your CV to each job,
+                match more roles, and land more interviews.
+              </p>
 
-          <nav aria-label="Footer navigation" className="flex gap-6">
-            <Link href="/privacy" className="hover:text-slate-300 transition">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-slate-300 transition">
-              Terms of Service
-            </Link>
-          </nav>
+              {/* Social */}
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://www.linkedin.com/in/manjot-bhoot-6780a43ba/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GhostAI on LinkedIn"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-900 hover:text-white transition"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4.98 3.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5zM3 9h4v12H3V9zm7 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21H19v-5.4c0-1.3 0-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H11V9z" />
+                  </svg>
+                </a>
+                <a
+                  href="https://x.com/ghostai_co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GhostAI on X"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-900 hover:text-white transition"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Product */}
+            <div>
+              <p className="text-sm font-semibold text-white mb-3">Product</p>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li><a href="#features" className="hover:text-slate-200 transition">Features</a></li>
+                <li><a href="#how-it-works" className="hover:text-slate-200 transition">How it Works</a></li>
+                <li><Link href="/pricing" className="hover:text-slate-200 transition">Pricing</Link></li>
+                <li><Link href="/ats-cv-checker" className="hover:text-slate-200 transition">ATS Checker</Link></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <p className="text-sm font-semibold text-white mb-3">Company</p>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li><Link href="/about" className="hover:text-slate-200 transition">About</Link></li>
+                <li><Link href="/contact" className="hover:text-slate-200 transition">Contact</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <p className="text-sm font-semibold text-white mb-3">Legal</p>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li><Link href="/privacy" className="hover:text-slate-200 transition">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-slate-200 transition">Terms of Service</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-10 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-slate-500">
+              © {new Date().getFullYear()} GhostAI. All rights reserved.
+            </p>
+
+            <a
+              href="https://backlinklog.com/listing/ghostaicorp.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="opacity-70 hover:opacity-100 transition"
+            >
+              <img
+                src="https://backlinklog.com/badge/ghostaicorp.com.svg"
+                alt="Listed on BacklinkLog"
+                width="130"
+                height="32"
+              />
+            </a>
+          </div>
         </div>
       </footer>
     </main>
