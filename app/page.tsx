@@ -592,72 +592,65 @@ export default function HomePage() {
       </section>
 
       
-        {/* Testimonials */}
+        {/* Trust signals */}
       <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
         <div className="text-center mb-10">
           <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            Early feedback
+            Why job seekers choose GhostAI
           </p>
 
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            What early users are saying
+            Built to be genuinely useful — and honest
           </h2>
 
           <p className="text-slate-300 max-w-2xl mx-auto">
-            GhostAI is being refined through real feedback from graduates,
-            job seekers, and professionals actively applying for roles.
+            No inflated promises. Just practical, role-specific help you stay in control of,
+            built for people actively applying for jobs.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <p className="text-slate-300 leading-relaxed mb-5">
-              “The keyword suggestions were much more actionable than I expected.
-              It actually explained why my CV felt weak.”
+            <div className="text-2xl mb-3">✏️</div>
+            <h3 className="text-lg font-bold mb-2">You stay in control</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Every suggestion is editable. Nothing is applied automatically —
+              you decide what goes on your CV.
             </p>
-
-            <div>
-              <p className="font-semibold text-white">
-                Graduate Applicant
-              </p>
-              <p className="text-sm text-slate-500">
-                London
-              </p>
-            </div>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <p className="text-slate-300 leading-relaxed mb-5">
-              “Most tools just give a score. GhostAI felt more like actual coaching
-              and helped me rewrite weak bullet points properly.”
+            <div className="text-2xl mb-3">🔒</div>
+            <h3 className="text-lg font-bold mb-2">Your data stays private</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Your CV is used to give you feedback — not sold or shared.
+              Start securely, no strings attached.
             </p>
-
-            <div>
-              <p className="font-semibold text-white">
-                Career Switcher
-              </p>
-              <p className="text-sm text-slate-500">
-                Manchester
-              </p>
-            </div>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <p className="text-slate-300 leading-relaxed mb-5">
-              “The interview feedback was surprisingly useful. It pushed my answers
-              to sound clearer and more structured.”
+            <div className="text-2xl mb-3">🎯</div>
+            <h3 className="text-lg font-bold mb-2">Role-specific, not generic</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              GhostAI matches your CV to the actual job description —
+              real gaps and keywords, not one-size-fits-all advice.
             </p>
+          </div>
 
-            <div>
-              <p className="font-semibold text-white">
-                Tech Applicant
-              </p>
-              <p className="text-sm text-slate-500">
-                Birmingham
-              </p>
-            </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+            <div className="text-2xl mb-3">⚡</div>
+            <h3 className="text-lg font-bold mb-2">Free to start</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              No card required to try. Get a match score, missing keywords,
+              and stronger bullets in seconds.
+            </p>
           </div>
         </div>
+
+        <p className="text-center text-sm text-slate-500 mt-8 max-w-2xl mx-auto">
+          GhostAI helps improve your application readiness. It does not guarantee
+          interviews or job offers.
+        </p>
       </section>
 
       {/* Trust / audience section */}
