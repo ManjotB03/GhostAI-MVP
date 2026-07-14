@@ -93,9 +93,9 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-[#0b0b0f] p-8 shadow-2x1">
-        
+    <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl">
+
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <Image
@@ -104,6 +104,7 @@ export default function SignupPage() {
             width={180}
             height={50}
             priority
+            unoptimized
           />
         </div>
 
@@ -113,18 +114,18 @@ export default function SignupPage() {
         </h1>
 
         <p className="text-slate-400 text-center mb-8">
-          Get your CV match score and missing keywords — free, no card required
+          Get your CV match score and missing keywords — free to start, no card required
         </p>
 
         {/* Google button */}
         <button
           onClick={() => signIn("google", { callbackUrl: "/ghost" })}
-          className="w-full flex items-center justify-center gap-3 rounded-xl bg-green-500 hover:bg-green-600 transition text-white font-semibold py-3 mb-6"
+          className="w-full flex items-center justify-center gap-3 rounded-xl bg-white hover:bg-slate-100 transition text-slate-800 font-semibold py-3 mb-6"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 48 48"
-            className="w-5 h-5 bg-white rounded-full p-0.5"
+            className="w-5 h-5"
           >
             <path
               fill="#FFC107"
@@ -149,11 +150,11 @@ export default function SignupPage() {
 
         {/* Divider */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-px bg-slate-200 flex-1" />
+          <div className="h-px bg-slate-700 flex-1" />
           <span className="text-sm text-slate-400">
             or sign up with email
           </span>
-          <div className="h-px bg-slate-200 flex-1" />
+          <div className="h-px bg-slate-700 flex-1" />
         </div>
 
         {/* Form */}
@@ -174,11 +175,11 @@ export default function SignupPage() {
                 }
               }}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none focus:border-green-500"
+              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none focus:border-sky-500"
             />
 
             {emailError && (
-              <p className="text-sm text-red-500 mt-2">
+              <p className="text-sm text-red-400 mt-2">
                 {emailError}
               </p>
             )}
@@ -202,20 +203,20 @@ export default function SignupPage() {
                   }
                 }}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 pr-14 text-white outline-none focus:border-green-500"
+                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 pr-14 text-white outline-none focus:border-sky-500"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 hover:text-slate-200"
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
 
             {passwordError && (
-              <p className="text-sm text-red-500 mt-2">
+              <p className="text-sm text-red-400 mt-2">
                 {passwordError}
               </p>
             )}
@@ -223,14 +224,14 @@ export default function SignupPage() {
 
           {/* Errors */}
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               {error}
             </div>
           )}
 
           {/* Success */}
           {success && (
-            <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
               {success}
             </div>
           )}
@@ -239,7 +240,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-green-500 hover:bg-green-600 transition py-3 font-semibold text-white disabled:opacity-70"
+            className="w-full rounded-xl bg-sky-500 hover:bg-sky-600 transition py-3 font-semibold text-white disabled:opacity-70"
           >
             {loading ? "Creating account..." : "Create free account"}
           </button>
@@ -247,7 +248,7 @@ export default function SignupPage() {
 
         {/* Trust badges */}
         <div className="flex items-center justify-center gap-4 text-xs text-slate-400 mt-6 flex-wrap">
-          <span>✓ Free forever</span>
+          <span>✓ Free to start</span>
           <span>✓ No credit card</span>
           <span>✓ 30 seconds to start</span>
         </div>
@@ -257,7 +258,7 @@ export default function SignupPage() {
           Already have an account?{" "}
           <a
             href="/login"
-            className="text-green-600 hover:text-green-700 font-medium"
+            className="text-sky-400 hover:text-sky-300 font-medium"
           >
             Log in
           </a>
