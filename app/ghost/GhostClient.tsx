@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
 
 type Mode = "career" | "interview_mock";
 
@@ -105,6 +106,8 @@ export default function GhostClient({
   const [response, setResponse] = useState("");
   
   const [atsScore, setAtsScore] = useState<number | null>(null);
+  const [savingApplication, setSavingApplication] = useState(false);
+  const [applicationSaved, setApplicationSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [showUpgradeBox, setShowUpgradeBox] = useState(false);
@@ -370,6 +373,7 @@ export default function GhostClient({
 
       setAtsScore(score);
       setResponse(cleaned || "No response returned.");
+      setApplicationSaved(false);
 
       const title = makeTitle(taskToSend, file?.name);
 
@@ -496,6 +500,12 @@ export default function GhostClient({
             {session?.user?.email && (
               <div className="text-xs text-gray-400 mb-2 truncate">{session.user.email}</div>
             )}
+            <Link
+              href="/applications"
+              className="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition text-sm mb-2"
+            >
+              📋 Application Tracker
+            </Link>
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}
@@ -810,18 +820,65 @@ export default function GhostClient({
               <div className="mt-6 p-5 w-full max-w-3xl bg-gray-800 rounded-2xl border border-gray-700">
                 <div className="flex items-center justify-between gap-3 mb-4">
                   <div className="text-sm text-gray-300">Output (Markdown)</div>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(response);
-                      } catch {}
-                    }}
-                    className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm transition"
-                  >
-                    Copy
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={savingApplication || applicationSaved}
+                      onClick={async () => {
+                        setSavingApplication(true);
+                        try {
+                          const res = await fetch("/api/applications", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              roleTitle: effectiveTargetRole || null,
+                              company: null,
+                              jobDescription: docText ? docText.slice(0, 12000) : null,
+                              cvVersion: response || null,
+                              matchScore: atsScore,
+                              sourceChatId: activeChatId || null,
+                              status: "saved",
+                            }),
+                          });
+                          if (res.ok) {
+                            setApplicationSaved(true);
+                          }
+                        } catch {
+                          // silent; button stays available to retry
+                        } finally {
+                          setSavingApplication(false);
+                        }
+                      }}
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm transition"
+                    >
+                      {applicationSaved
+                        ? "✓ Saved to tracker"
+                        : savingApplication
+                          ? "Saving..."
+                          : "Save as application"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(response);
+                        } catch {}
+                      }}
+                      className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm transition"
+                    >
+                      Copy
+                    </button>
+                  </div>
                 </div>
+
+                {applicationSaved && (
+                  <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
+                    <span>Added to your Application Tracker.</span>
+                    <Link href="/applications" className="underline hover:text-emerald-200">
+                      View tracker →
+                    </Link>
+                  </div>
+                )}
 
                 {atsScore !== null && (
                   <div className="mb-4 bg-gray-900 border border-gray-700 rounded-xl p-4">
