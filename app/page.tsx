@@ -8,9 +8,138 @@ export default function HomePage() {
   const [demoInput, setDemoInput] = useState("");
   const [demoOutput, setDemoOutput] = useState("");
   const [demoLoading, setDemoLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
+      {/* Nav */}
+      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 shrink-0">
+              <Image
+                src="/ghostai-logo.png"
+                alt="GhostAI"
+                width={32}
+                height={32}
+                priority
+                unoptimized
+              />
+              <span className="font-bold text-lg tracking-tight text-white">
+                GhostAI
+              </span>
+            </Link>
+
+            {/* Center links (desktop) */}
+            <nav
+              aria-label="Primary"
+              className="hidden md:flex items-center gap-8 text-sm text-slate-300"
+            >
+              <a href="#how-it-works" className="hover:text-white transition">
+                How it Works
+              </a>
+              <a href="#features" className="hover:text-white transition">
+                Features
+              </a>
+              <Link href="/pricing" className="hover:text-white transition">
+                Pricing
+              </Link>
+              <a href="#faq" className="hover:text-white transition">
+                FAQ
+              </a>
+            </nav>
+
+            {/* Right actions (desktop) */}
+            <div className="hidden md:flex items-center gap-3 shrink-0">
+              <Link
+                href="/login"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-200 border border-slate-700 hover:bg-slate-900 transition"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 transition shadow-lg shadow-sky-500/20"
+              >
+                Start Free Review →
+              </Link>
+            </div>
+
+            {/* Mobile actions: keep primary CTA visible + hamburger */}
+            <div className="flex md:hidden items-center gap-2">
+              <Link
+                href="/signup"
+                className="px-3 py-2 rounded-lg text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 transition"
+              >
+                Start Free
+              </Link>
+              <button
+                type="button"
+                aria-label="Toggle menu"
+                aria-expanded={mobileMenuOpen}
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                className="p-2 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-900 transition"
+              >
+                {mobileMenuOpen ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <line x1="3" y1="18" x2="21" y2="18" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile dropdown */}
+          {mobileMenuOpen && (
+            <div className="md:hidden pb-4 space-y-1 border-t border-slate-800/80 pt-3">
+              <a
+                href="#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
+              >
+                How it Works
+              </a>
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
+              >
+                Features
+              </a>
+              <Link
+                href="/pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
+              >
+                Pricing
+              </Link>
+              <a
+                href="#faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
+              >
+                FAQ
+              </a>
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-2 py-2 rounded-lg text-slate-200 border border-slate-700 text-center mt-2 hover:bg-slate-900 transition"
+              >
+                Log in
+              </Link>
+            </div>
+          )}
+        </div>
+      </header>
+
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
@@ -76,7 +205,7 @@ export default function HomePage() {
                 </span>
 
                 <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-300 font-medium">
-                No signup required
+                Free to start 
                 </span>
               </div>
             </form>
@@ -156,6 +285,62 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+{/* Why not just use ChatGPT */}
+<section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
+  <div className="rounded-3xl border border-sky-500/20 bg-slate-900/70 p-8 sm:p-10 shadow-lg shadow-sky-500/10">
+    <div className="text-center mb-8">
+      <p className="text-sky-400 font-semibold tracking-wide mb-3">
+        Why not just use ChatGPT?
+      </p>
+
+      <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+        GhostAI is built for the job application workflow, not just one prompt
+      </h2>
+
+      <p className="text-slate-300 max-w-3xl mx-auto leading-relaxed">
+        ChatGPT can rewrite a CV bullet. GhostAI guides you through matching your CV
+        to a specific job description, spotting gaps, improving weak bullet points,
+        and understanding what to change before you apply.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+        <p className="text-sky-400 text-sm font-semibold mb-2">
+          Job-specific matching
+        </p>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          Compare your CV against the actual role instead of getting generic advice.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+        <p className="text-sky-400 text-sm font-semibold mb-2">
+          Clear reasons, not random rewrites
+        </p>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          See what is missing, why it matters, and how to improve your wording honestly.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+        <p className="text-sky-400 text-sm font-semibold mb-2">
+          Built around applications
+        </p>
+        <p className="text-slate-300 text-sm leading-relaxed">
+          GhostAI is designed to help you prepare stronger applications, not just produce AI text.
+        </p>
+      </div>
+    </div>
+
+    <p className="text-slate-400 text-sm text-center mt-8 max-w-3xl mx-auto">
+      GhostAI does not guarantee interviews or job offers. It helps you improve your application readiness
+      by making your CV clearer, more relevant, and easier to tailor to each role.
+    </p>
+  </div>
+</section>
+
 
       {/* Who GhostAI is for */}
       <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
@@ -345,7 +530,7 @@ export default function HomePage() {
 </section>
 
       {/* Feature cards */}
-      <section className="max-w-6xl mx-auto px-6 py-8 sm:py-12">
+      <section id="features" className="max-w-6xl mx-auto px-6 py-8 sm:py-12 scroll-mt-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
             <div className="text-sky-400 text-2xl mb-4">📄</div>
@@ -377,7 +562,7 @@ export default function HomePage() {
       </section>
 
       {/* How it works */}
-      <section className="max-w-6xl mx-auto px-6 py-16 sm:py-24">
+      <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-16 sm:py-24 scroll-mt-20">
         <div className="text-center mb-12">
           <p className="text-sky-400 font-semibold tracking-wide mb-3">
             How it works
@@ -522,7 +707,7 @@ export default function HomePage() {
       </section>
 
       {/* FAQ section */}
-      <section className="max-w-5xl mx-auto px-6 py-16 sm:py-24">
+      <section id="faq" className="max-w-5xl mx-auto px-6 py-16 sm:py-24 scroll-mt-20">
         <div className="text-center mb-10">
           <p className="text-sky-400 font-semibold tracking-wide mb-3">FAQs</p>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
