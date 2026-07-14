@@ -143,144 +143,117 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
-        <div className="max-w-6xl mx-auto px-6 pt-2 pb-6 sm:pt-3 sm:pb-8 relative">
-          <div className="max-w-5xl mx-auto text-center">
-            <Image
-              src="/ghostai-logo.png"
-              alt="GhostAI logo"
-              width={260}
-              height={76}
-              className="mx-auto mb-4"
-              priority
-              unoptimized
-            />
+        <div className="max-w-6xl mx-auto px-6 pt-10 pb-12 sm:pt-14 sm:pb-16 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+            {/* Left column */}
+            <div>
+              <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-5">
+                AI-powered CV optimization for ATS
+              </p>
 
-            <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-4">
-              For people actively applying to jobs
-            </p>
+              <h1 className="text-4xl sm:text-5xl font-extrabold leading-[1.05] mb-5">
+                Tailor your CV to every job in seconds
+                <span className="text-sky-400"> and stop getting ignored.</span>
+              </h1>
 
-            <p className="text-sky-400 text-sm font-medium mb-2">
-              Most CVs get ignored because they don&apos;t match the job.
-            </p>
+              <p className="text-slate-300 text-base sm:text-lg max-w-xl mb-6 leading-relaxed">
+                Paste your CV and a job description. GhostAI shows what is missing,
+                rewrites weak bullets, and helps you match the role before you apply.
+              </p>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-[2.9rem] font-extrabold leading-[1.05] mb-4">
-              Tailor your CV to every job in seconds -
-              <span className="text-sky-400"> and stop getting ignored.</span>
-            </h1>
+              {/* Feature ticks */}
+              <div className="flex flex-wrap gap-x-5 gap-y-2 mb-7 text-sm text-slate-300">
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-emerald-400">✓</span> ATS Match Score
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-emerald-400">✓</span> Missing Keyword Detection
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-emerald-400">✓</span> Bullet Rewriting
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-emerald-400">✓</span> Job Match Boost
+                </span>
+              </div>
 
-            <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-5 leading-relaxed">
-              Paste your CV and a job description. GhostAI shows what is missing,
-              rewrites weak bullets, and helps you match the role before you apply.
-            </p>
-
-            {/* Quick start input */}
-            <form action="/ghost" method="GET" className="max-w-2xl mx-auto mb-5">
-              <div className="bg-slate-900 border border-sky-500/20 rounded-xl p-2 flex flex-col sm:flex-row gap-2 shadow-lg shadow-sky-500/10">
-                <input
-                  name="prompt"
-                  type="text"
-                  placeholder="Paste a job description - we'll guide you from there..."
-                  className="flex-1 bg-transparent px-4 py-3 text-sm outline-none text-white placeholder:text-slate-500"
-                />
-
-                <button
-                  type="submit"
-                  className="bg-sky-500 hover:bg-sky-600 px-6 py-3 rounded-lg text-sm font-semibold text-white transition whitespace-nowrap"
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                <Link
+                  href="/signup"
+                  className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20 text-center"
                 >
-                  Get my CV match score →
-                </button>
+                  Start Free Review →
+                </Link>
+
+                <a
+                  href="#demo"
+                  className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700 text-center"
+                >
+                  See how it works
+                </a>
               </div>
 
-              <p className="text-xs text-sky-400 mt-2 text-center">
-                See your match score + missing keywords instantly
-              </p>
-
-              <div className="mt-3 flex flex-wrap justify-center gap-2 text-xs">
-                <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sky-300 font-medium">
-                Free to start
-                </span>
-                
-                <span className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-slate-300">
-                Takes 30 seconds
-                </span>
-
-                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-300 font-medium">
-                Free to start 
-                </span>
-              </div>
-            </form>
-
-            {/* Above-fold proof */}
-            <div className="max-w-4xl mx-auto text-left mb-5">
-              <p className="text-xs text-slate-500 mb-3 text-center">
-                Example: turning generic experience into a job-matched bullet
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-slate-500 mb-1">❌ Generic CV bullet</p>
-                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 h-full">
-                    <p className="text-slate-300">
-                      Built data pipelines and worked with SQL to support reporting.
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs text-sky-400 mb-1 font-semibold">
-                    ✅ Stronger, job-matched bullet
-                  </p>
-                  <div className="bg-slate-900 border border-sky-500/30 rounded-xl p-4 h-full shadow-lg shadow-sky-500/10">
-                    <p className="text-white">
-                      Designed SQL-based reporting pipelines that improved data
-                      reliability and supported faster business decision-making.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm text-slate-400 mt-6 text-center">
-                Get your match score, missing keywords, and improved bullets in seconds.
+              <p className="text-sm text-slate-400">
+                No signup required to try · 100% secure · Results in seconds
               </p>
             </div>
 
-            <nav
-              aria-label="Main navigation"
-              className="flex flex-col sm:flex-row gap-4 justify-center mt-4"
-            >
-              <Link
-                href="/signup"
-                className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
-              >
-                Fix My CV for This Job
-              </Link>
+            {/* Right column: Before / After match score cards */}
+            <div className="relative">
+              <p className="text-xs text-slate-500 mb-2 text-center lg:text-right">
+                Example — illustrative match scores
+              </p>
 
-              <Link
-                href="/ats-cv-checker"
-                className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
-              >
-                Try Free ATS Checker
-              </Link>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Before */}
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 shadow-xl">
+                  <p className="text-center text-xs font-semibold tracking-wide text-slate-400 mb-3">
+                    BEFORE MATCH
+                  </p>
+                  <p className="text-center text-sm text-slate-400 mb-1">Match Score</p>
+                  <p className="text-center text-4xl font-extrabold text-red-400 mb-4">54%</p>
 
-               </nav>
+                  <ul className="space-y-2 text-sm text-slate-300">
+                    <li className="flex items-center gap-2">
+                      <span className="text-red-400">✕</span> Missing keywords
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-red-400">✕</span> Weaker bullet points
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-red-400">✕</span> Lower match score
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-red-400">✕</span> Not fully optimized
+                    </li>
+                  </ul>
+                </div>
 
-            <p className="mt-4 text-sm text-slate-400">
-              Paste your CV + job description • Get instant feedback • Free to start
-            </p>
+                {/* After */}
+                <div className="rounded-2xl border border-sky-500/30 bg-slate-900/70 p-5 shadow-xl shadow-sky-500/10">
+                  <p className="text-center text-xs font-semibold tracking-wide text-slate-400 mb-3">
+                    AFTER MATCH
+                  </p>
+                  <p className="text-center text-sm text-slate-400 mb-1">Match Score</p>
+                  <p className="text-center text-4xl font-extrabold text-emerald-400 mb-4">89%</p>
 
-            <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                CV feedback
-              </span>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                ATS-style score
-              </span>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                Job description matching
-              </span>
-              <span className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-slate-300">
-                Interview coaching
-              </span>
+                  <ul className="space-y-2 text-sm text-slate-300">
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> All keywords added
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> Stronger bullet points
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> Higher match score
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span> ATS-optimized
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -445,7 +418,7 @@ export default function HomePage() {
       </section>
 
       {/* Live Demo */}
-<section className="max-w-5xl mx-auto px-6 py-14 sm:py-20">
+<section id="demo" className="max-w-5xl mx-auto px-6 py-14 sm:py-20 scroll-mt-20">
   <div className="text-center mb-10">
     <p className="text-sky-400 font-semibold tracking-wide mb-3">
       Try GhostAI instantly
