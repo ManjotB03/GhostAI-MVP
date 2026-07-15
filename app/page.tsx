@@ -42,6 +42,12 @@ export default function HomePage() {
               <a href="#features" className="hover:text-white transition">
                 Features
               </a>
+              <Link href="/ats-cv-checker" className="hover:text-white transition">
+                Free ATS Check
+              </Link>
+              <Link href="/applications" className="hover:text-white transition">
+                Tracker
+              </Link>
               <Link href="/pricing" className="hover:text-white transition">
                 Pricing
               </Link>
@@ -115,6 +121,20 @@ export default function HomePage() {
                 Features
               </a>
               <Link
+                href="/ats-cv-checker"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
+              >
+                Free ATS Check
+              </Link>
+              <Link
+                href="/applications"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
+              >
+                Tracker
+              </Link>
+              <Link
                 href="/pricing"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
@@ -186,12 +206,12 @@ export default function HomePage() {
                   Start Free Review →
                 </Link>
 
-                <a
-                  href="#demo"
+                <Link
+                  href="/ats-cv-checker"
                   className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700 text-center"
                 >
-                  See how it works
-                </a>
+                  Free ATS check — no signup
+                </Link>
               </div>
 
               <p className="text-sm text-slate-400">
