@@ -53,6 +53,10 @@ export default function ApplicationsPage() {
   const { data: session, status: authStatus } = useSession();
 
   const [apps, setApps] = useState<Application[]>([]);
+  const [tier, setTier] = useState<string>("free");
+  const [unlimited, setUnlimited] = useState(false);
+  const [limit, setLimit] = useState<number | null>(null);
+  const [upgradeMsg, setUpgradeMsg] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -76,6 +80,9 @@ export default function ApplicationsPage() {
           return;
         }
         setApps(Array.isArray(data?.applications) ? data.applications : []);
+        setTier(String(data?.tier || "free"));
+        setUnlimited(Boolean(data?.unlimited));
+        setLimit(typeof data?.limit === "number" ? data.limit : null);
       } catch {
         setError("Could not load applications.");
       } finally {
@@ -122,6 +129,12 @@ export default function ApplicationsPage() {
         setRoleTitle("");
         setJobDescription("");
         setShowAdd(false);
+      } else if (res.status === 402 || data?.limitReached) {
+        setShowAdd(false);
+        setUpgradeMsg(
+          data?.message ||
+            "You've reached the free limit for tracked applications."
+        );
       } else {
         setError(data?.error || "Could not add application.");
       }
@@ -228,14 +241,54 @@ export default function ApplicationsPage() {
             <p className="text-slate-400 mt-1">
               Every job you&apos;re applying to, in one place.
             </p>
+            {!unlimited && limit !== null && (
+              <p className="text-xs text-slate-500 mt-2">
+                {apps.length} of {limit} free applications used
+                {apps.length >= limit && " — upgrade to track unlimited jobs"}
+              </p>
+            )}
           </div>
-          <button
-            onClick={() => setShowAdd((v) => !v)}
-            className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition self-start sm:self-auto"
-          >
-            {showAdd ? "Close" : "+ Add application"}
-          </button>
+          {!unlimited && limit !== null && apps.length >= limit ? (
+            <Link
+              href="/pricing"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition self-start sm:self-auto"
+            >
+              Upgrade to add more →
+            </Link>
+          ) : (
+            <button
+              onClick={() => setShowAdd((v) => !v)}
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition self-start sm:self-auto"
+            >
+              {showAdd ? "Close" : "+ Add application"}
+            </button>
+          )}
         </div>
+
+        {upgradeMsg && (
+          <div className="mb-6 rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="font-semibold text-white mb-1">
+                You&apos;ve hit the free tracking limit
+              </p>
+              <p className="text-sm text-slate-300">{upgradeMsg}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/pricing"
+                className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold transition whitespace-nowrap"
+              >
+                See plans →
+              </Link>
+              <button
+                onClick={() => setUpgradeMsg("")}
+                className="text-sm text-slate-400 hover:text-slate-200 px-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
