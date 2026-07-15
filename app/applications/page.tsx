@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 
-type Status = "saved" | "applied" | "interview" | "offer" | "rejected";
+type Status = "saved" | "applied" | "interview" | "offer" | "rejected" | "no_response";
 
 type Application = {
   id: string;
@@ -16,6 +16,8 @@ type Application = {
   match_score: number | null;
   cv_version: string | null;
   notes: string | null;
+  applied_at: string | null;
+  last_prompted_at: string | null;
   created_at: string;
 };
 
@@ -25,6 +27,7 @@ const STATUSES: { key: Status; label: string; accent: string }[] = [
   { key: "interview", label: "Interview", accent: "border-indigo-500/50" },
   { key: "offer", label: "Offer", accent: "border-emerald-500/50" },
   { key: "rejected", label: "Rejected", accent: "border-red-500/40" },
+  { key: "no_response", label: "No response", accent: "border-slate-700" },
 ];
 
 const STATUS_LABEL: Record<Status, string> = {
@@ -33,7 +36,18 @@ const STATUS_LABEL: Record<Status, string> = {
   interview: "Interview",
   offer: "Offer",
   rejected: "Rejected",
+  no_response: "No response",
 };
+
+// How many days an application sits in "Applied" before we ask for an update.
+const FOLLOW_UP_DAYS = 7;
+
+function daysSince(iso: string | null): number | null {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
+  return Math.floor((Date.now() - then) / (1000 * 60 * 60 * 24));
+}
 
 export default function ApplicationsPage() {
   const { data: session, status: authStatus } = useSession();
@@ -78,6 +92,7 @@ export default function ApplicationsPage() {
       interview: [],
       offer: [],
       rejected: [],
+      no_response: [],
     };
     for (const a of apps) {
       const s = (a.status as Status) in map ? (a.status as Status) : "saved";
@@ -131,6 +146,22 @@ export default function ApplicationsPage() {
     } catch {
       // if it fails, reload to resync
       setError("Status update failed. Refresh to resync.");
+    }
+  };
+
+  const snoozePrompt = async (id: string) => {
+    const now = new Date().toISOString();
+    setApps((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, last_prompted_at: now } : a))
+    );
+    try {
+      await fetch(`/api/applications/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lastPromptedAt: now }),
+      });
+    } catch {
+      setError("Could not save. Refresh to resync.");
     }
   };
 
@@ -262,7 +293,7 @@ export default function ApplicationsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {STATUSES.map((col) => (
               <div key={col.key} className="flex flex-col">
                 <div className="flex items-center justify-between mb-3">
@@ -298,6 +329,49 @@ export default function ApplicationsPage() {
                           Match {a.match_score}/100
                         </p>
                       )}
+
+                      {/* Outcome loop: ask for an update on stale "applied" cards */}
+                      {(() => {
+                        if (a.status !== "applied") return null;
+                        const since = daysSince(a.applied_at || a.created_at);
+                        if (since === null || since < FOLLOW_UP_DAYS) return null;
+                        const askedAgo = daysSince(a.last_prompted_at);
+                        if (askedAgo !== null && askedAgo < FOLLOW_UP_DAYS) return null;
+
+                        return (
+                          <div className="mb-2 rounded-lg border border-sky-500/30 bg-sky-500/10 p-2.5">
+                            <p className="text-[11px] text-sky-200 mb-2">
+                              Applied {since} days ago — heard anything back?
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              <button
+                                onClick={() => updateStatus(a.id, "interview")}
+                                className="text-[11px] px-2 py-1 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white transition"
+                              >
+                                Interview
+                              </button>
+                              <button
+                                onClick={() => updateStatus(a.id, "rejected")}
+                                className="text-[11px] px-2 py-1 rounded-md bg-red-600/80 hover:bg-red-600 text-white transition"
+                              >
+                                Rejected
+                              </button>
+                              <button
+                                onClick={() => updateStatus(a.id, "no_response")}
+                                className="text-[11px] px-2 py-1 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-100 transition"
+                              >
+                                No reply
+                              </button>
+                              <button
+                                onClick={() => snoozePrompt(a.id)}
+                                className="text-[11px] px-2 py-1 rounded-md text-slate-400 hover:text-slate-200 transition"
+                              >
+                                Not yet
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       <select
                         value={a.status}

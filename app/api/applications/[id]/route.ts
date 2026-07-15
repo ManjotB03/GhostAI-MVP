@@ -5,7 +5,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 
-const VALID_STATUSES = ["saved", "applied", "interview", "offer", "rejected"];
+const VALID_STATUSES = ["saved", "applied", "interview", "offer", "rejected", "no_response"];
 
 // PUT /api/applications/[id] -> update an application owned by the signed-in user
 export async function PUT(
@@ -36,6 +36,7 @@ export async function PUT(
       cvVersion,
       notes,
       sourceChatId,
+      lastPromptedAt,
     } = body || {};
 
     // Build an update object with only the fields that were provided,
@@ -49,6 +50,7 @@ export async function PUT(
     if (notes !== undefined) update.notes = notes;
     if (sourceChatId !== undefined) update.source_chat_id = sourceChatId;
     if (matchScore !== undefined) update.match_score = matchScore;
+    if (lastPromptedAt !== undefined) update.last_prompted_at = lastPromptedAt;
 
     if (status !== undefined) {
       const safeStatus = VALID_STATUSES.includes(String(status))

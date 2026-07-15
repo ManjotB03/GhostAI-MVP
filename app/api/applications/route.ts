@@ -5,7 +5,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 
-const VALID_STATUSES = ["saved", "applied", "interview", "offer", "rejected"];
+const VALID_STATUSES = ["saved", "applied", "interview", "offer", "rejected", "no_response"];
 
 // GET /api/applications -> list the signed-in user's applications, newest first
 export async function GET() {
