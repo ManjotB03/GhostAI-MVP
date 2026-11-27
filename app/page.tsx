@@ -211,7 +211,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
           <div className="flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <Image src="/ghostai-logo.png" alt="" width={30} height={30} priority unoptimized />
+              <Image src="/ghostai-icon.svg" alt="" width={30} height={30} priority unoptimized />
               <span className="text-lg font-bold tracking-tight">GhostAI</span>
             </Link>
 
@@ -620,7 +620,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             <div className="col-span-2">
               <Link href="/" className="flex items-center gap-2 mb-3">
-                <Image src="/ghostai-logo.png" alt="" width={28} height={28} unoptimized />
+                <Image src="/ghostai-icon.svg" alt="" width={28} height={28} unoptimized />
                 <span className="font-bold">GhostAI</span>
               </Link>
               <p className="text-sm text-slate-400 leading-relaxed max-w-xs mb-4">

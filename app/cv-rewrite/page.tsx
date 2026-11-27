@@ -99,7 +99,7 @@ export default function CvRewritePage() {
       <header className="border-b border-slate-800/70">
         <div className="max-w-5xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/ghostai-logo.png" alt="" width={28} height={28} unoptimized />
+            <Image src="/ghostai-icon.svg" alt="" width={28} height={28} unoptimized />
             <span className="font-bold">GhostAI</span>
           </Link>
           <Link href="/pricing" className="text-sm text-slate-300 hover:text-white">

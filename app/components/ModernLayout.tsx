@@ -24,7 +24,7 @@ export default function ModernLayout({ children }: ModernLayoutProps) {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/ghostai-logo.png"
+            src="/ghostai-icon.svg"
             alt="GhostAI"
             width={34}
             height={34}

@@ -274,7 +274,7 @@ export default function ApplicationsPage() {
       <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/ghostai-logo.png" alt="GhostAI" width={30} height={30} unoptimized />
+            <Image src="/ghostai-icon.svg" alt="GhostAI" width={30} height={30} unoptimized />
             <span className="font-bold text-lg">GhostAI</span>
           </Link>
           <div className="flex items-center gap-3">
