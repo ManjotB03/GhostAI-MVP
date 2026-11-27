@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { LIFETIME_STATUS, PASS_STATUS, isPassExpired, lifetimeSale } from "@/lib/tier";
+import { countLifetimeMembers } from "@/lib/lifetime";
 
 export const runtime = "nodejs";
 
@@ -156,19 +157,17 @@ export async function POST(req: Request) {
 
     if (plan === "lifetime") {
       const { cap } = lifetimeSale();
-      const { count, error: countErr } = await supabaseServer
-        .from("app_users")
-        .select("id", { count: "exact", head: true })
-        .eq("subscription_status", LIFETIME_STATUS);
-
-      if (countErr) {
+      let sold: number;
+      try {
+        sold = await countLifetimeMembers();
+      } catch (e: any) {
         return NextResponse.json(
-          { error: "DB error", details: countErr.message },
+          { error: "DB error", details: e?.message || "count failed" },
           { status: 500 }
         );
       }
 
-      if ((count ?? 0) >= cap) {
+      if (sold >= cap) {
         return NextResponse.json(
           { error: "All Founding Lifetime spots have been claimed." },
           { status: 409 }
