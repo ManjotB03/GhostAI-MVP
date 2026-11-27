@@ -259,7 +259,7 @@ export default function ApplicationsPage() {
           </p>
           <Link
             href="/login"
-            className="px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition"
+            className="px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold transition"
           >
             Log in
           </Link>
@@ -282,7 +282,13 @@ export default function ApplicationsPage() {
               href="/ghost"
               className="text-sm text-slate-300 hover:text-white transition"
             >
-              CV Coach
+              CV coach
+            </Link>
+            <Link
+              href="/pricing"
+              className="text-sm text-slate-300 hover:text-white transition"
+            >
+              Pricing
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
@@ -312,14 +318,14 @@ export default function ApplicationsPage() {
           {!unlimited && limit !== null && apps.length >= limit ? (
             <Link
               href="/pricing#one-off"
-              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition self-start sm:self-auto"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold transition self-start sm:self-auto"
             >
               Unlock unlimited, from £19 →
             </Link>
           ) : (
             <button
               onClick={() => setShowAdd((v) => !v)}
-              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition self-start sm:self-auto"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold transition self-start sm:self-auto"
             >
               {showAdd ? "Close" : "+ Add application"}
             </button>
@@ -341,7 +347,7 @@ export default function ApplicationsPage() {
             <div className="flex items-center gap-2">
               <Link
                 href="/pricing#one-off"
-                className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold transition whitespace-nowrap"
+                className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-semibold transition whitespace-nowrap"
               >
                 Get the pass →
               </Link>
@@ -387,7 +393,7 @@ export default function ApplicationsPage() {
             <button
               onClick={addApplication}
               disabled={saving}
-              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition disabled:opacity-70"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold transition disabled:opacity-70"
             >
               {saving ? "Adding..." : "Add to tracker"}
             </button>
@@ -405,7 +411,7 @@ export default function ApplicationsPage() {
             </p>
             <button
               onClick={() => setShowAdd(true)}
-              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition"
+              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold transition"
             >
               + Add your first application
             </button>
