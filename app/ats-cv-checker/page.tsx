@@ -91,8 +91,9 @@ export default function ATSCheckerPage() {
         </h1>
 
         <p className="text-lg sm:text-xl text-slate-300 mb-8">
-          Paste your CV and job description. Get an instant ATS match score,
-          missing keywords, and 3 improvements. No signup needed.
+          GhostAI&apos;s free ATS CV checker compares your CV (or resume) with a job
+          description and gives you an instant ATS match score, missing keywords,
+          and 3 improvements. No signup needed.
         </p>
 
         <div className="flex flex-wrap justify-center gap-3 mb-12">
@@ -281,8 +282,18 @@ export default function ATSCheckerPage() {
           <div className="space-y-5 text-slate-300 leading-relaxed">
             <p>
               An ATS score measures how well your CV matches a job description.
-              ATS stands for Applicant Tracking System — software used by many
-              employers and recruiters to scan CVs before a human reviews them.
+              ATS stands for{" "}
+              <a
+                href="https://en.wikipedia.org/wiki/Applicant_tracking_system"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sky-400 underline-offset-2 hover:underline"
+              >
+                Applicant Tracking System
+              </a>{" "}
+              — software used by many employers and recruiters to scan CVs before a
+              human reviews them. Widely used systems include Workday, Greenhouse,
+              Lever and Oracle Taleo.
             </p>
 
             <p>
@@ -309,6 +320,14 @@ export default function ATSCheckerPage() {
               missing keywords, highlighting matched skills, and suggesting practical
               CV improvements instantly. Instead of guessing why applications are
               being rejected, you can quickly see how well your CV fits the role.
+            </p>
+
+            <p>
+              Questions about your result or the checker? Email{" "}
+              <a href="mailto:ghostaicorp@gmail.com" className="text-sky-400 hover:text-sky-300">
+                ghostaicorp@gmail.com
+              </a>
+              .
             </p>
 
             <p>
