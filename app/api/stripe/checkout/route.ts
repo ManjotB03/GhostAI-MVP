@@ -16,7 +16,8 @@ type CheckoutPlan =
   | "ultimate-annual"
   | "cv-boost"
   | "lifetime"
-  | "job-hunt-pass";
+  | "job-hunt-pass"
+  | "cv-rewrite";
 
 const PRICE_IDS: Record<CheckoutPlan, string | undefined> = {
   "pro-monthly": process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
@@ -26,6 +27,7 @@ const PRICE_IDS: Record<CheckoutPlan, string | undefined> = {
   "cv-boost": process.env.STRIPE_CV_BOOST_PRICE_ID,
   lifetime: process.env.STRIPE_LIFETIME_PRICE_ID,
   "job-hunt-pass": process.env.STRIPE_JOB_HUNT_PASS_PRICE_ID,
+  "cv-rewrite": process.env.STRIPE_CV_REWRITE_PRICE_ID,
 };
 
 function getBaseUrl() {
@@ -37,7 +39,7 @@ function getBaseUrl() {
   );
 }
 
-const ONE_OFF_PLANS: CheckoutPlan[] = ["cv-boost", "lifetime", "job-hunt-pass"];
+const ONE_OFF_PLANS: CheckoutPlan[] = ["cv-boost", "lifetime", "job-hunt-pass", "cv-rewrite"];
 
 function isSubscriptionPlan(plan: CheckoutPlan) {
   return !ONE_OFF_PLANS.includes(plan);
@@ -71,6 +73,7 @@ export async function POST(req: Request) {
       "cv-boost",
       "lifetime",
       "job-hunt-pass",
+      "cv-rewrite",
     ];
 
     if (!validPlans.includes(plan)) {
@@ -132,7 +135,8 @@ export async function POST(req: Request) {
     const hasLifetime = status === LIFETIME_STATUS;
     const hasLivePass = status === PASS_STATUS && !isPassExpired(userRow);
 
-    if (hasLifetime && plan !== "cv-boost") {
+    // A lifetime member can still buy a human CV Rewrite.
+    if (hasLifetime && plan !== "cv-boost" && plan !== "cv-rewrite") {
       return NextResponse.json({
         alreadySubscribed: true,
         message: "You already have the Lifetime Pass, so there's nothing more to buy.",
@@ -211,8 +215,8 @@ export async function POST(req: Request) {
             },
           }
         : {}),
-      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}${plan === "lifetime" ? "/lifetime" : "/pricing"}`,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
+      cancel_url: `${baseUrl}${plan === "lifetime" ? "/lifetime" : plan === "cv-rewrite" ? "/cv-rewrite" : "/pricing"}`,
     });
 
     return NextResponse.json({ url: checkout.url });

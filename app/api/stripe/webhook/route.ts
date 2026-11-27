@@ -82,7 +82,7 @@ function tierFromSubscription(sub: any): Tier {
 async function fulfilOneOff(session: any): Promise<NextResponse> {
   const plan = String(session?.metadata?.plan || "").toLowerCase();
 
-  if (plan !== "lifetime" && plan !== "job-hunt-pass") {
+  if (plan !== "lifetime" && plan !== "job-hunt-pass" && plan !== "cv-rewrite") {
     // e.g. cv-boost: nothing to unlock yet.
     return NextResponse.json({ received: true });
   }
@@ -115,7 +115,8 @@ async function fulfilOneOff(session: any): Promise<NextResponse> {
 
   let update: Record<string, unknown>;
 
-  if (plan === "lifetime") {
+  // A CV Rewrite includes lifetime access.
+  if (plan === "lifetime" || plan === "cv-rewrite") {
     update = {
       subscription_tier: "pro",
       subscription_status: LIFETIME_STATUS,
