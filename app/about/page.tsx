@@ -1,41 +1,71 @@
+import Link from "next/link";
+import SimplePageShell from "../components/SimplePageShell";
+
+export const metadata = {
+  title: "About – GhostAI",
+  description:
+    "GhostAI helps graduates tailor every application, track them all, and follow up. Built by a solo founder who went through the job hunt himself.",
+};
+
+const FEATURES = [
+  "Tailor your CV to each job: match score, missing keywords, stronger bullet rewrites",
+  "Track every application with the CV version you sent",
+  "Get a check-in 7 days after applying, so nothing quietly disappears",
+  "Draft cover letters from the job ad and your CV in one click",
+  "Practise interview answers with STAR-style feedback",
+];
+
 export default function AboutPage() {
   return (
-    <div className="max-w-4xl mx-auto mt-16 px-6 text-white">
-      <h1 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-400 to-blue-500 bg-clip-text text-transparent">
-        About GhostAI
-      </h1>
-
-      <p className="text-slate-300 text-lg leading-relaxed mb-10">
-        GhostAI is an AI-powered <span className="text-sky-400 font-semibold">career coach</span>{" "}
-        built to help people land better jobs. We focus on practical outcomes — stronger CVs,
-        better interview answers, and clearer career direction.
-      </p>
-
-      <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-8 shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 text-white">
-          What GhostAI can help you with
-        </h2>
-
-        <ul className="text-slate-300 space-y-3 leading-relaxed">
-          <li>• Rewrite CV bullets to sound more impactful and results-driven</li>
-          <li>• Improve cover letters and tailor applications to job descriptions</li>
-          <li>• Generate strong STAR interview answers with real structure</li>
-          <li>• Prepare for common interview questions and follow-ups</li>
-          <li>• Build a clear plan to move roles, industries, or levels</li>
-          <li>• Salary negotiation scripts and confidence-building responses</li>
-        </ul>
-      </div>
-
-      <div className="mt-10 text-slate-300 leading-relaxed">
-        <h3 className="text-xl font-bold text-white mb-3">Built with</h3>
-        <p>
-          GhostAI is built using modern web tools and AI models to deliver fast,
-          structured, and genuinely useful career guidance.
+    <SimplePageShell>
+      <div className="max-w-3xl mx-auto px-5 sm:px-6 py-16">
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-400 mb-3">About</p>
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6">
+          The job hunt, turned into a system.
+        </h1>
+        <p className="text-lg text-slate-300 leading-relaxed mb-10">
+          GhostAI helps graduates and job seekers stop sending the same CV everywhere and hoping.
+          Tailor each application, keep every one in one place, and know when to follow up.
         </p>
-        <p className="mt-4 text-slate-400 text-sm">
-          Next.js • Tailwind CSS • Secure Auth • Stripe Billing • Supabase
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-7 mb-10">
+          <h2 className="text-xl font-bold mb-4">What GhostAI does</h2>
+          <ul className="space-y-3">
+            {FEATURES.map((f) => (
+              <li key={f} className="flex gap-3 text-slate-200">
+                <span className="text-sky-400">✓</span>
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <h2 className="text-xl font-bold mb-3">Why I built it</h2>
+        <p className="text-slate-300 leading-relaxed mb-4">
+          I&apos;m Manjot, the founder. My own job hunt felt like sending CVs into a void: dozens of
+          applications, the same CV, mostly silence. The problem wasn&apos;t effort. It was having no
+          system. GhostAI is the tool I wanted then.
         </p>
+        <p className="text-slate-300 leading-relaxed mb-10">
+          GhostAI helps you prepare stronger applications. It doesn&apos;t guarantee interviews or job
+          offers, and you stay in control of everything that goes on your CV.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link
+            href="/signup"
+            className="px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-center transition"
+          >
+            Start free
+          </Link>
+          <Link
+            href="/cv-rewrite"
+            className="px-6 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 font-semibold text-center transition"
+          >
+            Or have me rewrite your CV
+          </Link>
+        </div>
       </div>
-    </div>
+    </SimplePageShell>
   );
 }
