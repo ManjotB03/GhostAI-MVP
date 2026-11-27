@@ -4,154 +4,281 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
-export default function HomePage() {
-  const [demoInput, setDemoInput] = useState("");
-  const [demoOutput, setDemoOutput] = useState("");
-  const [demoLoading, setDemoLoading] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+/* ------------------------------------------------------------------ */
+/* Content                                                             */
+/* ------------------------------------------------------------------ */
+
+const NAV_LINKS: { href: string; label: string; anchor?: boolean }[] = [
+  { href: "#how-it-works", label: "How it works", anchor: true },
+  { href: "#tracker", label: "Tracker", anchor: true },
+  { href: "/ats-cv-checker", label: "Free ATS check" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "#faq", label: "FAQ", anchor: true },
+];
+
+const PAINS = [
+  {
+    title: "One CV, fifty different jobs",
+    body: "Grad schemes screen for the keywords in their own job description. A generic CV quietly loses to people who tailored theirs.",
+  },
+  {
+    title: "No idea what you sent where",
+    body: "Which version went to which company? When did you apply? It all lives in a spreadsheet you stopped updating in week two.",
+  },
+  {
+    title: "Silence, with no feedback",
+    body: "Most applications never get a reply, so you can't tell what's working. You just keep sending and hoping.",
+  },
+];
+
+const STEPS = [
+  {
+    n: "01",
+    title: "Tailor your CV to the role",
+    body: "Paste your CV and the job description. Get a match score, the keywords you're missing, and stronger rewrites of weak bullet points.",
+    tags: ["Match score", "Missing keywords", "Bullet rewrites"],
+  },
+  {
+    n: "02",
+    title: "Save it to your tracker",
+    body: "One click turns that tailored CV into an application card, with the company, role, match score and the exact CV version you sent.",
+    tags: ["One-click save", "CV version kept", "Status board"],
+  },
+  {
+    n: "03",
+    title: "Follow up and learn",
+    body: "A week after you apply, GhostAI asks if you've heard back. Over time you can see which applications got replies, and which didn't.",
+    tags: ["7-day check-in", "Outcome tracking", "Interview prep"],
+  },
+];
+
+const COMPARISON: { row: string; chatgpt: boolean | "partial"; ghost: boolean }[] = [
+  { row: "Rewrites CV bullet points", chatgpt: true, ghost: true },
+  { row: "Scores your CV against a specific job", chatgpt: "partial", ghost: true },
+  { row: "Remembers which CV you sent where", chatgpt: false, ghost: true },
+  { row: "Tracks every application's status", chatgpt: false, ghost: true },
+  { row: "Checks in when you haven't heard back", chatgpt: false, ghost: true },
+];
+
+const FAQS = [
+  {
+    q: "Is GhostAI only for graduates?",
+    a: "It's built around the graduate job hunt (grad schemes, first roles, lots of applications at once), but anyone tailoring a CV to specific jobs can use it.",
+  },
+  {
+    q: "Does it work for grad schemes and big-company applications?",
+    a: "Yes. Paste the job description for any role and GhostAI compares your CV against it, flags missing keywords, and suggests stronger wording.",
+  },
+  {
+    q: "Is it free?",
+    a: "Yes. The free plan includes 10 AI requests a day, CV feedback, a match score, and tracking for up to 5 applications. The ATS checker works without an account at all.",
+  },
+  {
+    q: "Will GhostAI get me interviews?",
+    a: "No tool can promise that. GhostAI helps you send more relevant applications and keep on top of them. You stay in control of everything that goes on your CV.",
+  },
+  {
+    q: "What happens to my CV?",
+    a: "Your CV is only used to give you feedback. It's never sold or shared.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/* Small pieces                                                        */
+/* ------------------------------------------------------------------ */
+
+function Check({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden className={`h-5 w-5 ${className}`}>
+      <path
+        fillRule="evenodd"
+        d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 011.4-1.4l3.8 3.8 6.8-6.8a1 1 0 011.4 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function Cross({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden className={`h-5 w-5 ${className}`}>
+      <path d="M6.3 5.3a1 1 0 00-1.4 1.4L8.6 10l-3.7 3.3a1 1 0 101.4 1.4L10 11.4l3.7 3.3a1 1 0 001.4-1.4L11.4 10l3.7-3.3a1 1 0 00-1.4-1.4L10 8.6 6.3 5.3z" />
+    </svg>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-400 mb-3">
+      {children}
+    </p>
+  );
+}
+
+/** Illustrative tracker board used in the hero and tracker section. */
+function TrackerPreview({ compact = false }: { compact?: boolean }) {
+  const cols: {
+    label: string;
+    dot: string;
+    cards: { co: string; role: string; score: number; nudge?: boolean }[];
+  }[] = [
+    {
+      label: "Applied",
+      dot: "bg-sky-400",
+      cards: [
+        { co: "Northwind Bank", role: "Graduate Analyst", score: 86, nudge: true },
+        { co: "Brightline Energy", role: "Grad Engineer", score: 79 },
+      ],
+    },
+    {
+      label: "Interview",
+      dot: "bg-indigo-400",
+      cards: [{ co: "Harbour Retail", role: "Commercial Grad", score: 91 }],
+    },
+    {
+      label: "No response",
+      dot: "bg-slate-500",
+      cards: [{ co: "Kestrel Consulting", role: "Associate", score: 58 }],
+    },
+  ];
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      {/* Nav */}
-      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-2xl shadow-sky-950/50 overflow-hidden">
+      <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+          <span className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+        </div>
+        <p className="text-xs text-slate-500">Your applications · example</p>
+      </div>
+
+      <div className={`grid grid-cols-3 gap-3 p-4 ${compact ? "" : "sm:p-5"}`}>
+        {cols.map((col) => (
+          <div key={col.label} className="min-w-0">
+            <div className="mb-2.5 flex items-center gap-2">
+              <span className={`h-2 w-2 rounded-full ${col.dot}`} />
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 truncate">
+                {col.label}
+              </p>
+            </div>
+            <div className="space-y-2.5">
+              {col.cards.map((c) => (
+                <div
+                  key={c.co}
+                  className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 sm:p-3"
+                >
+                  <p className="text-xs sm:text-sm font-semibold text-white truncate">{c.co}</p>
+                  <p className="text-[11px] text-slate-400 truncate mb-2">{c.role}</p>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1 flex-1 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          c.score >= 80 ? "bg-emerald-400" : c.score >= 70 ? "bg-sky-400" : "bg-amber-400"
+                        }`}
+                        style={{ width: `${c.score}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-medium text-slate-300 tabular-nums">{c.score}</span>
+                  </div>
+                  {c.nudge && (
+                    <p className="mt-2 rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-1 text-[10px] leading-snug text-sky-200">
+                      Applied 8 days ago. Heard back?
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
+export default function HomePage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-white antialiased">
+      {/* ---------------- Nav ---------------- */}
+      <header className="sticky top-0 z-50 border-b border-slate-800/70 bg-slate-950/75 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-5 sm:px-6">
+          <div className="flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <Image
-                src="/ghostai-logo.png"
-                alt="GhostAI"
-                width={32}
-                height={32}
-                priority
-                unoptimized
-              />
-              <span className="font-bold text-lg tracking-tight text-white">
-                GhostAI
-              </span>
+              <Image src="/ghostai-logo.png" alt="" width={30} height={30} priority unoptimized />
+              <span className="text-lg font-bold tracking-tight">GhostAI</span>
             </Link>
 
-            {/* Center links (desktop) */}
-            <nav
-              aria-label="Primary"
-              className="hidden md:flex items-center gap-8 text-sm text-slate-300"
-            >
-              <a href="#how-it-works" className="hover:text-white transition">
-                How it Works
-              </a>
-              <a href="#features" className="hover:text-white transition">
-                Features
-              </a>
-              <Link href="/ats-cv-checker" className="hover:text-white transition">
-                Free ATS Check
-              </Link>
-              <Link href="/applications" className="hover:text-white transition">
-                Tracker
-              </Link>
-              <Link href="/pricing" className="hover:text-white transition">
-                Pricing
-              </Link>
-              <a href="#faq" className="hover:text-white transition">
-                FAQ
-              </a>
+            <nav aria-label="Primary" className="hidden md:flex items-center gap-7 text-sm text-slate-300">
+              {NAV_LINKS.map((l) =>
+                l.anchor ? (
+                  <a key={l.href} href={l.href} className="hover:text-white transition">
+                    {l.label}
+                  </a>
+                ) : (
+                  <Link key={l.href} href={l.href} className="hover:text-white transition">
+                    {l.label}
+                  </Link>
+                )
+              )}
             </nav>
 
-            {/* Right actions (desktop) */}
-            <div className="hidden md:flex items-center gap-3 shrink-0">
-              <Link
-                href="/login"
-                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-200 border border-slate-700 hover:bg-slate-900 transition"
-              >
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white transition">
                 Log in
               </Link>
               <Link
                 href="/signup"
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 transition shadow-lg shadow-sky-500/20"
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-slate-950 transition"
               >
-                Start Free Review →
+                Start free
               </Link>
             </div>
 
-            {/* Mobile actions: keep primary CTA visible + hamburger */}
             <div className="flex md:hidden items-center gap-2">
-              <Link
-                href="/signup"
-                className="px-3 py-2 rounded-lg text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 transition"
-              >
-                Start Free
+              <Link href="/signup" className="px-3 py-2 rounded-lg text-sm font-semibold bg-sky-500 text-slate-950">
+                Start free
               </Link>
               <button
                 type="button"
                 aria-label="Toggle menu"
                 aria-expanded={mobileMenuOpen}
                 onClick={() => setMobileMenuOpen((v) => !v)}
-                className="p-2 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-900 transition"
+                className="p-2 rounded-lg border border-slate-700 text-slate-200"
               >
-                {mobileMenuOpen ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="3" y1="12" x2="21" y2="12" />
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <line x1="3" y1="18" x2="21" y2="18" />
-                  </svg>
-                )}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  {mobileMenuOpen ? (
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  ) : (
+                    <path d="M3 6h18M3 12h18M3 18h18" />
+                  )}
+                </svg>
               </button>
             </div>
           </div>
 
-          {/* Mobile dropdown */}
           {mobileMenuOpen && (
-            <div className="md:hidden pb-4 space-y-1 border-t border-slate-800/80 pt-3">
-              <a
-                href="#how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
-              >
-                How it Works
-              </a>
-              <a
-                href="#features"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
-              >
-                Features
-              </a>
-              <Link
-                href="/ats-cv-checker"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
-              >
-                Free ATS Check
-              </Link>
-              <Link
-                href="/applications"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
-              >
-                Tracker
-              </Link>
-              <Link
-                href="/pricing"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
-              >
-                Pricing
-              </Link>
-              <a
-                href="#faq"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-2 py-2 rounded-lg text-slate-200 hover:bg-slate-900 transition"
-              >
-                FAQ
-              </a>
+            <div className="md:hidden border-t border-slate-800/70 py-3 space-y-1">
+              {NAV_LINKS.map((l) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block rounded-lg px-2 py-2 text-slate-200 hover:bg-slate-900"
+                >
+                  {l.label}
+                </a>
+              ))}
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-2 py-2 rounded-lg text-slate-200 border border-slate-700 text-center mt-2 hover:bg-slate-900 transition"
+                className="mt-2 block rounded-lg border border-slate-700 px-2 py-2 text-center text-slate-200"
               >
                 Log in
               </Link>
@@ -160,649 +287,329 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* ---------------- Hero ---------------- */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_40%)]" />
-        <div className="max-w-6xl mx-auto px-6 pt-10 pb-12 sm:pt-14 sm:pb-16 relative">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-            {/* Left column */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_-10%,rgba(56,189,248,0.22),transparent)]" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(148,163,184,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.06)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
+
+        <div className="relative max-w-6xl mx-auto px-5 sm:px-6 pt-14 pb-16 sm:pt-20 sm:pb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-14 items-center">
             <div>
-              <p className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-1 text-sm font-medium text-sky-300 mb-5">
-                AI-powered CV optimization for ATS
+              <p className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3.5 py-1 text-sm font-medium text-sky-300 mb-6">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                For UK graduates applying to their first roles
               </p>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold leading-[1.05] mb-5">
-                Tailor your CV to every job in seconds
-                <span className="text-sky-400"> and stop getting ignored.</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.1rem] font-extrabold leading-[1.05] tracking-tight mb-6">
+                Sent 50 applications and heard nothing back?{" "}
+                <span className="bg-gradient-to-r from-sky-300 to-sky-500 bg-clip-text text-transparent">
+                  Let&apos;s fix that.
+                </span>
               </h1>
 
-              <p className="text-slate-300 text-base sm:text-lg max-w-xl mb-6 leading-relaxed">
-                Paste your CV and a job description. GhostAI shows what is missing,
-                rewrites weak bullets, and helps you match the role before you apply.
+              <p className="text-lg text-slate-300 leading-relaxed max-w-xl mb-8">
+                GhostAI tailors your CV to each graduate role, keeps every
+                application in one place, and checks in when you haven&apos;t
+                heard back, so you can see what&apos;s actually working.
               </p>
 
-              {/* Feature ticks */}
-              <div className="flex flex-wrap gap-x-5 gap-y-2 mb-7 text-sm text-slate-300">
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> ATS Match Score
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> Missing Keyword Detection
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> Bullet Rewriting
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span> Job Match Boost
-                </span>
-              </div>
-
-              {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 mb-5">
                 <Link
                   href="/signup"
-                  className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20 text-center"
+                  className="px-7 py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-center transition shadow-lg shadow-sky-500/25"
                 >
-                  Start Free Review →
+                  Start free
                 </Link>
-
                 <Link
                   href="/ats-cv-checker"
-                  className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700 text-center"
+                  className="px-7 py-3.5 rounded-xl border border-slate-700 bg-slate-900/60 hover:bg-slate-800 font-semibold text-center transition"
                 >
-                  Free ATS check — no signup
+                  Free ATS check, no signup
                 </Link>
               </div>
 
               <p className="text-sm text-slate-400">
-                No signup required to try · 100% secure · Results in seconds
+                No card needed. Free plan includes 10 AI requests a day and tracking for 5 applications.
               </p>
             </div>
 
-            {/* Right column: Before / After match score cards */}
             <div className="relative">
-              <p className="text-xs text-slate-500 mb-2 text-center lg:text-right">
-                Example — illustrative match scores
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Before */}
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
-                  <p className="text-center text-xs font-semibold tracking-wide text-slate-400 mb-3">
-                    BEFORE MATCH
-                  </p>
-                  <p className="text-center text-sm text-slate-400 mb-1">Match Score</p>
-                  <p className="text-center text-5xl font-extrabold text-red-400 mb-3">54%</p>
-
-                  <div className="h-1.5 w-full rounded-full bg-slate-800 mb-4 overflow-hidden">
-                    <div className="h-full rounded-full bg-red-400/80" style={{ width: "54%" }} />
+              <div aria-hidden className="absolute -inset-6 rounded-[2rem] bg-sky-500/10 blur-3xl" />
+              <div className="relative">
+                <TrackerPreview />
+                {/* floating match card */}
+                <div className="absolute -bottom-10 right-2 sm:-right-4 w-52 sm:w-56 rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-1">CV match · Graduate Analyst</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm text-slate-500 line-through tabular-nums">54</span>
+                    <span className="text-3xl font-extrabold text-emerald-400 tabular-nums">86</span>
+                    <span className="text-xs text-slate-400">/100</span>
                   </div>
-
-                  <ul className="space-y-2.5 text-sm text-slate-300">
-                    <li className="flex items-center gap-2">
-                      <span className="text-red-400">✕</span> Missing keywords
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-red-400">✕</span> Weaker bullet points
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-red-400">✕</span> Lower match score
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-red-400">✕</span> Not fully optimized
-                    </li>
-                  </ul>
-                </div>
-
-                {/* After */}
-                <div className="rounded-2xl border border-sky-500/30 bg-slate-900/70 p-6 shadow-xl shadow-sky-500/10">
-                  <p className="text-center text-xs font-semibold tracking-wide text-slate-400 mb-3">
-                    AFTER MATCH
-                  </p>
-                  <p className="text-center text-sm text-slate-400 mb-1">Match Score</p>
-                  <p className="text-center text-5xl font-extrabold text-emerald-400 mb-3">89%</p>
-
-                  <div className="h-1.5 w-full rounded-full bg-slate-800 mb-4 overflow-hidden">
-                    <div className="h-full rounded-full bg-emerald-400/80" style={{ width: "89%" }} />
-                  </div>
-
-                  <ul className="space-y-2.5 text-sm text-slate-300">
-                    <li className="flex items-center gap-2">
-                      <span className="text-emerald-400">✓</span> All keywords added
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-emerald-400">✓</span> Stronger bullet points
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-emerald-400">✓</span> Higher match score
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-emerald-400">✓</span> ATS-optimized
-                    </li>
-                  </ul>
+                  <p className="text-[11px] text-slate-400 mt-1">After adding 6 missing keywords</p>
                 </div>
               </div>
-
-              <p className="mt-4 text-center text-sm text-slate-400">
-                See your real match score in seconds —{" "}
-                <a href="/signup" className="text-sky-400 hover:text-sky-300 font-medium">
-                  run a free review →
-                </a>
-              </p>
             </div>
           </div>
         </div>
       </section>
 
-{/* Why not just use ChatGPT */}
-<section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
-  <div className="rounded-3xl border border-sky-500/20 bg-slate-900/70 p-8 sm:p-10 shadow-lg shadow-sky-500/10">
-    <div className="text-center mb-8">
-      <p className="text-sky-400 font-semibold tracking-wide mb-3">
-        Why not just use ChatGPT?
-      </p>
-
-      <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-        GhostAI is built for the job application workflow, not just one prompt
-      </h2>
-
-      <p className="text-slate-300 max-w-3xl mx-auto leading-relaxed">
-        ChatGPT can rewrite a CV bullet. GhostAI guides you through matching your CV
-        to a specific job description, spotting gaps, improving weak bullet points,
-        and understanding what to change before you apply.
-      </p>
-    </div>
-
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
-        <p className="text-sky-400 text-sm font-semibold mb-2">
-          Job-specific matching
-        </p>
-        <p className="text-slate-300 text-sm leading-relaxed">
-          Compare your CV against the actual role instead of getting generic advice.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
-        <p className="text-sky-400 text-sm font-semibold mb-2">
-          Clear reasons, not random rewrites
-        </p>
-        <p className="text-slate-300 text-sm leading-relaxed">
-          See what is missing, why it matters, and how to improve your wording honestly.
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
-        <p className="text-sky-400 text-sm font-semibold mb-2">
-          Built around applications
-        </p>
-        <p className="text-slate-300 text-sm leading-relaxed">
-          GhostAI is designed to help you prepare stronger applications, not just produce AI text.
-        </p>
-      </div>
-    </div>
-
-    <p className="text-slate-400 text-sm text-center mt-8 max-w-3xl mx-auto">
-      GhostAI does not guarantee interviews or job offers. It helps you improve your application readiness
-      by making your CV clearer, more relevant, and easier to tailor to each role.
-    </p>
-  </div>
-</section>
-
-
-      {/* Who GhostAI is for */}
-      <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
-        <div className="text-center mb-10">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            Who GhostAI is for
-          </p>
-
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Built for people tired of getting ignored
-          </h2>
-
-          <p className="text-slate-300 max-w-2xl mx-auto">
-            GhostAI helps job seekers understand why their applications are not
-            converting and how to position themselves more effectively.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">🎓</div>
-            <h3 className="text-lg font-bold mb-2">Graduates</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Struggling to land interviews even after sending dozens of applications.
-            </p>
+      {/* ---------------- Problem ---------------- */}
+      <section className="border-y border-slate-800/70 bg-slate-900/30">
+        <div className="max-w-6xl mx-auto px-5 sm:px-6 py-16 sm:py-20">
+          <div className="max-w-2xl mb-10">
+            <SectionLabel>The problem</SectionLabel>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              The graduate job hunt is a numbers game you can&apos;t see.
+            </h2>
           </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">🔄</div>
-            <h3 className="text-lg font-bold mb-2">Career Switchers</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Trying to break into tech or reposition existing experience for a new role.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">📄</div>
-            <h3 className="text-lg font-bold mb-2">Job Applicants</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Tired of generic CV advice and unsure why recruiters are not responding.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">🚀</div>
-            <h3 className="text-lg font-bold mb-2">Professionals</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Looking to improve positioning, interview performance, and career direction.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px overflow-hidden rounded-2xl border border-slate-800 bg-slate-800">
+            {PAINS.map((p) => (
+              <div key={p.title} className="bg-slate-950 p-7">
+                <h3 className="text-lg font-semibold mb-2">{p.title}</h3>
+                <p className="text-slate-400 leading-relaxed">{p.body}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Early trust / social proof */}
-      <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
-        <div className="rounded-3xl border border-sky-500/20 bg-slate-900/70 p-8 sm:p-10 text-center shadow-lg shadow-sky-500/10">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            Early traction
-          </p>
-
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            Built in public with real job seekers in mind
+      {/* ---------------- How it works ---------------- */}
+      <section id="how-it-works" className="scroll-mt-20 max-w-6xl mx-auto px-5 sm:px-6 py-20 sm:py-28">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <SectionLabel>How it works</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            One place for your whole job search
           </h2>
-
-          <p className="text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-            GhostAI is being improved through real user feedback, session analytics,
-            and early distribution tests across founder communities and AI tool platforms.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-left">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-              <p className="text-sky-400 text-sm font-semibold mb-2">
-                Feedback-led
-              </p>
-              <p className="text-slate-300 text-sm leading-relaxed">
-                Built around real hesitation points job seekers face when their CVs
-                are not getting responses.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-              <p className="text-sky-400 text-sm font-semibold mb-2">
-                Data-informed
-              </p>
-              <p className="text-slate-300 text-sm leading-relaxed">
-                Uses analytics and session tracking to understand where users get
-                stuck and improve the product quickly.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-              <p className="text-sky-400 text-sm font-semibold mb-2">
-                Career-focused
-              </p>
-              <p className="text-slate-300 text-sm leading-relaxed">
-                Focused on CV matching, missing keywords, stronger bullet points,
-                and interview confidence.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Live Demo */}
-<section id="demo" className="max-w-5xl mx-auto px-6 py-14 sm:py-20 scroll-mt-20">
-  <div className="text-center mb-10">
-    <p className="text-sky-400 font-semibold tracking-wide mb-3">
-      Try GhostAI instantly
-    </p>
-
-    <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-      See how GhostAI improves weak CV bullets
-    </h2>
-
-    <p className="text-slate-300 max-w-2xl mx-auto">
-      Experience the kind of improvements GhostAI gives before you even sign up.
-    </p>
-  </div>
-
-  <div className="max-w-3xl mx-auto rounded-3xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8">
-    <div className="mb-5">
-      <p className="text-sm text-slate-400 mb-2">
-        Weak CV bullet
-      </p>
-
-      <textarea
-        value={demoInput}
-        onChange={(e) => {
-          setDemoInput(e.target.value);
-          setDemoOutput("");
-        }}
-        className="w-full rounded-xl bg-slate-950 border border-slate-700 p-4 text-white outline-none min-h-[120px]"
-      />
-    </div>
-
-    <button
-  onClick={async () => {
-    if (!demoInput.trim() || demoLoading) return;
-
-    setDemoLoading(true);
-    setDemoOutput("");
-
-    try {
-      const res = await fetch("/api/ghost", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "career",
-          targetRole: "General job application",
-          task: `Rewrite this weak CV bullet into one stronger, concise, impact-focused CV bullet. Only return the improved bullet, no extra explanation:\n\n${demoInput}`,
-          docText: "",
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setDemoOutput("Could not generate a rewrite right now. Please try again.");
-        return;
-      }
-
-      setDemoOutput(String(data?.result || "").trim());
-    } catch {
-      setDemoOutput("Could not generate a rewrite right now. Please try again.");
-    } finally {
-      setDemoLoading(false);
-    }
-  }}
-  disabled={demoLoading}
-  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-600 transition font-semibold disabled:opacity-70"
->
-  {demoLoading ? "Improving..." : "Improve with GhostAI →"}
-</button>
-
-    {demoOutput && (
-      <div className="mt-6 rounded-2xl border border-sky-500/30 bg-slate-950 p-5">
-        <p className="text-sm text-sky-400 font-semibold mb-2">
-          Improved version
-        </p>
-
-        <p className="text-white leading-relaxed">
-          {demoOutput}
-        </p>
-      </div>
-    )}
-  </div>
-</section>
-
-      {/* Feature cards */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-8 sm:py-12 scroll-mt-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
-            <div className="text-sky-400 text-2xl mb-4">📄</div>
-            <h3 className="text-xl font-bold mb-3">Smart CV Review</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Upload your CV and get practical feedback on structure, clarity,
-              impact, and how to improve it for real job applications.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
-            <div className="text-sky-400 text-2xl mb-4">📊</div>
-            <h3 className="text-xl font-bold mb-3">ATS Score</h3>
-            <p className="text-slate-300 leading-relaxed">
-              See how well your CV matches a target role with an ATS-style score
-              and suggestions to strengthen keywords and positioning.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl">
-            <div className="text-sky-400 text-2xl mb-4">🎤</div>
-            <h3 className="text-xl font-bold mb-3">Interview Coaching</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Practise answers, get feedback, and improve the way you explain
-              your experience with structured interview support.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-16 sm:py-24 scroll-mt-20">
-        <div className="text-center mb-12">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            How it works
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            From CV upload to interview confidence
-          </h2>
-          <p className="text-slate-300 max-w-2xl mx-auto">
-            GhostAI gives you a clear path from improving your CV to preparing
-            stronger answers for interviews.
+          <p className="text-slate-400 text-lg">
+            Tailor, track, follow up. Repeat for every application without losing the thread.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-            <div className="text-sky-400 text-sm font-semibold mb-3">STEP 1</div>
-            <h3 className="text-xl font-bold mb-3">Upload your CV</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Add your CV and choose the role you’re targeting so GhostAI can tailor the feedback.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-            <div className="text-sky-400 text-sm font-semibold mb-3">STEP 2</div>
-            <h3 className="text-xl font-bold mb-3">Get tailored feedback</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Receive ATS-style scoring, stronger bullet rewrites, and specific improvements based on your target role.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-            <div className="text-sky-400 text-sm font-semibold mb-3">STEP 3</div>
-            <h3 className="text-xl font-bold mb-3">Practise interview answers</h3>
-            <p className="text-slate-300 leading-relaxed">
-              Use Interview Mock mode to turn weak answers into stronger, clearer, more confident responses.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      
-        {/* Trust signals */}
-      <section className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
-        <div className="text-center mb-10">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            Why job seekers choose GhostAI
-          </p>
-
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Built to be genuinely useful — and honest
-          </h2>
-
-          <p className="text-slate-300 max-w-2xl mx-auto">
-            No inflated promises. Just practical, role-specific help you stay in control of,
-            built for people actively applying for jobs.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">✏️</div>
-            <h3 className="text-lg font-bold mb-2">You stay in control</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Every suggestion is editable. Nothing is applied automatically —
-              you decide what goes on your CV.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">🔒</div>
-            <h3 className="text-lg font-bold mb-2">Your data stays private</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Your CV is used to give you feedback — not sold or shared.
-              Start securely, no strings attached.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">🎯</div>
-            <h3 className="text-lg font-bold mb-2">Role-specific, not generic</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              GhostAI matches your CV to the actual job description —
-              real gaps and keywords, not one-size-fits-all advice.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <div className="text-2xl mb-3">⚡</div>
-            <h3 className="text-lg font-bold mb-2">Free to start</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              No card required to try. Get a match score, missing keywords,
-              and stronger bullets in seconds.
-            </p>
-          </div>
-        </div>
-
-        <p className="text-center text-sm text-slate-500 mt-8 max-w-2xl mx-auto">
-          GhostAI helps improve your application readiness. It does not guarantee
-          interviews or job offers.
-        </p>
-      </section>
-
-      {/* Trust / audience section */}
-      <section className="max-w-6xl mx-auto px-6 pb-16 sm:pb-24">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-8 sm:p-12 text-center">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">
-            Built for job seekers
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Built for graduates, professionals, and career switchers
-          </h2>
-          <p className="text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Whether you&apos;re a graduate, experienced professional, or switching careers,
-            GhostAI helps you present your experience more clearly and prepare stronger interview answers.
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-3 text-sm">
-            <span className="rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-slate-300">
-              CV feedback
-            </span>
-            <span className="rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-slate-300">
-              ATS score
-            </span>
-            <span className="rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-slate-300">
-              Interview prep
-            </span>
-            <span className="rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-slate-300">
-              Target role matching
-            </span>
-            <span className="rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-slate-300">
-              Career coaching
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ section */}
-      <section id="faq" className="max-w-5xl mx-auto px-6 py-16 sm:py-24 scroll-mt-20">
-        <div className="text-center mb-10">
-          <p className="text-sky-400 font-semibold tracking-wide mb-3">FAQs</p>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Common Questions
-          </h2>
-          <p className="text-slate-300 max-w-2xl mx-auto">
-            Quick answers about how GhostAI works and what to expect.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          {[
-            {
-              q: "What does GhostAI do?",
-              a: "GhostAI helps you tailor your CV to specific job descriptions, highlight gaps, improve weak bullet points, and prepare stronger interview answers.",
-            },
-            {
-              q: "Does GhostAI guarantee interviews or job offers?",
-              a: "No. GhostAI helps improve your CV and preparation, but it cannot guarantee interviews, job offers, or employment outcomes.",
-            },
-            {
-              q: "Can I edit the AI suggestions?",
-              a: "Yes. You stay in control and can edit every suggestion before using it. Nothing is applied automatically.",
-            },
-            {
-              q: "Who is GhostAI for?",
-              a: "GhostAI is built for students, graduates, career switchers, and professionals who want clearer, more targeted job applications.",
-            },
-            {
-              q: "Can I use GhostAI for a specific job description?",
-              a: "Yes. You can paste a job description and use GhostAI to make your CV more relevant to that specific role.",
-            },
-          ].map((item) => (
-            <div
-              key={item.q}
-              className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6"
-            >
-              <h3 className="text-lg font-semibold text-white mb-2">{item.q}</h3>
-              <p className="text-slate-300 leading-relaxed">{item.a}</p>
-            </div>
+        <ol className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {STEPS.map((s) => (
+            <li key={s.n} className="relative rounded-2xl border border-slate-800 bg-slate-900/50 p-7">
+              <span className="text-5xl font-extrabold text-slate-800 tabular-nums">{s.n}</span>
+              <h3 className="mt-4 text-xl font-semibold mb-3">{s.title}</h3>
+              <p className="text-slate-400 leading-relaxed mb-5">{s.body}</p>
+              <div className="flex flex-wrap gap-2">
+                {s.tags.map((t) => (
+                  <span key={t} className="rounded-full border border-slate-700 px-2.5 py-1 text-xs text-slate-300">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </li>
           ))}
+        </ol>
+      </section>
+
+      {/* ---------------- Tracker showcase ---------------- */}
+      <section id="tracker" className="scroll-mt-20 relative overflow-hidden border-y border-slate-800/70">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_80%_50%,rgba(56,189,248,0.12),transparent)]" />
+        <div className="relative max-w-6xl mx-auto px-5 sm:px-6 py-20 sm:py-28 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <SectionLabel>Application tracker</SectionLabel>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5">
+              Stop losing track of where you applied.
+            </h2>
+            <p className="text-slate-400 text-lg leading-relaxed mb-8">
+              Every application gets a card with the role, the match score, and
+              the CV you sent. Move it from Applied to Interview to Offer. If a
+              week passes with no news, GhostAI asks, so nothing quietly disappears.
+            </p>
+            <ul className="space-y-4">
+              {[
+                "Save a tailored CV straight from the CV coach",
+                "See every application's status on one board",
+                "Get a check-in 7 days after you apply",
+                "Mark no-responses so you know what to change",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 text-slate-200">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-sky-400">
+                    <Check className="h-4 w-4" />
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <TrackerPreview compact />
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="border-t border-slate-800">
-        <div className="max-w-5xl mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Ready to tailor your CV to the next job?
+      {/* ---------------- vs ChatGPT ---------------- */}
+      <section className="max-w-4xl mx-auto px-5 sm:px-6 py-20 sm:py-28">
+        <div className="text-center mb-12">
+          <SectionLabel>Why not just use ChatGPT?</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            ChatGPT can rewrite a bullet. It can&apos;t run your job search.
           </h2>
-          <p className="text-slate-300 max-w-2xl mx-auto mb-8">
-            Paste your CV and job description, get targeted feedback, and improve your application before you send it.
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            A chat forgets everything when you close it. GhostAI remembers every
+            application, so you can actually learn from them.
           </p>
+        </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="overflow-hidden rounded-2xl border border-slate-800">
+          <table className="w-full text-left">
+            <thead className="bg-slate-900/80 text-sm">
+              <tr>
+                <th scope="col" className="px-5 py-4 font-medium text-slate-400">
+                  <span className="sr-only">Feature</span>
+                </th>
+                <th scope="col" className="px-4 py-4 font-semibold text-slate-300 text-center w-28 sm:w-36">ChatGPT</th>
+                <th scope="col" className="px-4 py-4 font-semibold text-sky-300 text-center w-28 sm:w-36">GhostAI</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {COMPARISON.map((r) => (
+                <tr key={r.row} className="bg-slate-950">
+                  <th scope="row" className="px-5 py-4 font-normal text-slate-200 text-sm sm:text-base">{r.row}</th>
+                  <td className="px-4 py-4">
+                    <div className="flex justify-center">
+                      {r.chatgpt === true ? (
+                        <Check className="text-slate-400" />
+                      ) : r.chatgpt === "partial" ? (
+                        <span className="text-xs text-slate-500">If prompted</span>
+                      ) : (
+                        <Cross className="text-slate-600" />
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 bg-sky-500/[0.04]">
+                    <div className="flex justify-center">
+                      <Check className="text-sky-400" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ---------------- Pricing teaser ---------------- */}
+      <section className="border-t border-slate-800/70 bg-slate-900/30">
+        <div className="max-w-5xl mx-auto px-5 sm:px-6 py-20 sm:py-24">
+          <div className="text-center mb-12">
+            <SectionLabel>Pricing</SectionLabel>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+              Free to start. £4.99 when you&apos;re applying seriously.
+            </h2>
+            <p className="text-slate-400 text-lg">Cancel anytime. No hidden fees.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950 p-7">
+              <p className="text-sm font-semibold text-slate-400 mb-1">Free</p>
+              <p className="text-4xl font-extrabold mb-5">£0</p>
+              <ul className="space-y-3 text-slate-300 mb-7">
+                {["10 AI requests a day", "CV feedback, match score and rewrites", "Track up to 5 applications", "Free ATS checker"].map((f) => (
+                  <li key={f} className="flex gap-3"><Check className="text-slate-500 shrink-0" />{f}</li>
+                ))}
+              </ul>
+              <Link href="/signup" className="block rounded-xl border border-slate-700 py-3 text-center font-semibold hover:bg-slate-900 transition">
+                Start free
+              </Link>
+            </div>
+
+            <div className="relative rounded-2xl border border-sky-500/50 bg-slate-950 p-7 shadow-xl shadow-sky-500/10">
+              <span className="absolute -top-3 left-7 rounded-full bg-sky-500 px-3 py-0.5 text-xs font-semibold text-slate-950">
+                Most popular
+              </span>
+              <p className="text-sm font-semibold text-sky-300 mb-1">Pro</p>
+              <p className="text-4xl font-extrabold mb-5">
+                £4.99<span className="text-base font-medium text-slate-400">/month</span>
+              </p>
+              <ul className="space-y-3 text-slate-300 mb-7">
+                {["45 AI requests a day", "Unlimited application tracking", "Interview mock mode with STAR feedback", "Everything in Free"].map((f) => (
+                  <li key={f} className="flex gap-3"><Check className="text-sky-400 shrink-0" />{f}</li>
+                ))}
+              </ul>
+              <Link href="/pricing" className="block rounded-xl bg-sky-500 hover:bg-sky-400 py-3 text-center font-semibold text-slate-950 transition">
+                See all plans
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- FAQ ---------------- */}
+      <section id="faq" className="scroll-mt-20 max-w-3xl mx-auto px-5 sm:px-6 py-20 sm:py-28">
+        <div className="text-center mb-10">
+          <SectionLabel>FAQ</SectionLabel>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Questions graduates ask</h2>
+        </div>
+
+        <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800">
+          {FAQS.map((f, i) => {
+            const open = openFaq === i;
+            return (
+              <div key={f.q}>
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setOpenFaq(open ? null : i)}
+                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+                >
+                  <span className="font-semibold">{f.q}</span>
+                  <svg
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden
+                    className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${open ? "rotate-45" : ""}`}
+                  >
+                    <path d="M10 4a1 1 0 011 1v4h4a1 1 0 110 2h-4v4a1 1 0 11-2 0v-4H5a1 1 0 110-2h4V5a1 1 0 011-1z" />
+                  </svg>
+                </button>
+                {open && <p className="px-6 pb-5 -mt-1 text-slate-400 leading-relaxed">{f.a}</p>}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ---------------- Final CTA ---------------- */}
+      <section className="px-5 sm:px-6 pb-20 sm:pb-28">
+        <div className="relative max-w-5xl mx-auto overflow-hidden rounded-3xl border border-sky-500/30 bg-gradient-to-b from-sky-500/15 to-slate-900/60 px-6 py-14 sm:py-16 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            Make your next application count.
+          </h2>
+          <p className="text-slate-300 text-lg max-w-xl mx-auto mb-8">
+            Tailor your CV, save it to your tracker, and know where every application stands.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/signup"
-              className="px-7 py-3.5 bg-sky-500 hover:bg-sky-600 rounded-xl text-white font-semibold transition shadow-lg shadow-sky-500/20"
+              className="px-7 py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold transition"
             >
-              Start free CV review
+              Start free
             </Link>
-
             <Link
-              href="/pricing"
-              className="px-7 py-3.5 bg-slate-900 hover:bg-slate-800 rounded-xl text-white font-semibold transition border border-slate-700"
+              href="/ats-cv-checker"
+              className="px-7 py-3.5 rounded-xl border border-slate-600 hover:bg-slate-800 font-semibold transition"
             >
-              See Plans
+              Free ATS check
             </Link>
           </div>
+          <p className="mt-8 text-xs text-slate-500">
+            GhostAI helps you prepare stronger applications. It doesn&apos;t guarantee interviews or job offers.
+          </p>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 mt-8">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-            {/* Brand */}
+      {/* ---------------- Footer ---------------- */}
+      <footer className="border-t border-slate-800">
+        <div className="max-w-6xl mx-auto px-5 sm:px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             <div className="col-span-2">
               <Link href="/" className="flex items-center gap-2 mb-3">
-                <Image
-                  src="/ghostai-logo.png"
-                  alt="GhostAI"
-                  width={28}
-                  height={28}
-                  unoptimized
-                />
-                <span className="font-bold text-white">GhostAI</span>
+                <Image src="/ghostai-logo.png" alt="" width={28} height={28} unoptimized />
+                <span className="font-bold">GhostAI</span>
               </Link>
               <p className="text-sm text-slate-400 leading-relaxed max-w-xs mb-4">
-                AI-powered CV optimization that helps you tailor your CV to each job,
-                match more roles, and land more interviews.
+                Tailor your CV to every graduate role and keep your whole job search in one place.
               </p>
-
-              {/* Social */}
               <div className="flex items-center gap-3">
                 <a
                   href="https://www.linkedin.com/in/manjot-bhoot-6780a43ba/"
@@ -829,29 +636,26 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Product */}
             <div>
-              <p className="text-sm font-semibold text-white mb-3">Product</p>
+              <p className="text-sm font-semibold mb-3">Product</p>
               <ul className="space-y-2 text-sm text-slate-400">
-                <li><a href="#features" className="hover:text-slate-200 transition">Features</a></li>
-                <li><a href="#how-it-works" className="hover:text-slate-200 transition">How it Works</a></li>
+                <li><a href="#how-it-works" className="hover:text-slate-200 transition">How it works</a></li>
+                <li><a href="#tracker" className="hover:text-slate-200 transition">Tracker</a></li>
                 <li><Link href="/pricing" className="hover:text-slate-200 transition">Pricing</Link></li>
                 <li><Link href="/ats-cv-checker" className="hover:text-slate-200 transition">ATS Checker</Link></li>
               </ul>
             </div>
 
-            {/* Company */}
             <div>
-              <p className="text-sm font-semibold text-white mb-3">Company</p>
+              <p className="text-sm font-semibold mb-3">Company</p>
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><Link href="/about" className="hover:text-slate-200 transition">About</Link></li>
                 <li><Link href="/contact" className="hover:text-slate-200 transition">Contact</Link></li>
               </ul>
             </div>
 
-            {/* Legal */}
             <div>
-              <p className="text-sm font-semibold text-white mb-3">Legal</p>
+              <p className="text-sm font-semibold mb-3">Legal</p>
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><Link href="/privacy" className="hover:text-slate-200 transition">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-slate-200 transition">Terms of Service</Link></li>
@@ -859,24 +663,16 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Bottom bar */}
           <div className="mt-10 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-slate-500">
-              © {new Date().getFullYear()} GhostAI. All rights reserved.
-            </p>
-
+            <p className="text-sm text-slate-500">© {new Date().getFullYear()} GhostAI. All rights reserved.</p>
             <a
               href="https://backlinklog.com/listing/ghostaicorp.com"
               target="_blank"
               rel="noopener noreferrer"
               className="opacity-70 hover:opacity-100 transition"
             >
-              <img
-                src="https://backlinklog.com/badge/ghostaicorp.com.svg"
-                alt="Listed on BacklinkLog"
-                width="130"
-                height="32"
-              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="https://backlinklog.com/badge/ghostaicorp.com.svg" alt="Listed on BacklinkLog" width="130" height="32" />
             </a>
           </div>
         </div>

@@ -8,16 +8,16 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   metadataBase: new URL("https://www.ghostaicorp.com"),
-  title: "GhostAI – Improve Your CV & Land More Interviews",
+  title: "GhostAI – CV Tailoring & Job Application Tracker for Graduates",
   description:
-    "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.",
+    "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "GhostAI – Improve Your CV & Land More Interviews",
+    title: "GhostAI – CV Tailoring & Job Application Tracker for Graduates",
     description:
-      "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.",
+      "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
     url: "https://www.ghostaicorp.com",
     siteName: "GhostAI",
     images: [
@@ -33,9 +33,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GhostAI – Improve Your CV & Land More Interviews",
+    title: "GhostAI – CV Tailoring & Job Application Tracker for Graduates",
     description:
-      "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.",
+      "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
     images: ["https://www.ghostaicorp.com/ghostai-logo.png"],
   },
 };
@@ -63,49 +63,49 @@ export default function RootLayout({
                 name: "GhostAI",
                 url: "https://www.ghostaicorp.com",
                 description:
-                  "Get AI-powered CV feedback, ATS scoring, and interview coaching to help you land more interviews faster.",
+                  "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
               },
               {
                 "@type": "FAQPage",
                 mainEntity: [
                   {
                     "@type": "Question",
-                    name: "What does GhostAI do?",
+                    name: "Is GhostAI only for graduates?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "GhostAI helps you tailor your CV to specific job descriptions, highlight gaps, improve weak bullet points, and prepare stronger interview answers.",
+                      text: "It's built around the graduate job hunt (grad schemes, first roles, lots of applications at once), but anyone tailoring a CV to specific jobs can use it.",
                     },
                   },
                   {
                     "@type": "Question",
-                    name: "Does GhostAI guarantee interviews or job offers?",
+                    name: "Does it work for grad schemes and big-company applications?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "No. GhostAI helps improve your CV and preparation, but it cannot guarantee interviews, job offers, or employment outcomes.",
+                      text: "Yes. Paste the job description for any role and GhostAI compares your CV against it, flags missing keywords, and suggests stronger wording.",
                     },
                   },
                   {
                     "@type": "Question",
-                    name: "Can I edit the AI suggestions?",
+                    name: "Is it free?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "Yes. You stay in control and can edit every suggestion before using it. Nothing is applied automatically.",
+                      text: "Yes. The free plan includes 10 AI requests a day, CV feedback, a match score, and tracking for up to 5 applications. The ATS checker works without an account at all.",
                     },
                   },
                   {
                     "@type": "Question",
-                    name: "Who is GhostAI for?",
+                    name: "Will GhostAI get me interviews?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "GhostAI is built for students, graduates, career switchers, and professionals who want clearer, more targeted job applications.",
+                      text: "No tool can promise that. GhostAI helps you send more relevant applications and keep on top of them. You stay in control of everything that goes on your CV.",
                     },
                   },
                   {
                     "@type": "Question",
-                    name: "Can I use GhostAI for a specific job description?",
+                    name: "What happens to my CV?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "Yes. You can paste a job description and use GhostAI to make your CV more relevant to that specific role.",
+                      text: "Your CV is only used to give you feedback. It's never sold or shared.",
                     },
                   },
                 ],
