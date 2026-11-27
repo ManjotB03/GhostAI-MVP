@@ -246,7 +246,7 @@ export default function PricingPage() {
           <button
             onClick={() => handleSubscribe("pro")}
             disabled={loadingPlan === "pro"}
-            className="w-full py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition disabled:opacity-70 disabled:cursor-not-allowed font-semibold"
+            className="w-full py-3 bg-sky-500 text-slate-950 rounded-lg hover:bg-sky-400 transition disabled:opacity-70 disabled:cursor-not-allowed font-semibold"
           >
             {loadingPlan === "pro" ? "Redirecting..." : "Upgrade to Pro"}
           </button>
@@ -289,7 +289,7 @@ export default function PricingPage() {
           <button
             onClick={() => handleSubscribe("ultimate")}
             disabled={loadingPlan === "ultimate"}
-            className="w-full py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition disabled:opacity-70 disabled:cursor-not-allowed font-semibold"
+            className="w-full py-3 bg-sky-500 text-slate-950 rounded-lg hover:bg-sky-400 transition disabled:opacity-70 disabled:cursor-not-allowed font-semibold"
           >
             {loadingPlan === "ultimate" ? "Redirecting..." : "Unlock Ultimate"}
           </button>
@@ -319,37 +319,37 @@ export default function PricingPage() {
 
               <tr>
                 <td className="p-5">CV feedback &amp; bullet rewrites</td>
-                <td className="p-5 text-emerald-400">✓</td>
-                <td className="p-5 text-emerald-400">✓</td>
-                <td className="p-5 text-emerald-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
               </tr>
 
               <tr>
                 <td className="p-5">ATS match score</td>
-                <td className="p-5 text-emerald-400">✓</td>
-                <td className="p-5 text-emerald-400">✓</td>
-                <td className="p-5 text-emerald-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
               </tr>
 
               <tr>
                 <td className="p-5">Application tracking</td>
                 <td className="p-5">5 applications</td>
-                <td className="p-5 text-emerald-400">Unlimited</td>
-                <td className="p-5 text-emerald-400">Unlimited</td>
+                <td className="p-5 text-sky-400">Unlimited</td>
+                <td className="p-5 text-sky-400">Unlimited</td>
               </tr>
 
               <tr>
                 <td className="p-5">Interview mock mode</td>
                 <td className="p-5 text-slate-600">✕</td>
-                <td className="p-5 text-emerald-400">✓</td>
-                <td className="p-5 text-emerald-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
               </tr>
 
               <tr>
                 <td className="p-5">Saved chat history</td>
-                <td className="p-5 text-emerald-400">✓</td>
-                <td className="p-5 text-emerald-400">✓</td>
-                <td className="p-5 text-emerald-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
+                <td className="p-5 text-sky-400">✓</td>
               </tr>
             </tbody>
           </table>
