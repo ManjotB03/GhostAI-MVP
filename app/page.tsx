@@ -534,6 +534,22 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ---------------- Human option ---------------- */}
+      <section className="px-5 sm:px-6 pt-16">
+        <Link
+          href="/cv-rewrite"
+          className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-sky-500/30 bg-sky-500/10 px-7 py-6 hover:bg-sky-500/15 transition"
+        >
+          <span>
+            <span className="block text-lg font-semibold">Rather have a person do it?</span>
+            <span className="block text-slate-300">
+              I&apos;ll rewrite your CV for the role you want and send a video walkthrough within 48 hours. £49, includes lifetime GhostAI.
+            </span>
+          </span>
+          <span className="text-sky-300 font-semibold whitespace-nowrap">CV Rewrite →</span>
+        </Link>
+      </section>
+
       {/* ---------------- FAQ ---------------- */}
       <section id="faq" className="scroll-mt-20 max-w-3xl mx-auto px-5 sm:px-6 py-20 sm:py-28">
         <div className="text-center mb-10">

@@ -399,8 +399,19 @@ export default function PricingPage() {
             </Link>
           </div>
         </div>
+        <Link
+          href="/cv-rewrite"
+          className="mt-6 max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/10 px-6 py-5 text-left hover:bg-sky-500/15 transition"
+        >
+          <span>
+            <span className="block font-semibold text-white">Want a person to do it for you?</span>
+            <span className="block text-sm text-slate-300">CV Rewrite by the founder: tailored to your target role, back in 48 hours, includes Lifetime. £49.</span>
+          </span>
+          <span className="text-sky-300 font-semibold whitespace-nowrap">See CV Rewrite →</span>
+        </Link>
+
         <p className="text-slate-500 text-sm mt-6">
-          Both come with our 14-day full refund. See the <Link href="/refunds" className="text-sky-400 hover:text-sky-300">Refund Policy</Link>.
+          All of these come with our 14-day full refund. See the <Link href="/refunds" className="text-sky-400 hover:text-sky-300">Refund Policy</Link>.
         </p>
       </div>
 

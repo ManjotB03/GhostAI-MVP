@@ -21,6 +21,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.7,
         },
         {
+            url: "https://www.ghostaicorp.com/cv-rewrite",
+            lastModified: new Date(),
+            changeFrequency: "weekly",
+            priority: 0.7,
+        },
+        {
             url: "https://www.ghostaicorp.com/refunds",
             lastModified: new Date(),
             changeFrequency: "yearly",
