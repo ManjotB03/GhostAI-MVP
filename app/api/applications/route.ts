@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 const VALID_STATUSES = ["saved", "applied", "interview", "offer", "rejected", "no_response"];
 
 // Free users can track a limited number of applications; paid tiers are unlimited.
-const FREE_APPLICATION_LIMIT = 5;
+const FREE_APPLICATION_LIMIT = 25;
 
 
 // GET /api/applications -> list the signed-in user's applications, newest first
