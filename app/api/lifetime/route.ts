@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
-import { LIFETIME_STATUS, lifetimeSale } from "@/lib/tier";
+import { lifetimeSale } from "@/lib/tier";
+import { countLifetimeMembers } from "@/lib/lifetime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,16 +10,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const sale = lifetimeSale();
 
-  const { count, error } = await supabaseServer
-    .from("app_users")
-    .select("id", { count: "exact", head: true })
-    .eq("subscription_status", LIFETIME_STATUS);
-
-  if (error) {
+  let sold: number;
+  try {
+    sold = await countLifetimeMembers();
+  } catch {
     return NextResponse.json({ error: "Could not load sale status" }, { status: 500 });
   }
-
-  const sold = count ?? 0;
   const remaining = Math.max(sale.cap - sold, 0);
 
   return NextResponse.json(
