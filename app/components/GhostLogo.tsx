@@ -7,7 +7,7 @@ export default function GhostLogo() {
   return (
     <Link href="/" className="flex items-center gap-2">
       <Image
-        src="/ghostai-logo.png"
+        src="/ghostai-icon.svg"
         alt="GhostAI Logo"
         width={140}
         height={40}

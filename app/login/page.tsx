@@ -41,7 +41,7 @@ export default function LoginPage() {
         {/* LOGO */}
         <div className="flex justify-center mb-6">
           <Image
-            src="/ghostai-logo.png"
+            src="/ghostai-icon.svg"
             alt="GhostAI"
             width={180}
             height={50}
