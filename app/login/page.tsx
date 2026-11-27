@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
+import { nextPath } from "@/lib/nextPath";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -30,7 +31,7 @@ export default function LoginPage() {
       return;
     }
 
-    window.location.href = "/ghost";
+    window.location.href = nextPath();
   };
 
   return (
@@ -66,7 +67,7 @@ export default function LoginPage() {
 
         {/* GOOGLE LOGIN */}
         <button
-          onClick={() => signIn("google", { callbackUrl: "/ghost" })}
+          onClick={() => signIn("google", { callbackUrl: nextPath() })}
           className="w-full flex items-center justify-center gap-3 rounded-xl bg-white hover:bg-slate-100 transition text-slate-800 font-semibold py-3 mb-6"
         >
           <img

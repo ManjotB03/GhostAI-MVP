@@ -57,6 +57,13 @@ export default function ApplicationsPage() {
   const [unlimited, setUnlimited] = useState(false);
   const [limit, setLimit] = useState<number | null>(null);
   const [upgradeMsg, setUpgradeMsg] = useState("");
+
+  // One-click cover letter
+  const [coverFor, setCoverFor] = useState<Application | null>(null);
+  const [coverText, setCoverText] = useState("");
+  const [coverLoading, setCoverLoading] = useState(false);
+  const [coverError, setCoverError] = useState("");
+  const [coverCopied, setCoverCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -187,6 +194,60 @@ export default function ApplicationsPage() {
     }
   };
 
+  const writeCoverLetter = async (a: Application) => {
+    setCoverFor(a);
+    setCoverText("");
+    setCoverError("");
+    setCoverCopied(false);
+    setCoverLoading(true);
+
+    const role = a.role_title || "this role";
+    const company = a.company || "the company";
+    const jd = (a.job_description || "").slice(0, 6000);
+
+    const task = [
+      `Write a tailored cover letter for the ${role} position at ${company}.`,
+      "Use British English. Keep it under 350 words, in 3–4 short paragraphs.",
+      "Open with a specific reason for applying, not 'I am writing to apply'.",
+      "Use only experience that appears in my CV; do not invent achievements, numbers or employers.",
+      "Mirror the most important requirements from the job description.",
+      "Return only the letter, starting with 'Dear Hiring Manager,' and ending with a sign-off and [Your name].",
+      jd
+        ? `\nJob description:\n${jd}`
+        : "\nNo job description was saved, so keep it general to the role.",
+    ].join("\n");
+
+    try {
+      const res = await fetch("/api/ghost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "career",
+          targetRole: role,
+          task,
+          docText: (a.cv_version || "").slice(0, 12000),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 402 || data?.limitReached) {
+        setCoverError(
+          data?.message || "You've reached today's AI limit. Upgrade for more daily requests."
+        );
+        return;
+      }
+      if (!res.ok || !data?.result) {
+        setCoverError("Couldn't write the cover letter right now. Please try again.");
+        return;
+      }
+      setCoverText(String(data.result).trim());
+    } catch {
+      setCoverError("Couldn't write the cover letter right now. Please try again.");
+    } finally {
+      setCoverLoading(false);
+    }
+  };
+
   // Not signed in
   if (authStatus !== "loading" && !session?.user?.email) {
     return (
@@ -250,10 +311,10 @@ export default function ApplicationsPage() {
           </div>
           {!unlimited && limit !== null && apps.length >= limit ? (
             <Link
-              href="/pricing"
+              href="/pricing#one-off"
               className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 font-semibold transition self-start sm:self-auto"
             >
-              Upgrade to add more →
+              Unlock unlimited, from £19 →
             </Link>
           ) : (
             <button
@@ -272,13 +333,17 @@ export default function ApplicationsPage() {
                 You&apos;ve hit the free tracking limit
               </p>
               <p className="text-sm text-slate-300">{upgradeMsg}</p>
+              <p className="text-sm text-slate-300 mt-1">
+                Track unlimited applications with the <strong className="text-white">Job Hunt Pass</strong>:
+                £19 once, for 90 days. No subscription.
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Link
-                href="/pricing"
+                href="/pricing#one-off"
                 className="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold transition whitespace-nowrap"
               >
-                See plans →
+                Get the pass →
               </Link>
               <button
                 onClick={() => setUpgradeMsg("")}
@@ -440,6 +505,13 @@ export default function ApplicationsPage() {
                         ))}
                       </select>
 
+                      <button
+                        onClick={() => writeCoverLetter(a)}
+                        className="w-full text-xs rounded-lg border border-sky-500/40 text-sky-200 hover:bg-sky-500/10 px-2 py-1.5 mb-2 transition"
+                      >
+                        Write cover letter
+                      </button>
+
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-slate-500">
                           {new Date(a.created_at).toLocaleDateString()}
@@ -459,6 +531,82 @@ export default function ApplicationsPage() {
           </div>
         )}
       </div>
+      {coverFor && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Cover letter"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+          onClick={() => !coverLoading && setCoverFor(null)}
+        >
+          <div
+            className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <h2 className="text-xl font-bold">Cover letter</h2>
+                <p className="text-sm text-slate-400">
+                  {coverFor.role_title || "Untitled role"}
+                  {coverFor.company ? ` · ${coverFor.company}` : ""}
+                </p>
+              </div>
+              <button
+                onClick={() => setCoverFor(null)}
+                disabled={coverLoading}
+                className="text-slate-400 hover:text-white text-sm"
+              >
+                Close
+              </button>
+            </div>
+
+            {!coverFor.cv_version && (
+              <p className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                Tip: this application has no saved CV, so the letter can&apos;t use your experience.
+                Save it from the CV coach with &quot;Save as application&quot; for a better letter.
+              </p>
+            )}
+
+            {coverLoading && <p className="text-slate-300">Writing your cover letter...</p>}
+            {coverError && (
+              <div className="text-sm text-amber-200">
+                <p className="mb-2">{coverError}</p>
+                <Link href="/pricing" className="text-sky-400 hover:text-sky-300">See plans →</Link>
+              </div>
+            )}
+
+            {coverText && (
+              <>
+                <textarea
+                  value={coverText}
+                  onChange={(e) => setCoverText(e.target.value)}
+                  className="w-full min-h-[320px] rounded-xl bg-slate-950 border border-slate-700 p-4 text-sm text-slate-100 leading-relaxed outline-none focus:border-sky-500"
+                />
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(coverText);
+                      setCoverCopied(true);
+                    }}
+                    className="rounded-lg bg-sky-500 hover:bg-sky-400 px-4 py-2 text-sm font-semibold text-slate-950"
+                  >
+                    {coverCopied ? "Copied" : "Copy letter"}
+                  </button>
+                  <button
+                    onClick={() => writeCoverLetter(coverFor)}
+                    className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-200 hover:bg-slate-800"
+                  >
+                    Write another version
+                  </button>
+                  <p className="text-xs text-slate-500">
+                    Check every line before you send it. Uses 2 AI requests if a CV is saved, otherwise 1.
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

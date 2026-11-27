@@ -37,7 +37,7 @@ export default function SuccessPage() {
         </div>
 
         <p className="text-sm text-slate-400 mt-8">
-          You can manage or cancel your subscription anytime from the pricing page.
+          Subscriptions can be managed or cancelled anytime from the pricing page. One-off passes don't renew, so there's nothing to cancel.
         </p>
 
       </div>

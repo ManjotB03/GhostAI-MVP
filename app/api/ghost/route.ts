@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { authOptions } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { LIMITS, OWNER_EMAIL, type Tier } from "@/lib/limits";
+import { TIER_COLUMNS, effectiveTier } from "@/lib/tier";
 
 export const runtime = "nodejs";
 
@@ -13,11 +14,6 @@ const openai = new OpenAI({
 
 type Mode = "career" | "interview_mock";
 
-function normalizeTier(input: any): Tier {
-  const t = String(input ?? "free").toLowerCase();
-  if (t === "free" || t === "pro" || t === "ultimate") return t;
-  return "free";
-}
 
 function systemPrompt(mode: Mode) {
   if (mode === "interview_mock") {
@@ -275,7 +271,7 @@ export async function POST(req: Request) {
 
     const { data: userRow, error: userErr } = await supabaseServer
       .from("app_users")
-      .select("subscription_tier")
+      .select(TIER_COLUMNS)
       .eq("email", email)
       .maybeSingle();
 
@@ -286,7 +282,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const tier: Tier = normalizeTier(userRow?.subscription_tier);
+    const tier: Tier = effectiveTier(userRow);
 
     if (!isOwner && tier === "free" && mode === "interview_mock") {
       return NextResponse.json(

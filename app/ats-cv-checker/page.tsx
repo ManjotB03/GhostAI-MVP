@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import EmailCapture from "../components/EmailCapture";
 
 export default function ATSCheckerPage() {
   const [cv, setCv] = useState("");
@@ -244,6 +245,15 @@ export default function ATSCheckerPage() {
                 </div>
               </div>
             )}
+
+            {/* Email capture */}
+            <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-950 p-6">
+              <h3 className="text-xl font-bold mb-1">Email me this report</h3>
+              <p className="text-slate-400 text-sm mb-4">
+                Get your score, keywords and improvements in your inbox, so you have them when you edit your CV.
+              </p>
+              <EmailCapture source="ats-report" buttonLabel="Send my report" report={results} />
+            </div>
 
             {/* CTA */}
             <div className="mt-12 text-center">

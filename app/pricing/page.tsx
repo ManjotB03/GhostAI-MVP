@@ -62,6 +62,34 @@ export default function PricingPage() {
     }
   };
 
+  const [passLoading, setPassLoading] = useState(false);
+
+  const handleJobHuntPass = async () => {
+    if (status === "loading") return;
+    if (!session?.user?.email) {
+      window.location.href = "/signup?next=/pricing";
+      return;
+    }
+    try {
+      setPassLoading(true);
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: "job-hunt-pass" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      alert(data?.message || data?.error || "Checkout failed");
+    } catch (err: any) {
+      alert(err?.message || "Checkout error");
+    } finally {
+      setPassLoading(false);
+    }
+  };
+
   const handleManageBilling = async () => {
     if (!session?.user?.email) {
       window.location.href = "/login";
@@ -328,27 +356,52 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* CV BOOST - coming soon */}
-      <div className="mt-16 bg-slate-900/70 border border-slate-800 rounded-2xl p-8 shadow-xl text-left max-w-md mx-auto opacity-80">
-        <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">
-          One-Time Purchase — Coming Soon
+      {/* ONE-OFF OPTIONS */}
+      <div id="one-off" className="mt-16 scroll-mt-24">
+        <h2 className="text-3xl font-bold text-white mb-2">Prefer to pay once?</h2>
+        <p className="text-slate-400 mb-8">No subscription to remember to cancel.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto text-left">
+          <div className="bg-slate-900/70 border border-sky-500/40 rounded-2xl p-8 shadow-xl">
+            <p className="text-xs uppercase tracking-wider text-sky-300 mb-2">One job hunt</p>
+            <h3 className="text-2xl font-bold mb-2">Job Hunt Pass</h3>
+            <p className="text-4xl font-extrabold mb-1">£19</p>
+            <p className="text-slate-400 text-sm mb-5">One payment · 90 days of Pro · no renewal</p>
+            <ul className="space-y-2 text-slate-300 text-sm mb-6">
+              <li>• 45 AI requests a day</li>
+              <li>• Unlimited application tracking</li>
+              <li>• Cover letters and interview mock mode</li>
+            </ul>
+            <button
+              onClick={handleJobHuntPass}
+              disabled={passLoading}
+              className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold rounded-lg transition disabled:opacity-70"
+            >
+              {passLoading ? "Opening checkout..." : "Get the Job Hunt Pass"}
+            </button>
+          </div>
+
+          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-8 shadow-xl">
+            <p className="text-xs uppercase tracking-wider text-slate-400 mb-2">Founding members</p>
+            <h3 className="text-2xl font-bold mb-2">Lifetime Pass</h3>
+            <p className="text-4xl font-extrabold mb-1">£49</p>
+            <p className="text-slate-400 text-sm mb-5">One payment · Pro forever · limited spots</p>
+            <ul className="space-y-2 text-slate-300 text-sm mb-6">
+              <li>• Everything in the Job Hunt Pass</li>
+              <li>• Never pay again for your next job hunt</li>
+              <li>• Only available during the founding sale</li>
+            </ul>
+            <Link
+              href="/lifetime"
+              className="block w-full py-3 text-center border border-slate-600 hover:bg-slate-800 font-semibold rounded-lg transition"
+            >
+              See the Lifetime Pass →
+            </Link>
+          </div>
+        </div>
+        <p className="text-slate-500 text-sm mt-6">
+          Both come with our 14-day full refund. See the <Link href="/refunds" className="text-sky-400 hover:text-sky-300">Refund Policy</Link>.
         </p>
-
-        <h2 className="text-2xl font-bold mb-2">CV Boost</h2>
-
-        <p className="text-4xl font-extrabold text-slate-400 mb-4">£9.99</p>
-
-        <p className="text-slate-400 mb-5">
-          A one-off full CV rewrite without a subscription. We&apos;re finishing
-          this off — it isn&apos;t available to buy just yet.
-        </p>
-
-        <button
-          disabled
-          className="w-full py-3 bg-slate-700 text-slate-300 font-semibold rounded-lg cursor-not-allowed"
-        >
-          Coming soon
-        </button>
       </div>
 
       {/* FAQ */}
