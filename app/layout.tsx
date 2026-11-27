@@ -97,7 +97,7 @@ export default function RootLayout({
                     name: "Is it free?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "Yes. The free plan includes 10 AI requests a day, CV feedback, a match score, and tracking for up to 5 applications. The ATS checker works without an account at all.",
+                      text: "Yes. The free plan includes 10 AI requests a day, CV feedback, a match score, and tracking for up to 25 applications. The ATS checker works without an account at all.",
                     },
                   },
                   {

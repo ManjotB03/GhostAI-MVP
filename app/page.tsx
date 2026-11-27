@@ -75,7 +75,7 @@ const FAQS = [
   },
   {
     q: "Is it free?",
-    a: "Yes. The free plan includes 10 AI requests a day, CV feedback, a match score, and tracking for up to 5 applications. The ATS checker works without an account at all.",
+    a: "Yes. The free plan includes 10 AI requests a day, CV feedback, a match score, and tracking for up to 25 applications. The ATS checker works without an account at all.",
   },
   {
     q: "Will GhostAI get me interviews?",
@@ -334,7 +334,7 @@ export default function HomePage() {
               </div>
 
               <p className="text-sm text-slate-400">
-                No card needed. Free plan includes 10 AI requests a day and tracking for 5 applications.
+                No card needed. Free plan includes 10 AI requests a day and tracking for 25 applications.
               </p>
             </div>
 
@@ -523,7 +523,7 @@ export default function HomePage() {
               <p className="text-sm font-semibold text-slate-400 mb-1">Free</p>
               <p className="text-4xl font-extrabold mb-5">£0</p>
               <ul className="space-y-3 text-slate-300 mb-7">
-                {["10 AI requests a day", "CV feedback, match score and rewrites", "Track up to 5 applications", "Free ATS checker"].map((f) => (
+                {["10 AI requests a day", "CV feedback, match score and rewrites", "Track up to 25 applications", "Free ATS checker"].map((f) => (
                   <li key={f} className="flex gap-3"><Check className="text-slate-500 shrink-0" />{f}</li>
                 ))}
               </ul>

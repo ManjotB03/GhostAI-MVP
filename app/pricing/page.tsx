@@ -198,7 +198,7 @@ export default function PricingPage() {
             <li>• CV feedback and bullet rewrites</li>
             <li>• ATS-style match score</li>
             <li>• Missing keyword suggestions</li>
-            <li>• Track up to 5 applications</li>
+            <li>• Track up to 25 applications</li>
             <li>• Free ATS checker (no signup needed)</li>
           </ul>
 
@@ -333,7 +333,7 @@ export default function PricingPage() {
 
               <tr>
                 <td className="p-5">Application tracking</td>
-                <td className="p-5">5 applications</td>
+                <td className="p-5">25 applications</td>
                 <td className="p-5 text-sky-400">Unlimited</td>
                 <td className="p-5 text-sky-400">Unlimited</td>
               </tr>
@@ -425,7 +425,7 @@ export default function PricingPage() {
           {[
             {
               q: "Can I use GhostAI for free?",
-              a: "Yes. The free plan gives you 10 AI requests a day, CV feedback, an ATS match score, and tracking for up to 5 applications. You can also use the ATS checker without an account at all.",
+              a: "Yes. The free plan gives you 10 AI requests a day, CV feedback, an ATS match score, and tracking for up to 25 applications. You can also use the ATS checker without an account at all.",
             },
             {
               q: "What do I get by upgrading?",
