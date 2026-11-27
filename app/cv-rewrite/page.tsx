@@ -118,6 +118,20 @@ export default function CvRewritePage() {
             Your CV, rewritten for the job you want.{" "}
             <span className="text-sky-400">By a real person, in 48 hours.</span>
           </h1>
+          <p className="text-lg text-slate-300 leading-relaxed mb-4">
+            GhostAI&apos;s CV rewrite service is a person rewriting your CV (or resume) for the exact role
+            you&apos;re applying to, so it gets through{" "}
+            <a
+              href="https://en.wikipedia.org/wiki/Applicant_tracking_system"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sky-400 underline-offset-2 hover:underline"
+            >
+              applicant tracking systems (ATS)
+            </a>{" "}
+            and reads well to recruiters, whether you apply on LinkedIn, Indeed or a company&apos;s own
+            careers site.
+          </p>
           <p className="text-lg text-slate-300 leading-relaxed mb-8">
             Send me your CV and the role you&apos;re going for. I&apos;ll tailor it line by line, show you
             every change on video, and you keep GhostAI for life to tailor the next ones yourself.
@@ -127,7 +141,10 @@ export default function CvRewritePage() {
       </section>
 
       <section className="max-w-3xl mx-auto px-5 sm:px-6 py-12">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-8">How it works</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">How it works</h2>
+        <p className="text-slate-400 mb-8">
+          Three steps: pay, send your CV and the job ad, and get your rewritten CV back within 48 hours.
+        </p>
         <ol className="space-y-6">
           {STEPS.map((s, i) => (
             <li key={s.title} className="flex gap-4">
@@ -145,7 +162,11 @@ export default function CvRewritePage() {
 
       <section className="max-w-3xl mx-auto px-5 sm:px-6 py-8">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-7">
-          <h2 className="text-xl font-bold mb-4">What you get for {PRICE}</h2>
+          <h2 className="text-xl font-bold mb-2">What you get for {PRICE}</h2>
+          <p className="text-slate-400 mb-4">
+            One CV tailored to your target role, a video walkthrough of every change, and lifetime
+            GhostAI access.
+          </p>
           <ul className="space-y-3">
             {INCLUDED.map((f) => (
               <li key={f} className="flex gap-3 text-slate-200">
@@ -158,7 +179,14 @@ export default function CvRewritePage() {
       </section>
 
       <section className="max-w-3xl mx-auto px-5 sm:px-6 py-12">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-6">Questions</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">Questions</h2>
+        <p className="text-slate-400 mb-6">
+          Quick answers about the CV rewrite service. Anything else, email{" "}
+          <a href="mailto:ghostaicorp@gmail.com" className="text-sky-400 hover:text-sky-300">
+            ghostaicorp@gmail.com
+          </a>
+          .
+        </p>
         <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800">
           {FAQS.map((f) => (
             <div key={f.q} className="px-6 py-5">
@@ -177,7 +205,10 @@ export default function CvRewritePage() {
 
       <section className="px-5 sm:px-6 pb-20">
         <div className="max-w-3xl mx-auto rounded-3xl border border-sky-500/30 bg-gradient-to-b from-sky-500/15 to-slate-900/60 px-6 py-12 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6">Applying soon? Get it right first.</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">Applying soon? Get it right first.</h2>
+          <p className="text-slate-300 mb-6">
+            Get your CV tailored before your next application goes out.
+          </p>
           {cta}
         </div>
       </section>
