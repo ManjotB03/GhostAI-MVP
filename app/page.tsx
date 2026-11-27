@@ -215,7 +215,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-5 sm:px-6">
           <div className="flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <Image src="/ghostai-icon.svg" alt="" width={30} height={30} priority unoptimized />
+              <Image src="/ghostai-icon.svg" alt="GhostAI logo" width={30} height={30} priority unoptimized />
               <span className="text-lg font-bold tracking-tight">GhostAI</span>
             </Link>
 
@@ -312,7 +312,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg text-slate-300 leading-relaxed max-w-xl mb-8">
-                GhostAI is a job application tracker and CV tailoring tool. It
+                GhostAI is a <strong className="font-semibold text-white">job application tracker</strong> and CV tailoring tool. It
                 tailors your CV to each job, keeps every application in one
                 place, and checks in when you haven&apos;t heard back, so you can
                 see what&apos;s actually working.
@@ -429,7 +429,7 @@ export default function HomePage() {
           <div>
             <SectionLabel>Application tracker</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5">
-              Stop losing track of where you applied.
+              A job application tracker that remembers where you applied.
             </h2>
             <p className="text-slate-400 text-lg leading-relaxed mb-8">
               Every application gets a card with the role, the match score, and
@@ -639,7 +639,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             <div className="col-span-2">
               <Link href="/" className="flex items-center gap-2 mb-3">
-                <Image src="/ghostai-icon.svg" alt="" width={28} height={28} unoptimized />
+                <Image src="/ghostai-icon.svg" alt="GhostAI job application tracker logo" width={28} height={28} unoptimized />
                 <span className="font-bold">GhostAI</span>
               </Link>
               <p className="text-sm text-slate-400 leading-relaxed max-w-xs mb-4">

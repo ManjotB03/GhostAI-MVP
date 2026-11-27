@@ -99,7 +99,7 @@ export default function CvRewritePage() {
       <header className="border-b border-slate-800/70">
         <div className="max-w-5xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/ghostai-icon.svg" alt="" width={28} height={28} unoptimized />
+            <Image src="/ghostai-icon.svg" alt="GhostAI CV rewrite service logo" width={28} height={28} unoptimized />
             <span className="font-bold">GhostAI</span>
           </Link>
           <Link href="/pricing" className="text-sm text-slate-300 hover:text-white">
@@ -119,7 +119,7 @@ export default function CvRewritePage() {
             <span className="text-sky-400">By a real person, in 48 hours.</span>
           </h1>
           <p className="text-lg text-slate-300 leading-relaxed mb-4">
-            GhostAI&apos;s CV rewrite service is a person rewriting your CV (or resume) for the exact role
+            GhostAI&apos;s <strong className="font-semibold text-white">CV rewrite service</strong> is a person rewriting your CV (or resume) for the exact role
             you&apos;re applying to, so it gets through{" "}
             <a
               href="https://en.wikipedia.org/wiki/Applicant_tracking_system"
@@ -141,7 +141,7 @@ export default function CvRewritePage() {
       </section>
 
       <section className="max-w-3xl mx-auto px-5 sm:px-6 py-12">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">How it works</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">How the CV rewrite service works</h2>
         <p className="text-slate-400 mb-8">
           Three steps: pay, send your CV and the job ad, and get your rewritten CV back within 48 hours.
         </p>

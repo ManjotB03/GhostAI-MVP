@@ -8,16 +8,16 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   metadataBase: new URL("https://www.ghostaicorp.com"),
-  title: "GhostAI – CV Tailoring & Job Application Tracker for Graduates",
+  title: "Job Application Tracker & CV Tailoring Tool | GhostAI",
   description:
-    "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
+    "GhostAI is a free job application tracker and CV tailoring tool. Tailor your CV to every job, track every application in one place, and get a reminder when you haven't heard back.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "GhostAI – CV Tailoring & Job Application Tracker for Graduates",
+    title: "Job Application Tracker & CV Tailoring Tool | GhostAI",
     description:
-      "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
+      "GhostAI is a free job application tracker and CV tailoring tool. Tailor your CV to every job, track every application in one place, and get a reminder when you haven't heard back.",
     url: "https://www.ghostaicorp.com",
     siteName: "GhostAI",
     images: [
@@ -33,9 +33,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GhostAI – CV Tailoring & Job Application Tracker for Graduates",
+    title: "Job Application Tracker & CV Tailoring Tool | GhostAI",
     description:
-      "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
+      "GhostAI is a free job application tracker and CV tailoring tool. Tailor your CV to every job, track every application in one place, and get a reminder when you haven't heard back.",
     images: ["https://www.ghostaicorp.com/ghostai-logo.png"],
   },
 };
@@ -63,7 +63,7 @@ export default function RootLayout({
                 name: "GhostAI",
                 url: "https://www.ghostaicorp.com",
                 description:
-                  "Tailor your CV to every graduate role, track every application in one place, and get a check-in when you haven't heard back. Free to start.",
+                  "GhostAI is a free job application tracker and CV tailoring tool. Tailor your CV to every job, track every application in one place, and get a reminder when you haven't heard back.",
               },
               {
                 "@type": "FAQPage",
