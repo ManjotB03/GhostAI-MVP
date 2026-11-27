@@ -1,26 +1,33 @@
+import SimplePageShell from "../components/SimplePageShell";
+
+export const metadata = {
+  title: "Contact – GhostAI",
+  description: "Questions, feedback or partnership enquiries? Email GhostAI.",
+};
+
+const EMAIL = "ghostaicorp@gmail.com";
+
 export default function ContactPage() {
   return (
-    <div className="max-w-xl mx-auto mt-16 px-6 text-center">
-      <h1 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
-        Contact Us
-      </h1>
-
-      <p className="text-lg text-gray-300 mb-8">
-        Have questions, feedback, or business enquiries?  
-        We’d love to hear from you.
-      </p>
-
-      <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-xl">
-        <h2 className="text-2xl font-semibold text-indigo-300 mb-4">Email</h2>
-        <p className="text-gray-300 text-lg">
-          ghostaicorp@gmail.com
-          
+    <SimplePageShell>
+      <div className="max-w-xl mx-auto px-5 sm:px-6 py-16 text-center">
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-400 mb-3">Contact</p>
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6">Get in touch</h1>
+        <p className="text-lg text-slate-300 mb-10">
+          Questions, feedback, a refund, or a partnership idea for your society, bootcamp or
+          coaching clients? Email me directly.
         </p>
-      </div>
 
-      <p className="text-gray-400 mt-10">
-        We aim to reply within 24–48 hours.
-      </p>
-    </div>
+        <a
+          href={`mailto:${EMAIL}`}
+          className="block rounded-2xl border border-sky-500/30 bg-sky-500/10 p-6 hover:bg-sky-500/15 transition"
+        >
+          <span className="block text-sm text-slate-400 mb-1">Email</span>
+          <span className="block text-xl font-semibold text-white">{EMAIL}</span>
+        </a>
+
+        <p className="text-slate-400 mt-8">I aim to reply within 2 working days.</p>
+      </div>
+    </SimplePageShell>
   );
 }
