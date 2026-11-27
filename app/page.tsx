@@ -650,7 +650,7 @@ export default function HomePage() {
                   href="https://www.linkedin.com/in/manjot-bhoot-6780a43ba/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="GhostAI on LinkedIn"
+                  aria-label="Founder Manjot Bhoot on LinkedIn"
                   className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-900 hover:text-white transition"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

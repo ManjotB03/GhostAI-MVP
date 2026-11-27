@@ -20,14 +20,6 @@ export const metadata = {
       "GhostAI is a free job application tracker and CV tailoring tool. Tailor your CV to every job, track every application in one place, and get a reminder when you haven't heard back.",
     url: "https://www.ghostaicorp.com",
     siteName: "GhostAI",
-    images: [
-      {
-        url: "https://www.ghostaicorp.com/ghostai-logo.png",
-        width: 1200,
-        height: 630,
-        alt: "GhostAI Logo",
-      },
-    ],
     locale: "en_GB",
     type: "website",
   },
@@ -36,7 +28,6 @@ export const metadata = {
     title: "Job Application Tracker & CV Tailoring Tool | GhostAI",
     description:
       "GhostAI is a free job application tracker and CV tailoring tool. Tailor your CV to every job, track every application in one place, and get a reminder when you haven't heard back.",
-    images: ["https://www.ghostaicorp.com/ghostai-logo.png"],
   },
 };
 
