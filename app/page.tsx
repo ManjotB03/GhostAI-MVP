@@ -659,6 +659,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><Link href="/privacy" className="hover:text-slate-200 transition">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-slate-200 transition">Terms of Service</Link></li>
+                <li><Link href="/refunds" className="hover:text-slate-200 transition">Refund Policy</Link></li>
               </ul>
             </div>
           </div>
