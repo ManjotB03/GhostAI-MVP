@@ -8,73 +8,47 @@ interface ModernLayoutProps {
   children: ReactNode;
 }
 
+const NAV = [
+  { href: "/ghost", label: "CV coach" },
+  { href: "/applications", label: "Tracker" },
+  { href: "/pricing", label: "Pricing" },
+];
+
+// App shell for signed-in pages. Always the dark navy theme so it matches the
+// rest of the site (it used to switch to a light background in light mode,
+// which put white text on a light page).
 export default function ModernLayout({ children }: ModernLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-sans relative">
-      
-      {/* ✅ BACKGROUND LAYER (CANNOT BLOCK CLICKS) */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        {/* optional subtle glow */}
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-sky-500/10 blur-3xl" />
+    <div className="min-h-screen flex flex-col bg-slate-950 text-white font-sans relative">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-[48rem] rounded-full bg-sky-500/10 blur-3xl" />
       </div>
 
-      {/* HEADER */}
-      <header className="bg-white dark:bg-gray-800 shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/ghostai-icon.svg"
-            alt="GhostAI"
-            width={34}
-            height={34}
-            priority
-          />
-          <span className="font-bold text-lg text-gray-900 dark:text-white">
-            GhostAI
-          </span>
-        </Link>
-
-        {/* NAVIGATION */}
-        <nav className="space-x-4">
-          <Link
-            href="/"
-            className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 transition"
-          >
-            Home
+      <header className="sticky top-0 z-50 border-b border-slate-800/70 bg-slate-950/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-6">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/ghostai-icon.svg" alt="" width={30} height={30} priority />
+            <span className="text-lg font-bold tracking-tight">GhostAI</span>
           </Link>
-
-          <Link
-            href="/about"
-            className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 transition"
-          >
-            About
-          </Link>
-
-          <Link
-            href="/contact"
-            className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 transition"
-          >
-            Contact
-          </Link>
-
-          <Link
-            href="/pricing"
-            className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 transition"
-          >
-            Pricing
-          </Link>
-        </nav>
+          <nav className="flex items-center gap-5 text-sm text-slate-300">
+            {NAV.map((l) => (
+              <Link key={l.href} href={l.href} className="hover:text-white transition">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="flex-1 relative z-10 flex flex-col items-center justify-start p-6 sm:p-12">
         {children}
       </main>
 
-      {/* FOOTER */}
-      <footer className="bg-white dark:bg-gray-800 shadow-inner py-4 px-6 text-center text-sm text-gray-500 dark:text-gray-400 relative z-10">
-        &copy; {new Date().getFullYear()} GhostAI • Built with Next.js & Tailwind CSS
+      <footer className="relative z-10 border-t border-slate-800 py-5 px-6 text-center text-sm text-slate-500">
+        © {new Date().getFullYear()} GhostAI ·{" "}
+        <Link href="/privacy" className="hover:text-slate-300">Privacy</Link> ·{" "}
+        <Link href="/terms" className="hover:text-slate-300">Terms</Link> ·{" "}
+        <Link href="/refunds" className="hover:text-slate-300">Refunds</Link>
       </footer>
     </div>
   );

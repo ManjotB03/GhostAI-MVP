@@ -437,15 +437,15 @@ export default function GhostClient({
     <ModernLayout>
       <div className="w-full flex min-h-[calc(100vh-0px)]">
         {/* Desktop / tablet sidebar */}
-        <div className="w-72 bg-gray-950 border-r border-gray-800 p-4 hidden md:flex flex-col">
+        <div className="w-72 bg-slate-950 border-r border-slate-800 p-4 hidden md:flex flex-col">
           <button
             onClick={resetComposer}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg mb-4 transition"
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg mb-4 transition"
           >
             + New chat
           </button>
 
-          <div className="text-xs text-gray-400 mb-2">
+          <div className="text-xs text-slate-400 mb-2">
             History {historyLoading ? "• loading…" : ""}
           </div>
 
@@ -453,12 +453,12 @@ export default function GhostClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search chats..."
-            className="w-full mb-3 bg-gray-900 border border-gray-700 text-white text-sm rounded-lg p-2"
+            className="w-full mb-3 bg-slate-900 border border-slate-700 text-white text-sm rounded-lg p-2"
           />
 
           <div className="flex-1 overflow-y-auto space-y-2 pr-1">
             {filteredChats.length === 0 && !historyLoading && (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-slate-500">
                 No chats yet. Run your first CV analysis.
               </div>
             )}
@@ -470,19 +470,19 @@ export default function GhostClient({
                   key={chat.id}
                   className={`group rounded-lg border transition ${
                     active
-                      ? "bg-gray-800 border-gray-600"
-                      : "bg-gray-900 border-gray-800 hover:border-gray-700"
+                      ? "bg-slate-800 border-slate-600"
+                      : "bg-slate-900 border-slate-800 hover:border-slate-700"
                   }`}
                 >
                   <button className="w-full text-left p-3" onClick={() => loadChat(chat)}>
                     <div className="text-sm text-white font-medium">{chat.title}</div>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                       {new Date(chat.createdAt).toLocaleString()}
                     </div>
                   </button>
 
                   <div className="px-3 pb-3 flex items-center justify-between">
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs text-slate-400">
                       {chat.atsScore !== null ? `ATS ${chat.atsScore}/100` : "—"}
                     </div>
                     <button
@@ -497,20 +497,20 @@ export default function GhostClient({
             })}
           </div>
 
-          <div className="pt-4 border-t border-gray-800 mt-4">
+          <div className="pt-4 border-t border-slate-800 mt-4">
             {session?.user?.email && (
-              <div className="text-xs text-gray-400 mb-2 truncate">{session.user.email}</div>
+              <div className="text-xs text-slate-400 mb-2 truncate">{session.user.email}</div>
             )}
             <Link
               href="/applications"
-              className="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition text-sm mb-2"
+              className="block w-full text-center bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg transition text-sm mb-2"
             >
               📋 Application Tracker
             </Link>
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full bg-gray-900 border border-gray-700 text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm"
+              className="w-full bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-sm"
             >
               Log out
             </button>
@@ -530,7 +530,7 @@ export default function GhostClient({
               <button
                 type="button"
                 onClick={() => setMobileHistoryOpen((prev) => !prev)}
-                className="bg-gray-900 border border-gray-700 text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm"
+                className="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-sm"
               >
                 {mobileHistoryOpen ? "Hide History" : "Show History"}
               </button>
@@ -538,7 +538,7 @@ export default function GhostClient({
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/login" })}
-                className="bg-gray-900 border border-gray-700 text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm"
+                className="bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg hover:bg-slate-800 transition text-sm"
               >
                 Log out
               </button>
@@ -546,15 +546,15 @@ export default function GhostClient({
 
             {/* Mobile history panel */}
             {mobileHistoryOpen && (
-              <div className="w-full mb-6 md:hidden rounded-xl border border-gray-800 bg-gray-950 p-4">
+              <div className="w-full mb-6 md:hidden rounded-xl border border-slate-800 bg-slate-950 p-4">
                 <button
                   onClick={resetComposer}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg mb-4 transition"
+                  className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg mb-4 transition"
                 >
                   + New chat
                 </button>
 
-                <div className="text-xs text-gray-400 mb-2">
+                <div className="text-xs text-slate-400 mb-2">
                   History {historyLoading ? "• loading…" : ""}
                 </div>
 
@@ -562,12 +562,12 @@ export default function GhostClient({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search chats..."
-                  className="w-full mb-3 bg-gray-900 border border-gray-700 text-white text-sm rounded-lg p-2"
+                  className="w-full mb-3 bg-slate-900 border border-slate-700 text-white text-sm rounded-lg p-2"
                 />
 
                 <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
                   {filteredChats.length === 0 && !historyLoading && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-slate-500">
                       No chats yet. Run your first CV analysis.
                     </div>
                   )}
@@ -579,8 +579,8 @@ export default function GhostClient({
                         key={chat.id}
                         className={`rounded-lg border transition ${
                           active
-                            ? "bg-gray-800 border-gray-600"
-                            : "bg-gray-900 border-gray-800 hover:border-gray-700"
+                            ? "bg-slate-800 border-slate-600"
+                            : "bg-slate-900 border-slate-800 hover:border-slate-700"
                         }`}
                       >
                         <button
@@ -591,13 +591,13 @@ export default function GhostClient({
                           }}
                         >
                           <div className="text-sm text-white font-medium">{chat.title}</div>
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="text-xs text-slate-400 mt-1">
                             {new Date(chat.createdAt).toLocaleString()}
                           </div>
                         </button>
 
                         <div className="px-3 pb-3 flex items-center justify-between">
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-slate-400">
                             {chat.atsScore !== null ? `ATS ${chat.atsScore}/100` : "—"}
                           </div>
                           <button
@@ -618,7 +618,7 @@ export default function GhostClient({
               GhostAI Career Coach
             </h1>
 
-            <p className="text-gray-300 mb-6 text-center max-w-2xl">
+            <p className="text-slate-300 mb-6 text-center max-w-2xl">
               Career advice that feels like a real coach — CVs, interviews, and salary growth.
             </p>
 
@@ -627,8 +627,8 @@ export default function GhostClient({
                 onClick={() => setMode("career")}
                 className={`px-4 py-2 rounded-lg border transition w-full ${
                   mode === "career"
-                    ? "bg-indigo-600 border-indigo-500 text-white"
-                    : "bg-gray-900 border-gray-700 text-gray-200 hover:bg-gray-800"
+                    ? "bg-sky-600 border-sky-500 text-white"
+                    : "bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800"
                 }`}
               >
                 Career Advice
@@ -638,8 +638,8 @@ export default function GhostClient({
                 onClick={() => setMode("interview_mock")}
                 className={`px-4 py-2 rounded-lg border transition w-full ${
                   mode === "interview_mock"
-                    ? "bg-purple-600 border-purple-500 text-white"
-                    : "bg-gray-900 border-gray-700 text-gray-200 hover:bg-gray-800"
+                    ? "bg-sky-600 border-sky-500 text-white"
+                    : "bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800"
                 }`}
               >
                 Interview Mock (Pro)
@@ -651,7 +651,7 @@ export default function GhostClient({
                 <button
                   key={p}
                   onClick={() => setTask(p)}
-                  className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition"
+                  className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm transition"
                 >
                   {p}
                 </button>
@@ -659,12 +659,12 @@ export default function GhostClient({
             </div>
 
             <div className="w-full max-w-xl mb-4">
-              <label className="text-sm text-gray-300 block mb-1">Target Role</label>
+              <label className="text-sm text-slate-300 block mb-1">Target Role</label>
 
               <select
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 text-white rounded-lg p-2"
+                className="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2"
               >
                 <option>Data Engineer</option>
                 <option>Data Analyst</option>
@@ -676,17 +676,17 @@ export default function GhostClient({
               </select>
 
               <div className="mt-3">
-                <label className="text-xs text-gray-400 block mb-1">
+                <label className="text-xs text-slate-400 block mb-1">
                   Or type any custom role (optional)
                 </label>
                 <input
                   value={customRole}
                   onChange={(e) => setCustomRole(e.target.value)}
                   placeholder="e.g., Analytics Engineer, Quant Developer, Cyber Security Analyst…"
-                  className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg p-2"
+                  className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-2"
                 />
-                <div className="mt-1 text-xs text-gray-500">
-                  Using: <span className="text-gray-200">{effectiveTargetRole}</span>
+                <div className="mt-1 text-xs text-slate-500">
+                  Using: <span className="text-slate-200">{effectiveTargetRole}</span>
                 </div>
               </div>
             </div>
@@ -698,8 +698,8 @@ export default function GhostClient({
                 onDrop={handleDrop}
                 className={`rounded-xl border-2 border-dashed p-4 transition ${
                   dragActive
-                    ? "border-indigo-400 bg-indigo-500/10"
-                    : "border-gray-700 bg-gray-900/50"
+                    ? "border-sky-400 bg-sky-500/10"
+                    : "border-slate-700 bg-slate-900/50"
                 }`}
               >
                 <div className="flex items-center gap-3 mb-2">
@@ -714,13 +714,13 @@ export default function GhostClient({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 hover:bg-gray-800 transition"
+                    className="px-4 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 hover:bg-slate-800 transition"
                   >
                     {extracting ? "Extracting..." : "Attach file"}
                   </button>
 
                   {file ? (
-                    <div className="text-sm text-gray-300 truncate">
+                    <div className="text-sm text-slate-300 truncate">
                       Attached: <span className="font-semibold">{file.name}</span>{" "}
                       <button
                         className="ml-2 text-red-300 hover:text-red-200 underline"
@@ -730,14 +730,14 @@ export default function GhostClient({
                       </button>
                     </div>
                   ) : (
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-slate-400">
                       Drag & drop your CV here or click Attach file
                     </div>
                   )}
                 </div>
 
                 {!file && (
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-slate-500">
                     Supported: PDF, TXT, MD
                   </div>
                 )}
@@ -750,7 +750,7 @@ export default function GhostClient({
               )}
 
               {docStats && (
-                <div className="mt-2 text-xs text-gray-400">
+                <div className="mt-2 text-xs text-slate-400">
                   Extracted: {docStats.words.toLocaleString()} words •{" "}
                   {docStats.chars.toLocaleString()} chars{" "}
                   {docStats.chars > 12000 ? "• sending first 12,000 chars" : ""}
@@ -758,9 +758,9 @@ export default function GhostClient({
               )}
 
               {docPreview && (
-                <div className="mt-2 bg-gray-900 border border-gray-700 rounded-lg p-3">
-                  <div className="text-xs text-gray-400 mb-2">Extract preview</div>
-                  <div className="text-sm text-gray-200 whitespace-pre-wrap">
+                <div className="mt-2 bg-slate-900 border border-slate-700 rounded-lg p-3">
+                  <div className="text-xs text-slate-400 mb-2">Extract preview</div>
+                  <div className="text-sm text-slate-200 whitespace-pre-wrap">
                     {docPreview}
                     {docStats && docStats.chars > 500 ? "…" : ""}
                   </div>
@@ -771,7 +771,7 @@ export default function GhostClient({
             <input
               type="text"
               placeholder={placeholder}
-              className="border border-gray-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-gray-800 text-white"
+              className="border border-slate-600 p-3 mb-4 w-full max-w-xl rounded-lg bg-slate-800 text-white"
               value={task}
               onChange={(e) => setTask(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -782,18 +782,18 @@ export default function GhostClient({
               whileHover={{ scale: 1.02 }}
               onClick={handleSubmit}
               disabled={loading || extracting}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg mb-4 disabled:opacity-70"
+              className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-lg mb-4 disabled:opacity-70"
             >
               {loading ? (file ? "Analyzing CV..." : "Thinking...") : file ? "Analyze CV" : "Submit"}
             </motion.button>
 
             {showUpgradeBox && (
-              <div className="mt-2 mb-6 w-full max-w-2xl rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-5 text-center">
+              <div className="mt-2 mb-6 w-full max-w-2xl rounded-2xl border border-sky-500/40 bg-sky-500/10 p-5 text-center">
                 <h3 className="text-xl font-bold text-white mb-2">{upgradeTitle}</h3>
-                <p className="text-gray-300 mb-4">{upgradeMessage}</p>
+                <p className="text-slate-300 mb-4">{upgradeMessage}</p>
 
                 {limitMeta?.limit !== undefined && limitMeta?.used !== undefined && (
-                  <p className="text-sm text-gray-400 mb-4">
+                  <p className="text-sm text-slate-400 mb-4">
                     You’ve used {limitMeta.used}/{limitMeta.limit} daily requests.
                   </p>
                 )}
@@ -801,7 +801,7 @@ export default function GhostClient({
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <a
                     href="/pricing"
-                    className="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition"
+                    className="px-6 py-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-semibold transition"
                   >
                     Upgrade to Pro
                   </a>
@@ -809,7 +809,7 @@ export default function GhostClient({
                   <button
                     type="button"
                     onClick={() => setShowUpgradeBox(false)}
-                    className="px-6 py-3 rounded-lg border border-gray-700 bg-gray-900 hover:bg-gray-800 text-gray-200 transition"
+                    className="px-6 py-3 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 transition"
                   >
                     Maybe later
                   </button>
@@ -818,9 +818,9 @@ export default function GhostClient({
             )}
 
             {response && (
-              <div className="mt-6 p-5 w-full max-w-3xl bg-gray-800 rounded-2xl border border-gray-700">
+              <div className="mt-6 p-5 w-full max-w-3xl bg-slate-800 rounded-2xl border border-slate-700">
                 <div className="flex items-center justify-between gap-3 mb-4">
-                  <div className="text-sm text-gray-300">Output (Markdown)</div>
+                  <div className="text-sm text-slate-300">Output (Markdown)</div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -865,7 +865,7 @@ export default function GhostClient({
                           await navigator.clipboard.writeText(response);
                         } catch {}
                       }}
-                      className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm transition"
+                      className="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm transition"
                     >
                       Copy
                     </button>
@@ -882,17 +882,17 @@ export default function GhostClient({
                 )}
 
                 {atsScore !== null && (
-                  <div className="mb-4 bg-gray-900 border border-gray-700 rounded-xl p-4">
+                  <div className="mb-4 bg-slate-900 border border-slate-700 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="text-sm text-gray-200 font-semibold">ATS Score</div>
-                      <div className="text-sm text-indigo-300 font-bold">{atsScore}/100</div>
+                      <div className="text-sm text-slate-200 font-semibold">ATS Score</div>
+                      <div className="text-sm text-sky-300 font-bold">{atsScore}/100</div>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-                      <div className="h-2 bg-indigo-500" style={{ width: `${atsScore}%` }} />
+                    <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                      <div className="h-2 bg-sky-500" style={{ width: `${atsScore}%` }} />
                     </div>
-                    <div className="mt-2 text-xs text-gray-400">
+                    <div className="mt-2 text-xs text-slate-400">
                       Based on ATS-friendliness + keyword match for:{" "}
-                      <span className="text-gray-200">{effectiveTargetRole}</span>
+                      <span className="text-slate-200">{effectiveTargetRole}</span>
                     </div>
                   </div>
                 )}
