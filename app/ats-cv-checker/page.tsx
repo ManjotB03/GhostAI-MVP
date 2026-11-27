@@ -281,7 +281,7 @@ export default function ATSCheckerPage() {
           <div className="space-y-5 text-slate-300 leading-relaxed">
             <p>
               An ATS score measures how well your CV matches a job description.
-              ATS stands for Applicant Tracking System — software used by many UK
+              ATS stands for Applicant Tracking System — software used by many
               employers and recruiters to scan CVs before a human reviews them.
             </p>
 
@@ -305,7 +305,7 @@ export default function ATSCheckerPage() {
             </p>
 
             <p>
-              GhostAI helps UK job seekers improve their ATS score by identifying
+              GhostAI helps job seekers improve their ATS score by identifying
               missing keywords, highlighting matched skills, and suggesting practical
               CV improvements instantly. Instead of guessing why applications are
               being rejected, you can quickly see how well your CV fits the role.

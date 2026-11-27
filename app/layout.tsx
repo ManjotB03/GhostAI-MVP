@@ -73,12 +73,12 @@ export default function RootLayout({
                     name: "Is GhostAI only for graduates?",
                     acceptedAnswer: {
                       "@type": "Answer",
-                      text: "It's built around the graduate job hunt (grad schemes, first roles, lots of applications at once), but anyone tailoring a CV to specific jobs can use it.",
+                      text: "It's built for anyone job hunting, especially students and graduates sending lots of applications at once. It works for jobs in any country.",
                     },
                   },
                   {
                     "@type": "Question",
-                    name: "Does it work for grad schemes and big-company applications?",
+                    name: "Does it work for graduate programmes and big-company applications?",
                     acceptedAnswer: {
                       "@type": "Answer",
                       text: "Yes. Paste the job description for any role and GhostAI compares your CV against it, flags missing keywords, and suggests stronger wording.",

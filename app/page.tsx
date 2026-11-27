@@ -19,7 +19,7 @@ const NAV_LINKS: { href: string; label: string; anchor?: boolean }[] = [
 const PAINS = [
   {
     title: "One CV, fifty different jobs",
-    body: "Grad schemes screen for the keywords in their own job description. A generic CV quietly loses to people who tailored theirs.",
+    body: "Graduate programmes and big employers screen for the keywords in their own job description. A generic CV quietly loses to people who tailored theirs.",
   },
   {
     title: "No idea what you sent where",
@@ -63,10 +63,10 @@ const COMPARISON: { row: string; chatgpt: boolean | "partial"; ghost: boolean }[
 const FAQS = [
   {
     q: "Is GhostAI only for graduates?",
-    a: "It's built around the graduate job hunt (grad schemes, first roles, lots of applications at once), but anyone tailoring a CV to specific jobs can use it.",
+    a: "It's built for anyone job hunting, especially students and graduates sending lots of applications at once. It works for jobs in any country.",
   },
   {
-    q: "Does it work for grad schemes and big-company applications?",
+    q: "Does it work for graduate programmes and big-company applications?",
     a: "Yes. Paste the job description for any role and GhostAI compares your CV against it, flags missing keywords, and suggests stronger wording.",
   },
   {
@@ -297,7 +297,7 @@ export default function HomePage() {
             <div>
               <p className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3.5 py-1 text-sm font-medium text-sky-300 mb-6">
                 <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                For UK graduates applying to their first roles
+                For students, graduates and job seekers everywhere
               </p>
 
               <h1 className="text-4xl sm:text-5xl lg:text-[3.1rem] font-extrabold leading-[1.05] tracking-tight mb-6">

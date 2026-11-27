@@ -28,7 +28,7 @@ const STARTER_PROMPTS = [
   "Write a cover letter for this job using my CV",
   "Help me answer: “Tell me about yourself”",
   "How can I switch into tech?",
-  "Write me a salary negotiation script for London",
+  "Write me a salary negotiation script for my next offer",
   "What should I do in the next 30 days to get interviews?",
 ];
 

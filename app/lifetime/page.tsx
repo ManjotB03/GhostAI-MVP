@@ -181,7 +181,7 @@ export default function LifetimePage() {
               {cta}
               {sale.endsAt && (
                 <p className="mt-5 text-sm text-slate-300">
-                  Closes {formatClose(sale.endsAt)}
+                  Closes {formatClose(sale.endsAt)} (UK time)
                   {countdown && <span className="text-sky-300"> · {countdown}</span>}, or when all{" "}
                   {sale.cap} spots are gone.
                 </p>
@@ -258,7 +258,7 @@ export default function LifetimePage() {
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
           <h3 className="font-semibold mb-2">Who it&apos;s for</h3>
           <p className="text-slate-400 leading-relaxed">
-            Graduates applying to grad schemes this season, career changers who&apos;ll job hunt
+            Graduates and job seekers applying this season, career changers who&apos;ll job hunt
             more than once, and anyone who&apos;d rather pay once than manage another subscription.
           </p>
         </div>

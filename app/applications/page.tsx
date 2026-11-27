@@ -207,7 +207,7 @@ export default function ApplicationsPage() {
 
     const task = [
       `Write a tailored cover letter for the ${role} position at ${company}.`,
-      "Use British English. Keep it under 350 words, in 3–4 short paragraphs.",
+      "Match the spelling of the job ad (UK or US English). Keep it under 350 words, in 3–4 short paragraphs.",
       "Open with a specific reason for applying, not 'I am writing to apply'.",
       "Use only experience that appears in my CV; do not invent achievements, numbers or employers.",
       "Mirror the most important requirements from the job description.",
