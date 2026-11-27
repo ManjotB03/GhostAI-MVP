@@ -70,6 +70,14 @@ export default function RootLayout({
                 mainEntity: [
                   {
                     "@type": "Question",
+                    name: "What's the best way to track job applications?",
+                    acceptedAnswer: {
+                      "@type": "Answer",
+                      text: "Use one place that records the role, the date you applied, the CV version you sent and when to follow up. A spreadsheet works until you have 20+ applications. GhostAI's job application tracker does this automatically when you save a tailored CV, and reminds you to follow up after 7 days.",
+                    },
+                  },
+                  {
+                    "@type": "Question",
                     name: "Is GhostAI only for graduates?",
                     acceptedAnswer: {
                       "@type": "Answer",

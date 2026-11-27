@@ -62,6 +62,10 @@ const COMPARISON: { row: string; chatgpt: boolean | "partial"; ghost: boolean }[
 
 const FAQS = [
   {
+    q: "What's the best way to track job applications?",
+    a: "Use one place that records the role, the date you applied, the CV version you sent and when to follow up. A spreadsheet works until you have 20+ applications. GhostAI's job application tracker does this automatically when you save a tailored CV, and reminds you to follow up after 7 days.",
+  },
+  {
     q: "Is GhostAI only for graduates?",
     a: "It's built for anyone job hunting, especially students and graduates sending lots of applications at once. It works for jobs in any country.",
   },
@@ -308,9 +312,10 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg text-slate-300 leading-relaxed max-w-xl mb-8">
-                GhostAI tailors your CV to each graduate role, keeps every
-                application in one place, and checks in when you haven&apos;t
-                heard back, so you can see what&apos;s actually working.
+                GhostAI is a job application tracker and CV tailoring tool. It
+                tailors your CV to each job, keeps every application in one
+                place, and checks in when you haven&apos;t heard back, so you can
+                see what&apos;s actually working.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-5">
@@ -359,8 +364,22 @@ export default function HomePage() {
           <div className="max-w-2xl mb-10">
             <SectionLabel>The problem</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              The graduate job hunt is a numbers game you can&apos;t see.
+              The job hunt is a numbers game you can&apos;t see.
             </h2>
+            <p className="mt-4 text-lg text-slate-400 leading-relaxed">
+              Most applications get no reply because the CV doesn&apos;t match the
+              job ad and there&apos;s no system for following up. Many employers
+              screen CVs with{" "}
+              <a
+                href="https://en.wikipedia.org/wiki/Applicant_tracking_system"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sky-400 underline-offset-2 hover:underline"
+              >
+                applicant tracking systems (ATS)
+              </a>{" "}
+              before a person ever reads them.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px overflow-hidden rounded-2xl border border-slate-800 bg-slate-800">
             {PAINS.map((p) => (
@@ -554,7 +573,7 @@ export default function HomePage() {
       <section id="faq" className="scroll-mt-20 max-w-3xl mx-auto px-5 sm:px-6 py-20 sm:py-28">
         <div className="text-center mb-10">
           <SectionLabel>FAQ</SectionLabel>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Questions graduates ask</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Questions job seekers ask</h2>
         </div>
 
         <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800">
