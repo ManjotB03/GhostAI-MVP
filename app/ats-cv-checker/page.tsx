@@ -67,7 +67,7 @@ export default function ATSCheckerPage() {
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/ghostai-icon.svg"
-              alt="GhostAI"
+              alt="GhostAI ATS CV checker logo"
               width={30}
               height={30}
               unoptimized
@@ -91,7 +91,7 @@ export default function ATSCheckerPage() {
         </h1>
 
         <p className="text-lg sm:text-xl text-slate-300 mb-8">
-          GhostAI&apos;s free ATS CV checker compares your CV (or resume) with a job
+          GhostAI&apos;s free <strong className="font-semibold text-white">ATS CV checker</strong> compares your CV (or resume) with a job
           description and gives you an instant ATS match score, missing keywords,
           and 3 improvements. No signup needed.
         </p>

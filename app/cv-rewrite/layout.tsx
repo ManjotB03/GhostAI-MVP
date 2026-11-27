@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "CV Rewrite by the Founder – GhostAI",
+  title: "CV Rewrite Service by a Real Person in 48 Hours | GhostAI",
   description:
-    "A real person tailors your CV to the job you want, with a 5-minute video walkthrough in 48 hours. £49, includes lifetime GhostAI access.",
+    "GhostAI's CV rewrite service: a real person tailors your CV to the job you want, with a 5-minute video walkthrough in 48 hours. £49, includes lifetime GhostAI access.",
   alternates: { canonical: "/cv-rewrite" },
 };
 
