@@ -369,7 +369,7 @@ export default function PricingPage() {
             },
             {
               q: "Can I cancel anytime?",
-              a: "Yes. Paid plans can be cancelled anytime through the billing portal. There are no hidden fees.",
+              a: "Yes. Paid plans can be cancelled anytime through the billing portal, and you can get a full refund on your first payment if you ask within 14 days. There are no hidden fees. See our Refund Policy at ghostaicorp.com/refunds.",
             },
             {
               q: "Does GhostAI guarantee interviews?",

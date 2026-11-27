@@ -79,6 +79,14 @@ export default function TermsPage() {
               usage limits. Payments are processed by third-party payment
               providers. Pricing and plan features may change over time.
             </p>
+            <p className="mt-3">
+              You can get a full refund on your first payment for a plan if you
+              ask within 14 days, and you can cancel anytime. See our{" "}
+              <Link href="/refunds" className="text-sky-400 hover:text-sky-300">
+                Refund Policy
+              </Link>{" "}
+              for details.
+            </p>
           </section>
 
           <section>
