@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { LIFETIME_STATUS, PASS_DAYS, PASS_STATUS, isPassExpired } from "@/lib/tier";
 
 export const runtime = "nodejs";
 
@@ -71,6 +72,79 @@ function tierFromSubscription(sub: any): Tier {
   return "free";
 }
 
+/**
+ * Fulfil a one-off Checkout payment (mode: "payment").
+ * - lifetime:      Pro forever (status "lifetime", no expiry)
+ * - job-hunt-pass: Pro until PASS_DAYS after the purchase (status "pass")
+ * Idempotent: Stripe retries produce the same result, because the pass end is
+ * computed from the session's own creation time, not from "now".
+ */
+async function fulfilOneOff(session: any): Promise<NextResponse> {
+  const plan = String(session?.metadata?.plan || "").toLowerCase();
+
+  if (plan !== "lifetime" && plan !== "job-hunt-pass") {
+    // e.g. cv-boost: nothing to unlock yet.
+    return NextResponse.json({ received: true });
+  }
+
+  if (session?.payment_status !== "paid") {
+    return NextResponse.json({ received: true });
+  }
+
+  const customerId = String(session?.customer || "");
+  const email = String(session?.metadata?.email || "");
+
+  let query = supabaseServer
+    .from("app_users")
+    .select("id,subscription_status,subscription_current_period_end");
+  query = customerId ? query.eq("stripe_customer_id", customerId) : query.eq("email", email);
+  const { data: row, error: readErr } = await query.maybeSingle();
+
+  if (readErr || !row) {
+    // 500 -> Stripe retries; the user row should exist (checkout creates it).
+    return NextResponse.json(
+      { error: "User not found for one-off payment", details: readErr?.message },
+      { status: 500 }
+    );
+  }
+
+  let update: Record<string, unknown>;
+
+  if (plan === "lifetime") {
+    update = {
+      subscription_tier: "pro",
+      subscription_status: LIFETIME_STATUS,
+      subscription_current_period_end: null,
+    };
+  } else {
+    if (row.subscription_status === LIFETIME_STATUS) {
+      return NextResponse.json({ received: true }); // already has more than a pass
+    }
+    const createdMs = (Number(session?.created) || Math.floor(Date.now() / 1000)) * 1000;
+    const newEnd = createdMs + PASS_DAYS * 24 * 60 * 60 * 1000;
+    const existingEnd =
+      row.subscription_status === PASS_STATUS
+        ? Date.parse(String(row.subscription_current_period_end || "")) || 0
+        : 0;
+    update = {
+      subscription_tier: "pro",
+      subscription_status: PASS_STATUS,
+      subscription_current_period_end: new Date(Math.max(newEnd, existingEnd)).toISOString(),
+    };
+  }
+
+  const { error } = await supabaseServer.from("app_users").update(update).eq("id", row.id);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Database update failed", details: error.message },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ received: true });
+}
+
 export async function POST(req: Request) {
   const signature = req.headers.get("stripe-signature");
 
@@ -113,9 +187,12 @@ export async function POST(req: Request) {
       subscription = event.data.object;
     }
 
-    // Checkout completed -> retrieve subscription from Stripe
+    // Checkout completed -> one-off payment, or retrieve the subscription
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
+      if (session?.mode === "payment") {
+        return await fulfilOneOff(session);
+      }
       if (session?.subscription) {
         subscription = await stripe.subscriptions.retrieve(String(session.subscription));
       }
@@ -133,6 +210,26 @@ export async function POST(req: Request) {
     }
 
     const tier = tierFromSubscription(subscription);
+
+    // Don't let a subscription event overwrite a one-off purchase:
+    // a lifetime member keeps Pro, and a live pass isn't downgraded by an old
+    // subscription ending. A paid subscription may replace a pass.
+    const { data: current } = await supabaseServer
+      .from("app_users")
+      .select("subscription_status,subscription_current_period_end")
+      .eq("stripe_customer_id", customerId)
+      .maybeSingle();
+
+    if (current?.subscription_status === LIFETIME_STATUS) {
+      return NextResponse.json({ received: true });
+    }
+    if (
+      current?.subscription_status === PASS_STATUS &&
+      !isPassExpired(current) &&
+      tier === "free"
+    ) {
+      return NextResponse.json({ received: true });
+    }
 
     // current_period_end is a unix timestamp (seconds)
     const currentPeriodEnd =

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { nextPath } from "@/lib/nextPath";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -83,7 +84,7 @@ export default function SignupPage() {
         return;
       }
 
-      router.push("/ghost");
+      router.push(nextPath());
       router.refresh();
     } catch (err: any) {
       setError(err?.message || "Something went wrong.");
@@ -119,7 +120,7 @@ export default function SignupPage() {
 
         {/* Google button */}
         <button
-          onClick={() => signIn("google", { callbackUrl: "/ghost" })}
+          onClick={() => signIn("google", { callbackUrl: nextPath() })}
           className="w-full flex items-center justify-center gap-3 rounded-xl bg-white hover:bg-slate-100 transition text-slate-800 font-semibold py-3 mb-6"
         >
           <svg

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { LIFETIME_STATUS, PASS_STATUS, isPassExpired, lifetimeSale } from "@/lib/tier";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,9 @@ type CheckoutPlan =
   | "pro-annual"
   | "ultimate-monthly"
   | "ultimate-annual"
-  | "cv-boost";
+  | "cv-boost"
+  | "lifetime"
+  | "job-hunt-pass";
 
 const PRICE_IDS: Record<CheckoutPlan, string | undefined> = {
   "pro-monthly": process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
@@ -20,6 +23,8 @@ const PRICE_IDS: Record<CheckoutPlan, string | undefined> = {
   "ultimate-monthly": process.env.STRIPE_ULTIMATE_MONTHLY_PRICE_ID,
   "ultimate-annual": process.env.STRIPE_ULTIMATE_ANNUAL_PRICE_ID,
   "cv-boost": process.env.STRIPE_CV_BOOST_PRICE_ID,
+  lifetime: process.env.STRIPE_LIFETIME_PRICE_ID,
+  "job-hunt-pass": process.env.STRIPE_JOB_HUNT_PASS_PRICE_ID,
 };
 
 function getBaseUrl() {
@@ -31,8 +36,10 @@ function getBaseUrl() {
   );
 }
 
+const ONE_OFF_PLANS: CheckoutPlan[] = ["cv-boost", "lifetime", "job-hunt-pass"];
+
 function isSubscriptionPlan(plan: CheckoutPlan) {
-  return plan !== "cv-boost";
+  return !ONE_OFF_PLANS.includes(plan);
 }
 
 export async function POST(req: Request) {
@@ -61,10 +68,19 @@ export async function POST(req: Request) {
       "ultimate-monthly",
       "ultimate-annual",
       "cv-boost",
+      "lifetime",
+      "job-hunt-pass",
     ];
 
     if (!validPlans.includes(plan)) {
       return NextResponse.json({ error: "Invalid checkout plan" }, { status: 400 });
+    }
+
+    if (plan === "lifetime" && !lifetimeSale().open) {
+      return NextResponse.json(
+        { error: "The Founding Lifetime Pass isn't on sale right now." },
+        { status: 403 }
+      );
     }
 
     const priceId = PRICE_IDS[plan];
@@ -79,7 +95,7 @@ export async function POST(req: Request) {
 
     const { data: userRow, error: userErr } = await supabaseServer
       .from("app_users")
-      .select("id,email,stripe_customer_id,subscription_status")
+      .select("id,email,stripe_customer_id,subscription_status,subscription_current_period_end")
       .eq("email", email)
       .maybeSingle();
 
@@ -110,15 +126,54 @@ export async function POST(req: Request) {
       userId = created.id;
     }
 
-    if (
-      isSubscriptionPlan(plan) &&
-      (userRow?.subscription_status === "active" ||
-        userRow?.subscription_status === "trialing")
-    ) {
+    const status = userRow?.subscription_status;
+    const hasActiveSub = status === "active" || status === "trialing";
+    const hasLifetime = status === LIFETIME_STATUS;
+    const hasLivePass = status === PASS_STATUS && !isPassExpired(userRow);
+
+    if (hasLifetime && plan !== "cv-boost") {
       return NextResponse.json({
         alreadySubscribed: true,
-        message: "You already have an active subscription.",
+        message: "You already have the Lifetime Pass, so there's nothing more to buy.",
       });
+    }
+
+    if (isSubscriptionPlan(plan) && (hasActiveSub || hasLivePass)) {
+      return NextResponse.json({
+        alreadySubscribed: true,
+        message: hasLivePass
+          ? "Your Job Hunt Pass is still active."
+          : "You already have an active subscription.",
+      });
+    }
+
+    if (plan === "job-hunt-pass" && hasActiveSub) {
+      return NextResponse.json({
+        alreadySubscribed: true,
+        message: "You already have an active subscription with the same features.",
+      });
+    }
+
+    if (plan === "lifetime") {
+      const { cap } = lifetimeSale();
+      const { count, error: countErr } = await supabaseServer
+        .from("app_users")
+        .select("id", { count: "exact", head: true })
+        .eq("subscription_status", LIFETIME_STATUS);
+
+      if (countErr) {
+        return NextResponse.json(
+          { error: "DB error", details: countErr.message },
+          { status: 500 }
+        );
+      }
+
+      if ((count ?? 0) >= cap) {
+        return NextResponse.json(
+          { error: "All Founding Lifetime spots have been claimed." },
+          { status: 409 }
+        );
+      }
     }
 
     if (!stripeCustomerId) {
@@ -158,7 +213,7 @@ export async function POST(req: Request) {
           }
         : {}),
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing`,
+      cancel_url: `${baseUrl}${plan === "lifetime" ? "/lifetime" : "/pricing"}`,
     });
 
     return NextResponse.json({ url: checkout.url });

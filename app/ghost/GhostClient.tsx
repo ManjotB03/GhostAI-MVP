@@ -25,6 +25,7 @@ type Chat = {
 
 const STARTER_PROMPTS = [
   "Review my CV for a graduate role",
+  "Write a cover letter for this job using my CV",
   "Help me answer: “Tell me about yourself”",
   "How can I switch into tech?",
   "Write me a salary negotiation script for London",

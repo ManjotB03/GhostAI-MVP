@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { OWNER_EMAIL } from "@/lib/limits";
+import { TIER_COLUMNS, effectiveTier } from "@/lib/tier";
 
 export const runtime = "nodejs";
 
@@ -11,11 +12,6 @@ const VALID_STATUSES = ["saved", "applied", "interview", "offer", "rejected", "n
 // Free users can track a limited number of applications; paid tiers are unlimited.
 const FREE_APPLICATION_LIMIT = 5;
 
-function normalizeTier(input: any): "free" | "pro" | "ultimate" {
-  const t = String(input ?? "free").toLowerCase();
-  if (t === "pro" || t === "ultimate") return t;
-  return "free";
-}
 
 // GET /api/applications -> list the signed-in user's applications, newest first
 export async function GET() {
@@ -47,11 +43,11 @@ export async function GET() {
 
     const { data: userRow } = await supabaseServer
       .from("app_users")
-      .select("subscription_tier")
+      .select(TIER_COLUMNS)
       .eq("email", email)
       .maybeSingle();
 
-    const tier = isOwner ? "owner" : normalizeTier(userRow?.subscription_tier);
+    const tier = isOwner ? "owner" : effectiveTier(userRow);
     const unlimited = tier !== "free";
 
     return NextResponse.json({
@@ -102,7 +98,7 @@ export async function POST(req: Request) {
     if (!isOwner) {
       const { data: userRow, error: userErr } = await supabaseServer
         .from("app_users")
-        .select("subscription_tier")
+        .select(TIER_COLUMNS)
         .eq("email", email)
         .maybeSingle();
 
@@ -113,7 +109,7 @@ export async function POST(req: Request) {
         );
       }
 
-      const tier = normalizeTier(userRow?.subscription_tier);
+      const tier = effectiveTier(userRow);
 
       if (tier === "free") {
         const { count, error: countErr } = await supabaseServer
