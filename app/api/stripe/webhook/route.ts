@@ -87,7 +87,12 @@ async function fulfilOneOff(session: any): Promise<NextResponse> {
     return NextResponse.json({ received: true });
   }
 
-  if (session?.payment_status !== "paid") {
+  // "no_payment_required" = a £0 checkout (e.g. a 100% off promotion code).
+  // Anything else (e.g. "unpaid" for delayed methods) waits for a later event.
+  const settled =
+    session?.payment_status === "paid" ||
+    session?.payment_status === "no_payment_required";
+  if (!settled) {
     return NextResponse.json({ received: true });
   }
 
